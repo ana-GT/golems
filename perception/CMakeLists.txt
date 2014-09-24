@@ -50,6 +50,25 @@ set_target_properties( eye_v1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
+# FOR EYE_V2
+include_directories( /home/ana/Research/Code/GM )
+include_directories( /home/ana/Research/Code/GM/aoi/refresher/sq_fitting/include )
+include_directories( /home/ana/Research/Code/GM/aoi/refresher/sq_fitting )
+include_directories( /home/ana/Research/Code/GM/aoi/refresher/)
+link_directories( /home/ana/Research/Code/GM/lib )
+
+add_executable( eye_v2 eye_v2.cpp )
+target_link_libraries( eye_v2  tabletop_segmentation SQ_utils SQ_fitter mindGapper dt Refresher utils  pcl_common pcl_io pcl_kdtree pcl_visualization pcl_search ${OpenCV_LIBRARIES} )
+set_target_properties( eye_v2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( test test.cpp )
+target_link_libraries( test  tabletop_segmentation ${PCL_LIBRARIES}  lapack blas gfortran )
+set_target_properties( test PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+
 # Apps
 add_executable( segmentedCloudTestReceiver segmentedCloudTestReceiver.cpp )
 target_link_libraries( segmentedCloudTestReceiver perception_msgs  ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
