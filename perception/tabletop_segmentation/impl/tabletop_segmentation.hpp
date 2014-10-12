@@ -219,10 +219,15 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
     return false;
   }
 
+  pcl::io::savePCDFile( "cloud_filtered.pcd", *cloud_filtered_ptr, true );
+
   // Downsample the filtered cloud: output = cloud_downsampled_ptr
   PointCloudPtr cloud_downsampled_ptr (new PointCloud); 
   grid_.setInputCloud (cloud_filtered_ptr);
   grid_.filter (*cloud_downsampled_ptr);
+
+  *cloud_downsampled_ptr = *cloud_filtered_ptr;
+
   if (cloud_downsampled_ptr->points.size() < (unsigned int)min_cluster_size_) {
     std::cout <<"\t [ERROR] Downsampled cloud only has "<< (int)cloud_downsampled_ptr->points.size()<<" points."<<std::endl;
     return false;
@@ -259,13 +264,13 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   seg_.segment( *table_inliers_ptr, 
 		*table_coefficients_ptr );
   
-  
   // Check the coefficients and inliers are above threshold values
   if (table_coefficients_ptr->values.size () <=3 ) {
     std::cout <<"\t [ERROR] Failed to detect table in scan" << std::endl;  
     return false;
   }
   
+
   if ( table_inliers_ptr->indices.size() < (unsigned int)inlier_threshold_) {
     std::cout <<"\t [ERROR] Plane detection has "<< (int)table_inliers_ptr->indices.size() <<
       " inliers, below min threshold of " << inlier_threshold_ << std::endl;
@@ -288,7 +293,10 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   
   // DEBUG ------------
   pcl::copyPointCloud( *cloud_downsampled_ptr, *table_inliers_ptr, dTableInliers );
-  if( pcl::io::savePCDFile( "table_inliers.pcd", dTableInliers, true ) == 0 ) {
+
+   mTable_Points = dTableInliers;
+
+  if( pcl::io::savePCDFileASCII( "table_inliers.pcd", dTableInliers ) == 0 ) {
     std::cout << "\t [DEBUG] Saved DEBUG table inliers cloud"<< std::endl;
   }
   // DEBUG ------------
