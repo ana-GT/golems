@@ -1,0 +1,8 @@
+1. Move the arms to check they work fine
+2. Use the MTS software to check one more joint
+3. Move the arms to check they work fine.
+4. Write program to move one joint only (and corresponding script)
+5. Modify socanmatic / can402
+6. Try it out
+
+vl#MyNumber
