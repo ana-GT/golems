@@ -6,8 +6,8 @@
 # ACH_LIBRARIES - The libraries needed to use amino
 # *********************************************************
 
-find_path( ach_INCLUDE_DIR ach.h )
-find_library( ach_LIBRARY ach )
+find_path( ach_INCLUDE_DIR ach.h PATHS $ENV{HOME}/local/include )
+find_library( ach_LIBRARY ach PATHS $ENV{HOME}/local/lib )
 
 set( ACH_LIBRARIES ${ach_LIBRARY} )
 set( ACH_INCLUDE_DIRS ${ach_INCLUDE_DIR} )

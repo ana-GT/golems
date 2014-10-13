@@ -64,7 +64,7 @@ static int update_n( size_t n,
 		     double *dq,
 		     ach_channel_t *chan, 
 		     struct timespec *ts ) {
-
+	printf("Update_n being called! \n");
     size_t frame_size;
     void *buf = NULL;
     ach_status_t r = sns_msg_local_get( chan, &buf,
@@ -72,25 +72,38 @@ static int update_n( size_t n,
 					ts, ACH_O_LAST | (ts ? ACH_O_WAIT : 0 ) );
     switch(r) {
     case ACH_OK:
+	printf("OK frame \n");
     case ACH_MISSED_FRAME: {
+	printf("OK OR MISSED FRAME \n");
 	struct sns_msg_motor_state *msg = (struct sns_msg_motor_state*)buf;
 	if( n == msg->header.n &&
 	    frame_size == sns_msg_motor_state_size_n((uint32_t)n) ) {
-	    
+	
+	printf("Entered right....\n");	    
 	    for( size_t j = 0; j < n; ++j ) {
 		q[j] = msg->X[j].pos;
 		dq[j] = msg->X[j].vel;
+		printf("Q[%d]: %f ", msg->X[j].pos );
+
 	    }
+		printf("\n");
 	    return 1;
 
 	} else {
+		printf("Entered wrong \n");
 	    SNS_LOG( LOG_ERR, "Invalid motor_state message \n" );
 	}
-	break;
-    }
+
+    } break;
     case ACH_TIMEOUT:
+	printf("Timeout frame \n");
+	break;
     case ACH_STALE_FRAMES:
+	printf("Stale frames \n");
+	break;
     case ACH_CANCELED:
+	printf("Cancelled ach \n");
+	
 	break;
     default:
 	SNS_LOG( LOG_ERR, "Failed ach_get: %s \n", ach_result_to_string(r) );

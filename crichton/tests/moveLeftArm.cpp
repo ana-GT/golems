@@ -10,21 +10,14 @@
 #define ARM_AXES 7
 #define VEL_STEP 0.08726 // 5 degrees
 
-enum ARM_SIDE {
-    ARM_LEFT= 0,
-    ARM_RIGHT = 1
-};
 
 //*******************************
 // Global variables            
 //*******************************
-ach_channel_t chan_state_left;
-ach_channel_t chan_state_right;
-ach_channel_t chan_ref_left;
-ach_channel_t chan_ref_right;
+ach_channel_t chan_state;
+ach_channel_t chan_ref;
 
-double ql[ARM_AXES]; double dql[ARM_AXES];
-double qr[ARM_AXES]; double dqr[ARM_AXES];
+double q[ARM_AXES]; double dq[ARM_AXES];
 struct timespec now;
 
 //***************************
@@ -41,8 +34,7 @@ static void control_n( size_t n,
 		       ach_channel_t* chan );
 void printHelp( char* argv0 );
 bool check_userInput( int &_arm_drive_ind,  
-		      double &_dj,
-		      int &_arm_side );
+		      double &_dv );
 
 /************************************************
  * @function main
@@ -50,7 +42,6 @@ bool check_userInput( int &_arm_drive_ind,
 int main( int argc, char* argv[] ) {
 
     // Variable to move a finger at a time
-    int arm_side = ARM_LEFT;
     double tsec = 2;
     int arm_drive_ind; double dv;
     struct pollfd stdin_poll;
@@ -80,19 +71,15 @@ int main( int argc, char* argv[] ) {
     //--------------------------------
     // 4. Open sdh state channels
     //--------------------------------
-    sns_chan_open( &chan_state_left, "state-left", NULL );
-    sns_chan_open( &chan_state_right, "state-right", NULL );
-    sns_chan_open( &chan_ref_left, "ref-left", NULL );
-    sns_chan_open( &chan_ref_right, "ref-right", NULL );
+    sns_chan_open( &chan_state, "state-left", NULL );
+    sns_chan_open( &chan_ref, "ref-left", NULL );
 
     //-----------------------------------------------------------------------
     // 5. Set sighandlers to die gracefully due to SIGTERM and other animals
     //------------------------------------------------------------------------
     {
-	ach_channel_t *chans[] = { &chan_state_left, 
-				   &chan_state_right, 
-				   &chan_ref_left,
-				   &chan_ref_right,
+	ach_channel_t *chans[] = { &chan_state, 
+				   &chan_ref,
 				   NULL};
 	sns_sigcancel( chans, sns_sig_term_default );
     }
@@ -105,18 +92,13 @@ int main( int argc, char* argv[] ) {
 	update();
 	// Check if user put input
 	if( poll(&stdin_poll, 1, 0 ) == 1 ) {
-	    if( check_userInput( arm_drive_ind, dv, arm_side ) == true ) {
+	    if( check_userInput( arm_drive_ind, dv ) == true ) {
 		printf("Should send arm message \n");
 		
-		if( arm_side == ARM_LEFT ) {
-		    for( int j = 0; j < ARM_AXES; ++j ) { dql[j] = 0; }
-		    dql[arm_drive_ind] = dv;
-		    control_n( ARM_AXES, dql, tsec, &chan_ref_left );	 
-		} else if( arm_side == ARM_RIGHT ) {
-		    for( int j = 0; j < ARM_AXES; ++j ) { dqr[j] = 0; }
-		    dqr[arm_drive_ind] = dv;
-		    control_n( ARM_AXES, dqr, tsec, &chan_ref_right );	 
-		}
+		for( int j = 0; j < ARM_AXES; ++j ) { dq[j] = 0; }
+		    dq[arm_drive_ind] = dv;
+		    control_n( ARM_AXES, dq, tsec, &chan_ref );	 
+		
 		
 	    }
 	} // end polling
@@ -164,8 +146,7 @@ static void control_n( size_t n,
  * @function check_userInput
  */
 bool check_userInput( int &_arm_drive_ind,  
-		      double &_dv,
-		      int &_arm_side ) {
+		      double &_dv ) {
    
     char drive_id[4];
     char dir[2];
@@ -182,54 +163,24 @@ bool check_userInput( int &_arm_drive_ind,
 	// Check which finger
 	if( strcmp(drive_id,"l0") == 0 ) {
 	    _arm_drive_ind = 0;
-	    _arm_side = ARM_LEFT;
 	} else if( strcmp(drive_id, "l1") == 0 ) {
 	    _arm_drive_ind = 1;
-	    _arm_side = ARM_LEFT;
 	} else if( strcmp(drive_id, "l2") == 0 ) {
 	    _arm_drive_ind = 2;
-	    _arm_side = ARM_LEFT;
 	} else if( strcmp(drive_id, "l3") == 0 ) {
 	    _arm_drive_ind = 3;
-	    _arm_side = ARM_LEFT;
 	} else if( strcmp(drive_id, "l4") == 0 ) {
 	    _arm_drive_ind = 4;
-	    _arm_side = ARM_LEFT;
 	} else if( strcmp(drive_id, "l5") == 0 ) {
 	    _arm_drive_ind = 5;
-	    _arm_side = ARM_LEFT;
 	} else if( strcmp(drive_id, "l6") == 0 ) {
 	    _arm_drive_ind = 6; 
-	    _arm_side = ARM_LEFT;
-	} else if( strcmp(drive_id,"r0") == 0 ) {
-	    _arm_drive_ind = 0;
-	    _arm_side = ARM_RIGHT;
-	} else if( strcmp(drive_id, "r1") == 0 ) {
-	    _arm_drive_ind = 1;
-	    _arm_side = ARM_RIGHT;
-	} else if( strcmp(drive_id, "r2") == 0 ) {
-	    _arm_drive_ind = 2;
-	    _arm_side = ARM_RIGHT;
-	} else if( strcmp(drive_id, "r3") == 0 ) {
-	    _arm_drive_ind = 3;
-	    _arm_side = ARM_RIGHT;
-	} else if( strcmp(drive_id, "r4") == 0 ) {
-	    _arm_drive_ind = 4;
-	    _arm_side = ARM_RIGHT;
-	} else if( strcmp(drive_id, "r5") == 0 ) {
-	    _arm_drive_ind = 5;
-	    _arm_side = ARM_RIGHT;
-	} else if( strcmp(drive_id, "r6") == 0 ) {
-	    _arm_drive_ind = 6;
-	    _arm_side = ARM_RIGHT;
 	} else {
 	    printf("\t *[check_userInput] No recognized option \n");
 	    return false;
 	}
-
-	printf("\t -- [INFO] Moving drive %d with dv:%f of arm: %s \n",
-	       _arm_drive_ind, _dv,
-	       _arm_side == ARM_LEFT? "arm_left" : "arm_right" );
+	printf("\t -- [INFO] Moving drive %d with dv:%f of left arm \n",
+	       _arm_drive_ind, _dv );
 	return true;
     } else {
 	return false;
@@ -253,15 +204,12 @@ static int update( void ) {
     int is_updated = 0;
 
     // Get ARM States
-    int u_al = update_n( ARM_AXES, ql, dql, 
-			 &chan_state_left,
+    int u_al = update_n( ARM_AXES, q, dq, 
+			 &chan_state,
 			 &timeout );
 
-    int u_ar = update_n( ARM_AXES, qr, dqr,
-			 &chan_state_right,
-			 &timeout );
     
-    return u_al && u_ar;
+    return u_al;
 }
 
 /**
@@ -287,10 +235,8 @@ static int update_n( size_t n,
 		frame_size == sns_msg_motor_state_size_n((uint32_t)n) ) {
 		for( size_t j = 0; j < n; ++j ) {
 		    q[j] = msg->X[j].pos;
-		    printf(" Q(%d): %f ", j, msg->X[j].pos);
 		     dq[j] = msg->X[j].vel;
 		} // end for 
-		printf("\n");
 		return 1;
 	    } // end if
 	    else {
