@@ -72,7 +72,7 @@ int main( int argc, char* argv[] ) {
   srand( time(NULL) );
 
   // Open device
-  cv::VideoCapture capture( CV_CAP_OPENNI );
+  cv::VideoCapture capture( cv::CAP_OPENNI );
   
   if( !capture.isOpened() ) {
     std::cout << "/t * Could not open the capture object"<<std::endl;
@@ -86,7 +86,7 @@ int main( int argc, char* argv[] ) {
   cv::setMouseCallback( windowName, onMouse, 0 );
 
   // Loop
-  f = (float)capture.get( CV_CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );
+  f = (float)capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );
 
   for(;;) {
     
@@ -95,7 +95,7 @@ int main( int argc, char* argv[] ) {
       return -1;
     }
     
-    capture.retrieve( rgbImg, CV_CAP_OPENNI_BGR_IMAGE );
+    capture.retrieve( rgbImg, cv::CAP_OPENNI_BGR_IMAGE );
     rgbImg.copyTo( labeledRgbImg );
     
     if( isSegmentedFlag ) {
@@ -103,7 +103,7 @@ int main( int argc, char* argv[] ) {
     }
     cv::imshow( windowName, labeledRgbImg );
          
-    capture.retrieve( pclMap, CV_CAP_OPENNI_POINT_CLOUD_MAP );
+    capture.retrieve( pclMap, cv::CAP_OPENNI_POINT_CLOUD_MAP );
     
 
     char k = cv::waitKey(30);

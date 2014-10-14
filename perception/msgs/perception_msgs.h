@@ -19,7 +19,7 @@ extern "C" {
     struct sns_msg_header header;
     uint8_t n_clusters; /** Number of clusters */
     uint8_t selected;
-        
+    double table_coeffs[4];        
     struct {
       sns_real_t x;
       sns_real_t y;

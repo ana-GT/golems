@@ -9,7 +9,7 @@ void sns_msg_segmented_cloud_dump( FILE* _out,
 
   fprintf( _out, "n_clusters: %d \n", _msg->n_clusters );
   fprintf( _out, "n_points: %d \n", _msg->header.n );
-  
+  fprintf( _out, "table coeffs: %f %f %f %f \n", _msg->table_coeffs[0], _msg->table_coeffs[1], _msg->table_coeffs[2], _msg->table_coeffs[3] );
   uint32_t i;
   for( i = 0; i < _msg->header.n; ++i ) {
     fprintf( _out, "\t %f %f %f - cluster: %d \n", _msg->u[i].x, 
