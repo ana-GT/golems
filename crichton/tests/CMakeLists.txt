@@ -32,6 +32,10 @@ add_executable( moveLeftArm moveLeftArm.cpp )
 target_link_libraries( moveLeftArm ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
 set_target_properties( moveLeftArm PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( moveLeftJoint moveLeftJoint.cpp )
+target_link_libraries( moveLeftJoint ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( moveLeftJoint PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 add_executable( moveLeftArm_loop moveLeftArm_loop.cpp )
 target_link_libraries( moveLeftArm_loop ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
 set_target_properties( moveLeftArm_loop PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
