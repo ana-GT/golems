@@ -1,5 +1,6 @@
 #include "perception_msgs.h"
 
+/******** SEGMENTED CLOUD ********/
 struct sns_msg_segmented_cloud* sns_msg_segmented_cloud_alloc( uint64_t _n) {
   return sns_msg_segmented_cloud_heap_alloc( (uint32_t) _n );
 }
@@ -19,3 +20,4 @@ void sns_msg_segmented_cloud_dump( FILE* _out,
   }
   fprintf( _out, "\n" );
 }
+
