@@ -11,8 +11,8 @@ CHANNELS="$CHANNELS ref-right state-right"
 
 # SocketCAN interfaces
 CAN_L=can0 # Left arm
-CAN_R=can1 # Right arm
-CAN_T=can2 # Torso
+#CAN_R=can1 # Right arm
+#CAN_T=can2 # Torso
 
 # esdCAN interfaces
 CAN_SDH_L=0 # Left hand
