@@ -2,12 +2,12 @@
 # tests
 #********************
 
-message( STATUS "2 Amino include dir: ${AMINO_INCLUDE_DIRS}" )
-message( STATUS "2 Amino lib dir: ${AMINO_LIBRARIES}" )
-message( STATUS "2 SNS include dir: ${SNS_INCLUDE_DIRS}" )
-message( STATUS "2 SNS lib dir: ${SNS_LIBRARIES}" )
-message( STATUS "2 Ach include dir: ${ACH_INCLUDE_DIRS}" )
-message( STATUS "2 Ach lib dir: ${ACH_LIBRARIES}" )
+include_directories( ${CMAKE_SOURCE_DIR}/crichton )
+link_directories( ${CMAKE_SOURCE_DIR}/lib )
+
+find_package( PkgConfig )
+pkg_check_modules( EIGEN REQUIRED eigen3 )
+include_directories( ${EIGEN_INCLUDE_DIRS} )
 
 
 add_executable( readHandStates readHandStates.cpp )
@@ -49,3 +49,35 @@ set_target_properties( read_leftArm_state PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${
 add_executable( read_rightArm_state read_rightArm_state.cpp )
 target_link_libraries( read_rightArm_state ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
 set_target_properties( read_rightArm_state PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( basicControl_test1 basicControl_test1.cpp )
+target_link_libraries( basicControl_test1  basicControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( basicControl_test1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( basicControl_test2 basicControl_test2.cpp )
+target_link_libraries( basicControl_test2  basicControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( basicControl_test2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( basicControl_right basicControl_right.cpp )
+target_link_libraries( basicControl_right  basicControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( basicControl_right PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( test_timestamp testTimestamp.cpp )
+target_link_libraries( test_timestamp  ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( test_timestamp PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( monotonic monotonic.cpp )
+target_link_libraries( monotonic  ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( monotonic PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( joint_vel_test1 joint_vel_test1.cpp )
+target_link_libraries( joint_vel_test1  ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( joint_vel_test1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( joint_vel_test2 joint_vel_test2.cpp )
+target_link_libraries( joint_vel_test2  tkunz basicControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( joint_vel_test2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )

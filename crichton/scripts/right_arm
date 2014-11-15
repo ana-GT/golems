@@ -1,31 +1,13 @@
 #!/bin/bash
 
-CHANNELS="ref-left state-left"
 CHANNELS="$CHANNELS ref-right state-right"
-CHANNELS="$CHANNELS sdhref-left sdhstate-left"
-CHANNELS="$CHANNELS sdhref-right sdhstate-right"
-
-# Trajectory channels
-TRAJ_CHANNELS="traj-left traj-right"
-
-# Workstations
-PLANNING_HOST="zhaan" 
-#PLANNING_HOST="powell" # Powell - my workstation
-CONTROL_HOST="calvin" # 192.168.1.40 
 
 #*****************
 # DEFINITIONS
 #*****************
 
 # SocketCAN interfaces
-CAN_L=can0 # Left arm
 CAN_R=can1 # Right arm
-#CAN_T=can2 # Torso
-
-# esdCAN interfaces
-CAN_SDH_L=0 # Left hand
-CAN_SDH_R=1 # Right hand
-
 
 
 # Check where SNS is located
@@ -51,20 +33,11 @@ crichton_ach_mk() {
     for c in $CHANNELS; do
 	ach mk -1 -o 666 $c
     done
-
-    # For trajectories
-    for c in $TRAJ_CHANNELS; do
-        ach mk -m 7 -n 1000 -1 -o 666 $c
-    done  
 }
 
 # Remove channels
 crichton_ach_rm() {
     for c in $CHANNELS; do
-	ach rm $c
-    done
-
-    for c in $TRAJ_CHANNELS; do
 	ach rm $c
     done
 }
@@ -85,61 +58,28 @@ crichton_start_sns() {
 # Start : Create channels + start SNS + run daemons
 crichton_start() {
     crichton_ach_mk
-
-    # Pull arm/hand states
-    sudo achd -d pull $PLANNING_HOST traj-left 	
-    sudo achd -d pull $PLANNING_HOST traj-right	
-
     crichton_start_sns
 
-#    $SNS run -d -r lwa-left -- \
-#	can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
-
-# $SNS run  -d -r sdh-left -- \
-# sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
-
-#    $SNS run -d -r lwa-right -- \
-#	can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right    
-
-# $SNS run  -d -r sdh-right -- \
-# sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
-
+    #$SNS run -d -r lwa-right -- \
+	#can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right    
 }
 
 # Expunge: Remove temporal folders for log
 crichton_expunge() {
-    sudo rm -rf /var/tmp/sns/lwa-left
-    sudo rm -rf /var/run/sns/lwa-left
-
-    sudo rm -rf /var/tmp/sns/sdh-left
-    sudo rm -rf /var/run/sns/sdh-left
-    
-		sudo rm -rf /var/tmp/sns/lwa-right
+    sudo rm -rf /var/tmp/sns/lwa-right
     sudo rm -rf /var/run/sns/lwa-right
- 
-		sudo rm -rf /var/tmp/sns/sdh-right
-    sudo rm -rf /var/run/sns/sdh-right
 }
 
 
 # Stop: Stop daemons and programs
 crichton_stop() {
-    $SNS kill lwa-left
-    $SNS kill sdh-left
-		$SNS kill lwa-right
-    $SNS kill sdh-right
+    $SNS kill lwa-right
 }
 
 # Change ownerships of SNS temporal files
 crichton_steal() {
-    chown -R $1 /var/run/sns/lwa-left \
-	/var/tmp/sns/lwa-left \
-	/var/run/sns/sdh-left \
-	/var/tmp/sns/sdh-left \
-	/var/run/sns/lwa-right \
-	/var/tmp/sns/lwa-right \
-  /var/run/sns/sdh-right \
-  /var/tmp/sns/sdh-right
+    chown -R $1 /var/run/sns/lwa-right \
+		/var/tmp/sns/lwa-right
 }
 
 #***************************

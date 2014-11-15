@@ -1,0 +1,112 @@
+#!/bin/bash
+
+
+#*****************
+# DEFINITIONS
+#*****************
+CHANNELS="ref-torso state-torso" 
+
+# SocketCAN interfaces
+CAN_T=can2 # Torso
+
+# Check where SNS is located
+if test -z $SNS; then
+    if test -x /home/ana/local/etc/init.d/sns; then
+	SNS=/home/ana/local/etc/init.d/sns
+    elif test -x /usr/local/etc/init.d/sns; then
+	SNS=/usr/local/etc/init.d/sns
+    elif test -x /etc/init.d/sns; then
+	SNS=/etc/init.d/sns
+    else 
+	echo "[ERROR] Could not find SNS program"
+	exit 1
+    fi
+fi
+
+#**************
+# FUNCTIONS
+#**************
+
+# Make channels
+crichton_ach_mk() {
+    for c in $CHANNELS; do
+	ach mk -1 -o 666 $c
+    done
+}
+
+# Remove channels
+crichton_ach_rm() {
+    for c in $CHANNELS; do
+	ach rm $c
+    done
+}
+
+# SNS service start
+crichton_start_sns() {
+    snslogd_is_running=`pgrep snslogd`
+	echo "snslogd (if exists) has pid:: ${snslogd_is_running}"
+    
+    if test -z $snslogd_is_running; then
+	echo "\t * Starting SNS service"
+	sudo $SNS start
+    else 
+	echo "\t * SNS already is running"
+    fi
+}
+
+# Start : Create channels + start SNS + run daemons
+crichton_start() {
+    crichton_ach_mk
+    crichton_start_sns
+  
+# 	 	$SNS run -d -r lwa-right -- \
+#		./can402 -f $CAN_T -R 1 -C 0 -n a -c ref-torso -s state-torso    
+}
+
+# Expunge: Remove temporal folders for log
+crichton_expunge() {
+    sudo rm -rf /var/tmp/sns/torso
+    sudo rm -rf /var/run/sns/torso
+}
+
+
+# Stop: Stop daemons and programs
+crichton_stop() {
+    $SNS kill torso
+}
+
+# Change ownerships of SNS temporal files
+crichton_steal() {
+    chown -R $1 /var/run/sns/torso \
+	/var/tmp/sns/torso 
+}
+
+#***************************
+# SET SCRIPT OPTIONS
+#***************************
+case "$1" in
+    start)
+	crichton_start
+	;;
+    stop)
+	crichton_stop
+	;;
+    rm) 
+	crichton_ach_rm
+	;;
+    mk)
+	crichton_ach_mk
+	;;
+    steal)
+	shift
+	crichton_steal $@
+	;;
+    expunge)
+	crichton_expunge
+	;;
+    *)
+	echo "[ERROR] Invalid command. Options are start/stop/rm/mk/steal NEW_OWNER/expunge"
+	exit 1
+	;;
+esac
+

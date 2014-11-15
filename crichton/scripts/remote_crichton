@@ -1,0 +1,135 @@
+#!/bin/sh
+
+# Find SNS
+if test -x ~/local/etc/init.d/sns; then
+   SNS=~/local/etc/init.d/sns
+elif test -x /usr/local/etc/init.d/sns; then
+   SNS=/usr/local/etc/init.d/sns
+elif test -x /etc/init.d/sns; then
+   SNS=/etc/init.d/sns
+else 
+   echo "Could not find SNS program"
+   exit 1
+fi
+
+#*****************************
+# Trajectory channels
+#*****************************
+TRAJ_CHANNELS="traj-left traj-right"
+
+#*****************************
+# Workstations
+#*****************************
+PLANNING_HOST="zhaan" 
+CONTROL_HOST="calvin"  
+
+#*****************************
+# Make trajectory channels
+#*****************************
+remote_crichton_ach_mk() {
+  for c in $TRAJ_CHANNELS; do
+	 ach mk -m 7 -n 1000 -1 -o 666 $c
+   done
+}
+
+
+remote_crichton_ach_rm() {
+	for c in $TRAJ_CHANNELS; do
+		ach rm $c
+  done
+
+}
+
+#==================================
+# Call functions on input argument
+#==================================
+case "$1" in
+
+	#**********************
+	# START
+	#**********************
+	start)
+
+		# Create channels
+    remote_crichton_ach_mk
+
+		# Start SNS
+		$SNS start
+	
+		# Create folder /tmp, /var for sns stuff		
+		sudo mkdir -p /var/tmp/sns/state-left 
+		sudo mkdir -p /var/run/sns/state-left
+
+		sudo mkdir -p /var/tmp/sns/sdhstate-left 
+		sudo mkdir -p /var/run/sns/sdhstate-left 
+
+		sudo mkdir -p /var/tmp/sns/state-right 
+		sudo mkdir -p /var/run/sns/state-right
+
+		sudo mkdir -p /var/tmp/sns/sdhstate-right 
+		sudo mkdir -p /var/run/sns/sdhstate-right 
+
+		# Pull arm/hand states
+		sudo achd -d pull $CONTROL_HOST state-left 	
+		sudo achd -d pull $CONTROL_HOST sdhstate-left		
+		
+		sudo achd -d pull $CONTROL_HOST state-right 	
+		sudo achd -d pull $CONTROL_HOST sdhstate-right		
+		
+		# Push arm/hand ref
+		sudo achd -d pull $CONTROL_HOST ref-left 	
+		sudo achd -d push $CONTROL_HOST sdhref-left
+
+		
+    sudo achd -d pull $CONTROL_HOST ref-right 	
+		sudo achd -d push $CONTROL_HOST sdhref-right
+
+		sudo achd -d push $CONTROL_HOST traj-left 	
+		sudo achd -d push $CONTROL_HOST traj-right
+		;;
+
+	#**********************
+	# STOP
+	#**********************
+	stop)
+		#$SNS kill kinectmarkers # This is zhaan's. KILL IT?
+		;;
+
+	#**********************
+	# EXPUNGE
+	#**********************
+	expunge)
+
+		sudo rm -rf /var/tmp/sns/state-left	
+		sudo rm -rf /var/run/sns/state-left
+
+		sudo rm -rf /var/tmp/sns/sdhstate-left	
+		sudo rm -rf /var/run/sns/sdhstate-left
+
+		sudo rm -rf /var/tmp/sns/state-right	
+		sudo rm -rf /var/run/sns/state-right
+
+		sudo rm -rf /var/tmp/sns/sdhstate-right	
+		sudo rm -rf /var/run/sns/sdhstate-right
+
+		echo "Expunging!"
+
+		;;
+
+	#**********************
+	# RM
+	#**********************
+	rm)
+		;;
+	#**********************
+	# ALL ELSE
+	#**********************
+	*)
+		echo "Invalid command"	
+		exit 1
+		;;
+esac
+
+
+
+

@@ -1,0 +1,87 @@
+#!/bin/sh
+
+# Find SNS
+if test -x ~/local/etc/init.d/sns; then
+   SNS=~/local/etc/init.d/sns
+elif test -x /usr/local/etc/init.d/sns; then
+   SNS=/usr/local/etc/init.d/sns
+elif test -x /etc/init.d/sns; then
+   SNS=/etc/init.d/sns
+else 
+   echo "Could not find SNS program"
+   exit 1
+fi
+
+# Workstations
+PLANNING_HOST="zhaan" 
+#PLANNING_HOST="powel" # Powell - my workstation
+CONTROL_HOST="calvin" # 192.168.1.40 
+
+#==================================
+# Call functions on input argument
+#==================================
+case "$1" in
+
+	#**********************
+	# START
+	#**********************
+	start)
+
+		# Start SNS
+		$SNS start
+	
+		# Create folder /tmp, /var for sns stuff
+		sudo mkdir -p /var/tmp/sns/state-right 
+		sudo mkdir -p /var/run/sns/state-right 
+
+		sudo mkdir -p /var/tmp/sns/sdhstate-right 
+		sudo mkdir -p /var/run/sns/sdhstate-right
+
+		# Pull arm states	
+		sudo achd -d pull $CONTROL_HOST state-right		
+		sudo achd -d pull $CONTROL_HOST sdhstate-right
+
+		# Push arm states
+		sudo achd -d push $CONTROL_HOST ref-right 	
+		sudo achd -d push $CONTROL_HOST sdhref-right
+		;;
+
+	#**********************
+	# STOP
+	#**********************
+	stop)
+		#$SNS kill kinectmarkers # This is zhaan's. KILL IT?
+		;;
+
+	#**********************
+	# EXPUNGE
+	#**********************
+	expunge)
+
+		sudo rm -rf /var/tmp/sns/state-right	
+		sudo rm -rf /var/run/sns/state-right
+
+		sudo rm -rf /var/tmp/sns/sdhstate-right	
+		sudo rm -rf /var/run/sns/sdhstate-right
+
+		echo "Expunging!"
+
+		;;
+
+	#**********************
+	# RM
+	#**********************
+	rm)
+		;;
+	#**********************
+	# ALL ELSE
+	#**********************
+	*)
+		echo "Invalid command"	
+		exit 1
+		;;
+esac
+
+
+
+

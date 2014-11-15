@@ -35,27 +35,27 @@ add_definitions(${PCL_DEFINITIONS})
 
 # Libraries
 add_subdirectory( msgs )
-add_subdirectory( tabletop_segmentation )
-add_subdirectory( getKinectTran )
-add_subdirectory( box_detector )
+#add_subdirectory( tabletop_segmentation )
+#add_subdirectory( getKinectTran )
+#add_subdirectory( box_detector )
 
 
 # Apps
-add_executable( eye_v0 eye_v0.cpp )
-target_link_libraries( eye_v0 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
-set_target_properties( eye_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+#add_executable( eye_v0 eye_v0.cpp )
+#target_link_libraries( eye_v0 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
+#set_target_properties( eye_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+#  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-include_directories(box_detector/src/pcl_tools/include)
-include_directories(box_detector/src/density/include)
-include_directories(box_detector/src/shape_completion/include)
-include_directories(box_detector/src/mvobbox/include)
+#include_directories(box_detector/src/pcl_tools/include)
+#include_directories(box_detector/src/density/include)
+#include_directories(box_detector/src/shape_completion/include)
+#include_directories(box_detector/src/mvobbox/include)
 
 
-add_executable( object_in_box object_in_box.cpp )
-target_link_libraries( object_in_box  perception_msgs tabletop_segmentation container_detection mvobbox pcl_tools ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
-set_target_properties( object_in_box PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin COMPILE_FLAGS -std=gnu++11 )
+#add_executable( object_in_box object_in_box.cpp )
+#target_link_libraries( object_in_box  perception_msgs tabletop_segmentation container_detection mvobbox pcl_tools ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
+#set_target_properties( object_in_box PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+#  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin COMPILE_FLAGS -std=gnu++11 )
 
 
 #add_executable( eye_v1 eye_v1.cpp )
@@ -77,10 +77,10 @@ set_target_properties( object_in_box PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE
 #  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
-add_executable( getSegmentedClouds getSegmentedClouds.cpp )
-target_link_libraries( getSegmentedClouds  tabletop_segmentation  pcl_common pcl_io pcl_kdtree pcl_visualization pcl_search ${OpenCV_LIBRARIES} )
-set_target_properties( getSegmentedClouds PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+#add_executable( getSegmentedClouds getSegmentedClouds.cpp )
+#target_link_libraries( getSegmentedClouds  tabletop_segmentation  pcl_common pcl_io pcl_kdtree pcl_visualization pcl_search ${OpenCV_LIBRARIES} )
+#set_target_properties( getSegmentedClouds PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+#  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
 # Apps
