@@ -59,8 +59,8 @@ int main( int argc, char* argv[] ) {
   start << q[0], q[1];
 
   // 2. Define goal pose
-  goal(0) = start(0) - 0.2;
-  goal(1) = start(1) + 0.3;
+  goal(0) = start(0) - 0.1;
+  goal(1) = start(1) - 0.4;
   printf("Goal state: %f %f \n", goal(0), goal(1) );
   
   // 3. Create path
@@ -115,8 +115,9 @@ int main( int argc, char* argv[] ) {
 
     // Get velocity command
     vel_cmd = trajectory.getVelocity(d_now - d_start);
-    //printf("Time: %f vel: %f \n", d_now, vel_cmd(0) );
+    std::cout << "["<< (d_now - d_start)<<"] Vel: "<< vel_cmd.transpose() << std::endl;
     
+
     if( !bc.control_n( NUM_JOINTS, 
 		       vel_cmd.data(), 
 		       tsec, &chan_ref, 

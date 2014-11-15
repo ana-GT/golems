@@ -1,5 +1,5 @@
 /**
- * @file crichton_trajGen.cpp
+ * @file traj_test_receiver.cpp
  */
 
 #include <stdio.h>
@@ -19,19 +19,8 @@ int arm_side;
 struct timespec now;
 struct timespec ts;
 
-std::string arm_state_name[2];
-std::string arm_ref_name[2];
-std::string hand_state_name[2];
-std::string hand_ref_name[2];
-
 std::string traj_name[2];
 
-
-ach_channel_t* arm_state_chan[2];
-ach_channel_t* arm_ref_chan[2];
-
-ach_channel_t* hand_state_chan[2];
-ach_channel_t* hand_ref_chan[2];
 
 ach_channel_t* traj_chan[2];
 
@@ -41,58 +30,35 @@ ach_channel_t* traj_chan[2];
  */
 int main( int argc, char* argv[] ) {
 
-  // Hard-code initialization
-  arm_state_name[0] = std::string("state-left");
-  arm_state_name[1] = std::string("state-right");
+  sns_init();
+  sns_start();
   
-  arm_ref_name[0] = std::string("ref-left");
-  arm_ref_name[1] = std::string("ref-right");
-  
-  hand_state_name[0] = std::string("sdhstate-left");
-  hand_state_name[1] = std::string("sdhstate-right");
-  
-  hand_ref_name[0] = std::string("sdhref-left");
-  hand_ref_name[1] = std::string("sdhref-right");
-  
-  traj_name[0] = "traj-left";
-  traj_name[1] = "traj-right";
+  traj_name[0] = "test-left";
+  traj_name[1] = "test-right";
 
 
   // Create channels  
   for( int i = 0; i < 2; ++i ) {
-    arm_state_chan[i] = new ach_channel_t();
-    arm_ref_chan[i] = new ach_channel_t();
-    hand_state_chan[i] = new ach_channel_t();
-    hand_ref_chan[i] = new ach_channel_t();
-    
     traj_chan[i] = new ach_channel_t();
   }
 
 
   // Open & set channels
   for( int i = 0; i < 2; ++i ) {
-    sns_chan_open( arm_state_chan[i], arm_state_name[i].c_str(), NULL );
-    sns_chan_open( arm_ref_chan[i], arm_ref_name[i].c_str(), NULL );
-    sns_chan_open( hand_state_chan[i], hand_state_name[i].c_str(), NULL );
-    sns_chan_open( hand_ref_chan[i], hand_ref_name[i].c_str(), NULL );
 
     sns_chan_open( traj_chan[i], traj_name[i].c_str(), NULL );
   }
   
-  mBc.setChannels( arm_state_chan, 
-		   arm_ref_chan,
-		   hand_state_chan,
-		   hand_ref_chan);
-
   // Loop until you hear a trajectory coming
   while(true) {
     
     if( clock_gettime( ACH_DEFAULT_CLOCK, &now ) ) {
       SNS_LOG( LOG_ERR, "clock_gettime failed: '%s' \n", strerror(errno) );
+      printf("Did not get time right \n");
       return 0;
     }
     ts= sns_time_add_ns( now, 1000*1000*10 );
-    printf("Checking\n");
+
     check_traj_chan( &ts );
     usleep((useconds_t)(1e6*mDt) );    
   }
@@ -156,9 +122,6 @@ bool check_traj_chan(struct timespec *ts) {
 	}
     std::cout << "Max accel: "<< maxAccel.transpose() << std::endl;
     std::cout << "Max vel: "<< maxVel.transpose() << std::endl;
-
-	mBc.followTrajectory( c, path, maxAccel, maxVel );
-	printf("Finished sending trajectory \n");
 	
 	return true;
       } else {

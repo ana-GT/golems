@@ -81,3 +81,21 @@ set_target_properties( joint_vel_test1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMA
 add_executable( joint_vel_test2 joint_vel_test2.cpp )
 target_link_libraries( joint_vel_test2  tkunz basicControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
 set_target_properties( joint_vel_test2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( traj_test1 traj_test1.cpp )
+target_link_libraries( traj_test1  tkunz basicControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( traj_test1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( traj_test_receiver traj_test_receiver.cpp )
+target_link_libraries( traj_test_receiver  tkunz basicControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( traj_test_receiver PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( ach_send ach_send.cpp )
+target_link_libraries( ach_send   ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( ach_send PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( ach_receive ach_receive.cpp )
+target_link_libraries( ach_receive  ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+set_target_properties( ach_receive PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+

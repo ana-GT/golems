@@ -158,12 +158,12 @@ bool UnimanualControl::followTrajectory( const std::list<Eigen::VectorXd> &_path
     vel_cmd = trajectory.getVelocity(current_time - start_time);
     std::cout << "["<< (current_time - start_time) << "]:"<< vel_cmd.transpose() << std::endl;
     // Send command to robot    
-/*
+
     if( !control_n( ARM_AXES, vel_cmd.data(), mDt, mChan_arm_ref, SNS_MOTOR_MODE_VEL ) ) {
       printf("[followTrajectory] Sending velocity message did not go well \n");
       return false;
     }
-*/    
+    
 
     // Sleep and clean up
     usleep ((useconds_t)(1e6*mDt) ); 
