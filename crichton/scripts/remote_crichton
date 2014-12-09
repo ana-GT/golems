@@ -20,7 +20,7 @@ TRAJ_CHANNELS="traj-left traj-right"
 #*****************************
 # Workstations
 #*****************************
-PLANNING_HOST="zhaan" 
+PLANNING_HOST="powell" 
 CONTROL_HOST="calvin"  
 
 #*****************************
