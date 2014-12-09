@@ -14,7 +14,7 @@ BaseControl::BaseControl() {
   mDt = 1.0 / mFreq;
   mDq_thresh = 0.1;
 
-  mMaxDev = 0;
+  mMaxDev = 0.05;
 }
 
 /**
@@ -117,13 +117,13 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
 
     // Build velocity command
     vel_cmd = trajectory.getVelocity( current_time - start_time );
-    std::cout << "["<<(current_time - start_time) << "]: "<< vel_cmd.transpose() << std::endl;
+    //std::cout << "["<<(current_time - start_time) << "]: "<< vel_cmd.transpose() << std::endl;
     // Send command to robot
-    /*
+    
     if( !control_n( mN, vel_cmd, mDt, mChan_ref, SNS_MOTOR_MODE_VEL ) ) {
       printf("\t[followTrajectory] Sending vel msg error \n");
       return false;
-      }*/
+      }
     
     // Sleep and clean up
     usleep( (useconds_t)(1e6*mDt)) ;

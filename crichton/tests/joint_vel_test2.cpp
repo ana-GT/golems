@@ -21,7 +21,7 @@ double d_duration = 2;
 
 double tsec = 0.01;
 double vel = 0.1;
-const int NUM_JOINTS = 2;
+const int NUM_JOINTS = 7;
 BasicControl bc;
 
 void zero();
@@ -55,13 +55,16 @@ int main( int argc, char* argv[] ) {
   if( clock_gettime(ACH_DEFAULT_CLOCK, &t_now ) ) { printf("No tnow obtained. Exiting \n"); return 0; }
   t_timeout = sns_time_add_ns( t_now, 1000*1000*1 );
   while( !bc.update_n( NUM_JOINTS, q, dq, &chan_state, &t_timeout ) ) {};
-  printf("Initial state: %f, %f \n", q[0], q[1] );
-  start << q[0], q[1];
+  for( int i = 0; i < NUM_JOINTS; ++i ) { 
+    start(i) = q[i]; 
+    goal(i) = q[i]; 
+  }
+  std::cout << "Start: "<< start.transpose() << std::endl;
 
   // 2. Define goal pose
-  goal(0) = start(0) - 0.1;
-  goal(1) = start(1) - 0.4;
-  printf("Goal state: %f %f \n", goal(0), goal(1) );
+  goal(5) = start(5) - 0.1;
+  goal(6) = start(6) - 0.1;
+  std::cout << "Goal: "<< goal.transpose() << std::endl;
   
   // 3. Create path
   std::list<Eigen::VectorXd> path;
@@ -69,8 +72,8 @@ int main( int argc, char* argv[] ) {
   path.push_back( goal );
   
   // 4. Create trajectory
-  maxVel << 0.1, 0.1;
-  maxAccel << 0.1, 0.1;
+  maxVel = Eigen::VectorXd::Ones(NUM_JOINTS) * 0.1;
+  maxAccel = Eigen::VectorXd::Ones(NUM_JOINTS) * 0.18;
   
   Trajectory trajectory( Path(path, 0.1), maxVel, maxAccel );
   trajectory.outputPhasePlaneTrajectory();
@@ -115,7 +118,7 @@ int main( int argc, char* argv[] ) {
 
     // Get velocity command
     vel_cmd = trajectory.getVelocity(d_now - d_start);
-    std::cout << "["<< (d_now - d_start)<<"] Vel: "<< vel_cmd.transpose() << std::endl;
+    //std::cout << "["<< (d_now - d_start)<<"] Vel: "<< vel_cmd.transpose() << std::endl;
     
 
     if( !bc.control_n( NUM_JOINTS, 

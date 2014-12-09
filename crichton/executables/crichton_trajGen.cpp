@@ -9,7 +9,7 @@
 
 bool check_traj_chan( struct timespec *ts );
 
-double mDt = 1.0/100.0;
+double mDt = 0.01;
 double mMaxVel = 0.18;
 double mMaxAccel = 0.1;
 
@@ -91,10 +91,10 @@ int main( int argc, char* argv[] ) {
       SNS_LOG( LOG_ERR, "clock_gettime failed: '%s' \n", strerror(errno) );
       return 0;
     }
-    ts= sns_time_add_ns( now, 1000*1000*10 );
-    printf("Checking\n");
+    ts= sns_time_add_ns( now, 1000*1000*1 );
+    
     check_traj_chan( &ts );
-    usleep((useconds_t)(1e6*mDt) );    
+    usleep(1e6*mDt);    
   }
 
 
@@ -108,19 +108,19 @@ int main( int argc, char* argv[] ) {
 bool check_traj_chan(struct timespec *ts) {
   
   std::list<Eigen::VectorXd> path;
-  for( int c = 0; c < 2; ++c ) {
+  for( int c = 0; c < 2; c++ ) {
     size_t frame_size;
     void *buf = NULL;
     ach_status_t r = sns_msg_local_get( traj_chan[c], 
 					&buf,
 					&frame_size,
 					ts, 
-					ACH_O_LAST | (ts ? ACH_O_WAIT : 0 ) );
+					ACH_O_LAST | ACH_O_WAIT );
+
     switch(r) {
     
     case ACH_OK:
     case ACH_MISSED_FRAME: {
-      printf("Got something \n");
       struct sns_msg_path_dense *msg = (struct sns_msg_path_dense*)buf;
       if( frame_size == sns_msg_path_dense_size(msg) ) {
 	
@@ -132,8 +132,6 @@ bool check_traj_chan(struct timespec *ts) {
 
 	Eigen::VectorXd maxVel; maxVel = mMaxVel*Eigen::VectorXd::Ones( n_dofs );
 	Eigen::VectorXd maxAccel; maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dofs );
-	std::cout << "Max accel: "<< maxAccel.transpose() << std::endl;
-	std::cout << "Max vel: "<< maxVel.transpose() << std::endl;
 
 	int counter = 0;
 	for( int i = 0; i < n_steps; ++i ) {
@@ -154,13 +152,9 @@ bool check_traj_chan(struct timespec *ts) {
 	  std::cout << "P["<<m<<"]: "<< (*it).transpose() << std::endl;
 	  m++;
 	}
-    std::cout << "Max accel: "<< maxAccel.transpose() << std::endl;
-    std::cout << "Max vel: "<< maxVel.transpose() << std::endl;
 
 	mBc.followTrajectory( c, path, maxAccel, maxVel );
-	printf("Finished sending trajectory \n");
 	
-	return true;
       } else {
 	SNS_LOG( LOG_ERR, "Invalid motor_state message \n" );
 	return false;
@@ -175,7 +169,8 @@ bool check_traj_chan(struct timespec *ts) {
       SNS_LOG( LOG_ERR, "Failed ach_get: %s \n", ach_result_to_string(r) );
     } // end switch
     
-    return false;
   } // end for
+
+  return true;
   
 }

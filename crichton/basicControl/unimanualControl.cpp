@@ -36,29 +36,57 @@ bool UnimanualControl::setChannels( ach_channel_t* _arm_state_chan,
 
 
 /**
- * @function update
+ * @function update_arm
  * @brief Read the latest state of the motors
  */
-bool UnimanualControl::update() {
+bool UnimanualControl::update_arm() {
 
   if( clock_gettime( ACH_DEFAULT_CLOCK, &now ) ) {
     SNS_LOG( LOG_ERR, "clock_gettime failed: '%s' \n", strerror(errno) );
     return false;
   }
-  struct timespec timeout = sns_time_add_ns( now, 1000*1000*5 );
-  // Both arms (not grippers by now)
-  int u_a = update_n( ARM_AXES, 
-		      mArm_q, mArm_dq, 
-		      mChan_arm_state, 
-		      &timeout );
+  struct timespec timeout = sns_time_add_ns( now, 1000*1000*1 );
 
-  int u_h = update_n( HAND_AXES, 
-		      mHand_q, mHand_dq, 
-		      mChan_hand_state, 
-		      &timeout );
+  bool u_a = update_n( ARM_AXES, 
+		       mArm_q, mArm_dq, 
+		       mChan_arm_state, 
+		       &timeout );
+
   aa_mem_region_local_release();
- 
-  return u_a && u_h;
+  
+  return u_a;
+}
+
+/**
+ * @function update_hand
+ * @brief Read the latest state of the hand
+ */
+bool UnimanualControl::update_hand() {
+
+  if( clock_gettime( ACH_DEFAULT_CLOCK, &now ) ) {
+    SNS_LOG( LOG_ERR, "clock_gettime failed: '%s' \n", strerror(errno) );
+    return false;
+  }
+  struct timespec timeout = sns_time_add_ns( now, 1000*1000*10 );
+
+  bool u_h = update_n( HAND_AXES, 
+		       mHand_q, mHand_dq, 
+		       mChan_hand_state, 
+		       &timeout );
+
+  aa_mem_region_local_release();
+
+  return u_h;
+
+}
+
+
+/**
+ * @function update
+ * @brief Read the latest state of the motors of arm and hands
+ */
+bool UnimanualControl::update() {
+  return update_hand() & update_arm();
 }
 
 /**
@@ -88,7 +116,8 @@ void UnimanualControl::getStates( Eigen::VectorXd &_q_arm,
 
 /**
  * @function followTrajectory
- * @brief plot 'test.txt' using 1:2 with lines, '' using 1:3 with lines, '' using 1:4 with lines, '' using 1:5 with lines, '' using 1:6 with lines, '' using 1:7 with lines
+ * @brief plot 'test.txt' using 1:2 with lines, '' using 1:3 with lines, '' 
+ * using 1:4 with lines, '' using 1:5 with lines, '' using 1:6 with lines, '' using 1:7 with lines
  */
 bool UnimanualControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
 					 const Eigen::VectorXd &_maxAccel,
@@ -100,7 +129,7 @@ bool UnimanualControl::followTrajectory( const std::list<Eigen::VectorXd> &_path
   // Safety check
   Eigen::VectorXd current(ARM_AXES);
   printf("\t * Check if it is reasonable to follow this path \n");
-  while( !update() ) {}
+  while( !update_arm() ) {}
   for(int i =0; i < ARM_AXES; ++i ) { current(i) = mArm_q[i]; }
   
   if( ( *(path.begin()) - current).norm() > mDq_thresh ) {
@@ -112,7 +141,6 @@ bool UnimanualControl::followTrajectory( const std::list<Eigen::VectorXd> &_path
     if( ( *(path.begin()) - current).norm() < 2*mDq_thresh ) {
       printf("\t * [FIX] Adding first point of current state \n");
       path.push_front( current );
-      return true;
     }
     else {
       printf("\t * [NO FIX] Too far (more than twice step) \n");
@@ -138,32 +166,28 @@ bool UnimanualControl::followTrajectory( const std::list<Eigen::VectorXd> &_path
   Eigen::VectorXd vel_cmd;
   printf( "\t [DEBUG] Duration of trajectory: %f \n", duration );
   
-
   // Loop
-  while( !update() ) {}
+  while( !update_arm() ) {}
 
   start_time = now.tv_sec + (now.tv_nsec)/(1.0e9);
   current_time = start_time;
-
 
   // Send velocity commands
   while( current_time < start_time + duration ) {
 
     // Get current time and state
-    while( !update() ) {}
-
+    while( !update_arm() ) {}
     current_time = now.tv_sec + (now.tv_nsec)/(1.0e9);
 
     // Get velocity command
     vel_cmd = trajectory.getVelocity(current_time - start_time);
     std::cout << "["<< (current_time - start_time) << "]:"<< vel_cmd.transpose() << std::endl;
-    // Send command to robot    
-
+    // Send command to robot 
     if( !control_n( ARM_AXES, vel_cmd.data(), mDt, mChan_arm_ref, SNS_MOTOR_MODE_VEL ) ) {
       printf("[followTrajectory] Sending velocity message did not go well \n");
       return false;
     }
-    
+   
 
     // Sleep and clean up
     usleep ((useconds_t)(1e6*mDt) ); 

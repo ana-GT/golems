@@ -33,12 +33,12 @@ int main( int argc, char* argv[] ) {
   std::list<Eigen::VectorXd> path;
 
   // Set start and goal point
-  Eigen::VectorXd qo, dqo;
-  Eigen::VectorXd qf;
+  Eigen::VectorXd qo(n), dqo(n);
+  Eigen::VectorXd qf(n);
   mBs.get_state( qo, dqo );
 
-  qf(0) = qo(0) + 0.1;
-  qf(1) = qo(1) + 0.1;
+	qf(0) = qo(0) + 0.3;
+  qf(1) = qo(1) + 0.06;
 
   std::cout << "\t * Start: "<< qo.transpose() << std::endl;
   std::cout << "\t * Goal: "<< qf.transpose() << std::endl;

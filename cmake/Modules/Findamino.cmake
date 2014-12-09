@@ -6,8 +6,8 @@
 # AMINO_LIBRARIES - The libraries needed to use amino
 # *********************************************************
 
-find_path( amino_INCLUDE_DIR amino.h PATHS /usr/local/include ) # NO_DEFAULT_PATH
-find_library( amino_LIBRARY amino PATHS /usr/local/lib ) # NO_DEFAULT_PATH
+find_path( amino_INCLUDE_DIR amino.h PATHS /home/ana/local/include ) # NO_DEFAULT_PATH
+find_library( amino_LIBRARY amino PATHS /home/ana/local/lib ) # NO_DEFAULT_PATH
 
 set( AMINO_LIBRARIES ${amino_LIBRARY} )
 set( AMINO_INCLUDE_DIRS ${amino_INCLUDE_DIR} )

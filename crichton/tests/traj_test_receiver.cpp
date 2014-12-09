@@ -9,7 +9,7 @@
 
 bool check_traj_chan( struct timespec *ts );
 
-double mDt = 1.0/100.0;
+double mDt = 0.01;
 double mMaxVel = 0.18;
 double mMaxAccel = 0.1;
 
@@ -57,10 +57,10 @@ int main( int argc, char* argv[] ) {
       printf("Did not get time right \n");
       return 0;
     }
-    ts= sns_time_add_ns( now, 1000*1000*10 );
+    ts= sns_time_add_ns( now, 1000*1000*1 );
 
     check_traj_chan( &ts );
-    usleep((useconds_t)(1e6*mDt) );    
+    usleep((1e6*mDt) );    
   }
 
 
@@ -72,7 +72,9 @@ int main( int argc, char* argv[] ) {
  * @function check_traj_chan
  */
 bool check_traj_chan(struct timespec *ts) {
-  
+
+
+
   std::list<Eigen::VectorXd> path;
   for( int c = 0; c < 2; ++c ) {
     size_t frame_size;
@@ -86,7 +88,6 @@ bool check_traj_chan(struct timespec *ts) {
     
     case ACH_OK:
     case ACH_MISSED_FRAME: {
-      printf("Got something \n");
       struct sns_msg_path_dense *msg = (struct sns_msg_path_dense*)buf;
       if( frame_size == sns_msg_path_dense_size(msg) ) {
 	

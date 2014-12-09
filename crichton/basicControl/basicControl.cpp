@@ -142,10 +142,10 @@ bool BasicControl::control_n( size_t n,
 
   msg->header.n = n;
   AA_MEM_CPY( msg->u, x, n );
-  
+
+
   // Duration from now + tnano
-  double tnano = tsec*1e9;
-  struct timespec now;
+  int64_t tnano = (int64_t)(tsec*1e9);
   if( clock_gettime( ACH_DEFAULT_CLOCK, &now ) ){
     SNS_LOG( LOG_ERR, "Clock_gettime failed: %s \n", strerror(errno) );
   }

@@ -21,6 +21,8 @@ class UnimanualControl: public BasicControl {
 		    ach_channel_t* _hand_ref_chan );
 
   bool update();
+  bool update_arm();
+  bool update_hand();
   void getStates( Eigen::VectorXd &_q_a,
 		  Eigen::VectorXd &_dq_a,
 		  Eigen::VectorXd &_q_h,
