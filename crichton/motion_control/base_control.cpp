@@ -14,7 +14,7 @@ BaseControl::BaseControl() {
   mDt = 1.0 / mFreq;
   mDq_thresh = 0.1;
 
-  mMaxDev = 0.05;
+  mMaxDev = 0.1;
 }
 
 /**
@@ -103,21 +103,27 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   printf("\t [followTrajectory] DEBUG: Duration of trajectory: %f \n", duration );
 
   // Update current state and time
+  double tn;
+
   while( !update() ) {}
 
   start_time = mNow.tv_sec + (mNow.tv_nsec)/1.0e9;
   current_time = start_time;
+  tn = current_time - start_time;
 
   // Send velocity commands
-  while( current_time < start_time + duration ) {
+  while( tn < duration ) {
 
     // Get current time and state
     while( !update() ) {}
     current_time = mNow.tv_sec + mNow.tv_nsec / (1.0e9);
+    tn = current_time - start_time;   
 
     // Build velocity command
-    vel_cmd = trajectory.getVelocity( current_time - start_time );
-    //std::cout << "["<<(current_time - start_time) << "]: "<< vel_cmd.transpose() << std::endl;
+    vel_cmd = trajectory.getVelocity( tn );
+    std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
+    std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
+    std::cout << "Current position: " << mq.transpose() << std::endl;
     // Send command to robot
     
     if( !control_n( mN, vel_cmd, mDt, mChan_ref, SNS_MOTOR_MODE_VEL ) ) {
