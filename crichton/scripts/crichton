@@ -8,9 +8,8 @@ CHANNELS="$CHANNELS sdhref-right sdhstate-right"
 # Trajectory channels
 TRAJ_CHANNELS="traj-left traj-right"
 
-# Workstations
-PLANNING_HOST="zhaan" 
-#PLANNING_HOST="powell" # Powell - my workstation
+# Workstations 
+PLANNING_HOST="powell"
 CONTROL_HOST="calvin" # 192.168.1.40 
 
 #*****************
@@ -20,7 +19,7 @@ CONTROL_HOST="calvin" # 192.168.1.40
 # SocketCAN interfaces
 CAN_L=can0 # Left arm
 CAN_R=can1 # Right arm
-#CAN_T=can2 # Torso
+CAN_T=can2 # Torso
 
 # esdCAN interfaces
 CAN_SDH_L=0 # Left hand
