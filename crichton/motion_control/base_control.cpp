@@ -155,7 +155,6 @@ bool BaseControl::update_n( size_t n,
 			    Eigen::VectorXd &_dq,
 			    ach_channel_t* chan,
 			    struct timespec *ts ) {
-
   
   size_t frame_size;
   void* buf = NULL;
@@ -204,7 +203,10 @@ bool BaseControl::control_n( size_t n,
 			     int mode ) {
 
   // Safety check
-  if( _x.size() != n ) { printf("\t [control_n] Size of control vector is diff than expected \n"); return false; }
+  if( _x.size() != n ) {
+    printf("\t [control_n] Size of control vector is diff than expected \n");
+    return false;
+  }
   
 
   // Create the message
@@ -224,14 +226,14 @@ bool BaseControl::control_n( size_t n,
 
   msg->header.n = n;
   AA_MEM_CPY( msg->u, _x.data(), n );
-
+  
   // Duration from now + tnano
-  double tnano = tsec*1e9;
+  int64_t dur_nsec = (int64_t) ( tsec*1e9 );
   if( clock_gettime( ACH_DEFAULT_CLOCK, &mNow ) ) {
     SNS_LOG( LOG_ERR, "Clock_gettime failed: %s \n", strerror(errno) );
   }
 
-  sns_msg_set_time( &msg->header, &mNow, tnano );
+  sns_msg_set_time( &msg->header, &mNow, dur_nsec );
 
   // Send
   ach_status_t r;
@@ -255,16 +257,15 @@ bool BaseControl::reset_n( size_t n,
   msg->header.n = n;
 
   // Duration from now to tnano
-  double tnano = tsec*1e9;
+  int64_t dur_nsec = (int64_t)(tsec*1e9);
   if( clock_gettime( ACH_DEFAULT_CLOCK, &mNow ) ) {
     SNS_LOG( LOG_ERR, "Clock_gettime failed: %s \n", strerror(errno) );
   }
-  sns_msg_set_time( &msg->header, &mNow, tnano );
+  sns_msg_set_time( &msg->header, &mNow, dur_nsec );
 
   // Send
   ach_status_t r;
   r = ach_put( chan, msg, sns_msg_motor_ref_size(msg) );
 
-  return (r == ACH_OK);
-  
+  return (r == ACH_OK);  
 }
