@@ -53,6 +53,7 @@ class BaseControl {
   double mFreq;
   double mDt;
   double mDq_thresh;
+	int64_t mVALID_NS;
 
   ach_channel_t* mChan_ref;
   ach_channel_t* mChan_state;

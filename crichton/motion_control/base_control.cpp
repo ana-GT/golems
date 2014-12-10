@@ -15,6 +15,7 @@ BaseControl::BaseControl() {
   mDq_thresh = 0.1;
 
   mMaxDev = 0.1;
+	mVALID_NS = (int64_t)((1000000000) / 5);
 }
 
 /**
@@ -127,7 +128,7 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
     std::cout << "Current velocity: " << mdq.transpose() << std::endl;
 		// Send command to robot
     
-    if( !control_n( mN, vel_cmd, mDt, mChan_ref, SNS_MOTOR_MODE_VEL ) ) {
+    if( !control_n( mN, vel_cmd, 2*mDt, mChan_ref, SNS_MOTOR_MODE_VEL ) ) {
       printf("\t[followTrajectory] Sending vel msg error \n");
       return false;
       }
@@ -233,7 +234,7 @@ bool BaseControl::control_n( size_t n,
     SNS_LOG( LOG_ERR, "Clock_gettime failed: %s \n", strerror(errno) );
   }
 
-  sns_msg_set_time( &msg->header, &mNow, dur_nsec );
+  sns_msg_set_time( &msg->header, &mNow, mVALID_NS ); // mVALID_NS value taken from piranha/src/pirctrl.c
 
   // Send
   ach_status_t r;
