@@ -12,10 +12,14 @@ else
    exit 1
 fi
 
+
+
+
 #*****************************
-# Trajectory channels
+# State & Trajectory channels
 #*****************************
 TRAJ_CHANNELS="traj-left traj-right"
+CHANNELS="state-left state-right sdhstate-left sdhstate-right"
 
 #*****************************
 # Workstations
@@ -30,12 +34,20 @@ remote_crichton_ach_mk() {
   for c in $TRAJ_CHANNELS; do
 	 ach mk -m 7 -n 1000 -1 -o 666 $c
    done
+
+  for c in $CHANNELS; do
+	ach mk -m 1 -o 666 $c
+   done	
 }
 
 
 remote_crichton_ach_rm() {
-	for c in $TRAJ_CHANNELS; do
-		ach rm $c
+  for c in $TRAJ_CHANNELS; do
+    ach rm $c
+  done
+
+  for c in $CHANNELS; do
+    ach rm $c
   done
 
 }
@@ -81,7 +93,7 @@ case "$1" in
 		sudo achd -d push $CONTROL_HOST sdhref-left
 
 		
-    sudo achd -d pull $CONTROL_HOST ref-right 	
+    		sudo achd -d pull $CONTROL_HOST ref-right 	
 		sudo achd -d push $CONTROL_HOST sdhref-right
 
 		sudo achd -d push $CONTROL_HOST traj-left 	
@@ -92,6 +104,7 @@ case "$1" in
 	# STOP
 	#**********************
 	stop)
+		remote_crichton_ach_rm
 		#$SNS kill kinectmarkers # This is zhaan's. KILL IT?
 		;;
 
