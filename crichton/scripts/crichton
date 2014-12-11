@@ -127,6 +127,7 @@ crichton_stop() {
     $SNS kill sdh-left
 		$SNS kill lwa-right
     $SNS kill sdh-right
+		crichton_ach_rm
 }
 
 # Change ownerships of SNS temporal files

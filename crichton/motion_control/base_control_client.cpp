@@ -7,7 +7,7 @@
 #include <ach.h>
 
 ach_channel_t traj_chan;
-int num_joints = 2;
+int num_joints = 4;
 
 int main( int argc, char* argv[] ) {
 
@@ -19,11 +19,15 @@ int main( int argc, char* argv[] ) {
   Eigen::VectorXd po(num_joints);
   Eigen::VectorXd pf(num_joints);
 
-  po(0) = 0.1;
-  po(1) = 0.3;
+  po(0) = 0.1579;
+  po(1) = 0.09859;
+	po(2) = 0.137584;
+	po(3) = -0.002077;
   
-  pf(0) = po(0) + 0.1;
-  pf(1) = po(1) - 0.25;
+  pf(0) = po(0) - 0.15;
+  pf(1) = po(1) - 0.1;
+  pf(2) = po(2) - 0.15;
+  pf(3) = po(3) + 0.1;
   
   path.push_back( po );
   path.push_back( pf );

@@ -21,12 +21,10 @@ double mMaxAccel = 0.1;
 struct timespec t_now;
 struct timespec t_timeout;
 
-int num_joints = 2;
-
 /** Functions */
 bool poll_traj_chan();
 
-
+int num_joints = 4;
 
 /**
  * @function main
@@ -72,8 +70,8 @@ bool poll_traj_chan() {
 				      &t_timeout,
 				      ACH_O_LAST | ACH_O_WAIT );
 
-  switch(r) {
-
+	switch(r) {
+	
   case ACH_OK:
   case ACH_MISSED_FRAME: {
     struct sns_msg_path_dense* msg = (struct sns_msg_path_dense*) buf;

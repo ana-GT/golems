@@ -26,7 +26,7 @@ int main( int argc, char* argv[] ) {
 
   BaseControl mBs;
 
-  int n = 2;
+  int n = 4;
   mBs.set_numJoints( n );
   mBs.set_channels( &chan_ref, &chan_state );
 
@@ -37,8 +37,10 @@ int main( int argc, char* argv[] ) {
   Eigen::VectorXd qf(n);
   mBs.get_state( qo, dqo );
 
-	qf(0) = qo(0) - 0.1;
-  qf(1) = qo(1) - 0.15;
+	qf(0) = qo(0) + 0.15;
+  qf(1) = qo(1) + 0.1;
+	qf(2) = qo(2) + 0.15;
+  qf(3) = qo(3) + 0.1;
 
   std::cout << "\t * Start: "<< qo.transpose() << std::endl;
   std::cout << "\t * Goal: "<< qf.transpose() << std::endl;
