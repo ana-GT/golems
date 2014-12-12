@@ -13,5 +13,5 @@ include_directories( ${SNS_INCLUDE_DIRS} )
 
 
 # Subdirectories
-#add_subdirectory( perception )
+add_subdirectory( perception )
 add_subdirectory( crichton )

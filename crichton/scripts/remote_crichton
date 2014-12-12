@@ -89,11 +89,7 @@ case "$1" in
 		sudo achd -d pull $CONTROL_HOST sdhstate-right		
 		
 		# Push arm/hand ref
-		sudo achd -d pull $CONTROL_HOST ref-left 	
-		sudo achd -d push $CONTROL_HOST sdhref-left
-
-		
-    		sudo achd -d pull $CONTROL_HOST ref-right 	
+		sudo achd -d push $CONTROL_HOST sdhref-left	
 		sudo achd -d push $CONTROL_HOST sdhref-right
 
 		sudo achd -d push $CONTROL_HOST traj-left 	
