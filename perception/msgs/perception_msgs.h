@@ -53,6 +53,35 @@ extern "C" {
     double s[4]; // Size (a,b,c,width)
   };
 
+  /**
+   * @struct sns_msg_rgb_img
+   * @brief Define a RGB image
+   */
+  struct sns_msg_rgb_img {
+    uint32_t width;
+    uint32_t height;
+    struct {
+      uint8_t x;
+      uint8_t y;
+      uint8_t z;
+    } u[1];
+  };
+
+  static inline size_t sns_msg_rgb_img_size_tn( uint32_t _width, uint32_t _height ) {
+    static const struct sns_msg_rgb_img* msg;
+    return sizeof( *msg ) + sizeof( msg->u[0] ) + sizeof( msg->u[0] )*_width*_height;
+  }
+
+  static inline size_t sns_msg_rgb_img_size( const struct sns_msg_rgb_img* _msg ) {
+    return sns_msg_rgb_img_size_tn( _msg->width, _msg->height );
+  }
+
+  struct sns_msg_rgb_img* sns_msg_rgb_img_alloc( uint32_t _width, uint32_t _height );
+  void sns_msg_rgb_img_dump( FILE* _out,
+                             const struct sns_msg_rgb_img* _msg );
+
+ 
+  
 
 #ifdef __cplusplus
 }
