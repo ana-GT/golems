@@ -1,0 +1,13 @@
+# Configure files for golems
+
+# This set includes the following variables
+# golems_INCLUDE_DIRS: Directories containing the golems include files
+# golems_LIBRARIES: Libraries needed to use golems
+# golems_LIBRARY_DIRS: Directories that contain golems libraries
+
+
+set( golems_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include"
+       "@EIGEN_INCLUDE_DIRS@" )
+set( golems_LIBRARY_DIRS "@CMAKE_INSTALL_PREFIX@/lib" )
+
+set( golems_LIBRARIES motionControl tkunz )

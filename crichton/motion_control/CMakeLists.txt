@@ -1,13 +1,10 @@
 project( motion_control )
 set( CMAKE_CXX_FLAGS "-fPIC" )
 
-# Find Eigen
-find_package( PkgConfig )
-pkg_check_modules( EIGEN REQUIRED eigen3 )
-include_directories( ${EIGEN_INCLUDE_DIRS} )
-
+# Add Tobias' trajectory generation code
 add_subdirectory( trajectories )
 
+# Add my motionControl code
 add_library( motionControl base_control.cpp base_control.h
   Control_Interface.cpp Control_Interface.h
   Arm_Interface.cpp Arm_Interface.h
@@ -16,10 +13,17 @@ add_library( motionControl base_control.cpp base_control.h
 target_link_libraries( motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} )
 set_target_properties( motionControl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
-# Servers (to be run in calvin)
+# Install
+install( TARGETS motionControl DESTINATION lib )
+install( DIRECTORY  ./  DESTINATION include/motion_control FILES_MATCHING PATTERN "*.h" )
+
+# Trajectory server for one trajectory at a time
 add_executable( gatekeeper gatekeeper.cpp )
 target_link_libraries( gatekeeper motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
 set_target_properties( gatekeeper PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+# Install
+install( TARGETS gatekeeper DESTINATION bin )
 
 
 add_executable( base_control_server base_control_server.cpp )
@@ -30,3 +34,5 @@ set_target_properties( base_control_server PROPERTIES RUNTIME_OUTPUT_DIRECTORY $
 add_executable( base_control_client base_control_client.cpp )
 target_link_libraries( base_control_client motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
 set_target_properties( base_control_client PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
