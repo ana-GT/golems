@@ -32,6 +32,7 @@ add_definitions(${PCL_DEFINITIONS})
 # Libraries
 add_subdirectory( msgs )
 
+add_subdirectory( calibration )
 add_subdirectory( executables )
 add_subdirectory( marker_detection )
 
