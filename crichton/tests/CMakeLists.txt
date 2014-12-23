@@ -101,6 +101,6 @@ include_directories( ${EIGEN_INCLUDE_DIRS} )
 
 
 add_executable( test_baseControl test_baseControl.cpp )
-target_link_libraries( test_baseControl motionControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack)
+target_link_libraries( test_baseControl motionControl ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
 set_target_properties( test_baseControl PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
