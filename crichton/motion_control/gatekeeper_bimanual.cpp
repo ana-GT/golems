@@ -130,7 +130,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
     
   case ACH_OK:
   case ACH_MISSED_FRAME: {
-	  printf("Gotten something \n");
+    printf("Gotten something \n");
     struct sns_msg_bimanual* msg = (struct sns_msg_bimanual*) buf;
     if( frame_size == sns_msg_bimanual_size(msg) ) {
       
@@ -147,7 +147,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	for( int i = 0; i < n_steps_left; ++i ) {
 	  Eigen::VectorXd p(n_dofs);
 	  for( int j = 0; j < n_dofs; ++j ) {
-	    p(j) = msg->left[counter];
+	    p(j) = msg->x[counter];
 	    counter++;
 	  }
 	  std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
@@ -158,7 +158,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	for( int i = 0; i < n_steps_right; ++i ) {
 	  Eigen::VectorXd p(n_dofs);
 	  for( int j = 0; j < n_dofs; ++j ) {
-	    p(j) = msg->right[counter];
+	    p(j) = msg->x[counter];
 	    counter++;
 	  }
 	  std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;
@@ -171,18 +171,18 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	for( int i = 0; i < n_steps_left; ++i ) {
 	  Eigen::VectorXd p(n_dofs);
 	  for( int j = 0; j < n_dofs; ++j ) {
-	    p(j) = msg->left[counter];
+	    p(j) = msg->x[counter];
 	    counter++;
 	  }
 	  std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
 	  _leftPath.push_back( p );
 	} // for i
 
-	counter = 0;
+	counter = n_steps_left * n_dofs;
 	for( int i = 0; i < n_steps_right; ++i ) {
 	  Eigen::VectorXd p(n_dofs);
 	  for( int j = 0; j < n_dofs; ++j ) {
-	    p(j) = msg->right[counter];
+	    p(j) = msg->x[counter];
 	    counter++;
 	  }
 	  std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;

@@ -23,8 +23,8 @@ extern "C" {
     uint8_t mode; // 0: left, 1: right, 2: both
     uint16_t n_steps_left; // Length of left trajectory
     uint16_t n_steps_right; // Length of right trajectory
-    sns_real_t left[1]; // Trajectory left, count is: n_dof*n_steps_left;
-    sns_real_t right[1]; // Trajectory left, count is: n_dof*n_steps_right;
+    sns_real_t x[1]; // Trajectory left, count is: n_dof*(n_steps_left+n_steps_right);
+
   };
 
   /**
@@ -35,7 +35,7 @@ extern "C" {
 						 uint16_t _n_steps_right,
 						 uint8_t _n_dofs ) {
     static const struct sns_msg_bimanual *msg;
-    return sizeof( *msg ) - sizeof( msg->left[0] ) + sizeof( msg->left[0] )*_n_steps_left*_n_dofs - sizeof( msg->right[0] ) + sizeof( msg->right[0] )*_n_steps_right*_n_dofs;
+    return sizeof( *msg ) - sizeof( msg->x[0] ) + sizeof( msg->x[0] )*(_n_steps_left + _n_steps_right)*_n_dofs;
   }
   
   /**

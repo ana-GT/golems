@@ -122,12 +122,12 @@ bool DualLimb_Interface::follow_arm_trajectory( int _i,
   struct sns_msg_bimanual* msg;
 
   if( _i == 0 ) {
-    msg = sns_msg_bimanual_alloc( _path.size(), 1,
+    msg = sns_msg_bimanual_alloc( _path.size(), 0,
 				  (*(_path.begin())).size() );
 
     msg->n_dof = (*(_path.begin())).size();
     msg->n_steps_left = _path.size();
-    msg->n_steps_right = 1; // alloc
+    msg->n_steps_right = 0; // alloc
     msg->mode = 0;
   
     sns_msg_header_fill( &msg->header );
@@ -138,16 +138,16 @@ bool DualLimb_Interface::follow_arm_trajectory( int _i,
     std::list<Eigen::VectorXd>::const_iterator it;
     for( it = _path.begin(); it != _path.end(); ++it ) {
       for( int j = 0; j < (*it).size(); ++j ) {
-	msg->left[counter] = (*it)(j);
+	msg->x[counter] = (*it)(j);
 	counter++;
       }
     }
   } else if( _i == 1 ) {
-    msg = sns_msg_bimanual_alloc( 1, _path.size(),
+    msg = sns_msg_bimanual_alloc( 0, _path.size(),
 				  (*(_path.begin())).size() );
     
     msg->n_dof = (*(_path.begin())).size();
-    msg->n_steps_left = 1; // alloc
+    msg->n_steps_left = 0; // alloc
     msg->n_steps_right = _path.size();
     msg->mode = 1;
     
@@ -159,7 +159,7 @@ bool DualLimb_Interface::follow_arm_trajectory( int _i,
     std::list<Eigen::VectorXd>::const_iterator it;
     for( it = _path.begin(); it != _path.end(); ++it ) {
       for( int j = 0; j < (*it).size(); ++j ) {
-	msg->right[counter] = (*it)(j);
+	msg->x[counter] = (*it)(j);
 	counter++;
       }
     }
@@ -216,15 +216,15 @@ bool DualLimb_Interface::follow_dual_arm_trajectory( const std::list<Eigen::Vect
   std::list<Eigen::VectorXd>::const_iterator it;
   for( it = _leftPath.begin(); it != _leftPath.end(); ++it ) {
     for( int j = 0; j < (*it).size(); ++j ) {
-      msg->left[counter] = (*it)(j);
+      msg->x[counter] = (*it)(j);
       counter++;
     }
   }
   
-  counter = 0;
+  counter = msg->n_steps_left * msg->n_dof;
   for( it = _rightPath.begin(); it != _rightPath.end(); ++it ) {
     for( int j = 0; j < (*it).size(); ++j ) {
-      msg->right[counter] = (*it)(j);
+      msg->x[counter] = (*it)(j);
       counter++;
     }
   }

@@ -44,22 +44,48 @@ void sns_msg_bimanual_dump( FILE* _out,
   fprintf( _out, "mode: %d \n", mode );
 
   uint32_t i, j;
-  fprintf(_out, "Left arm trajectory: \n");
-  for( i = 0; i < _msg->n_steps_left; i++ ) {
-    for( j = 0; j < n_dof; ++j ) {
-      fprintf( _out, "\t %f", _msg->left[i*n_dof + j]);
-    }
-    fprintf( _out, "\n" );
-  }
 
-  fprintf(_out, "Right arm trajectory: \n");
-  for( i = 0; i < _msg->n_steps_right; i++ ) {
-    for( j = 0; j < n_dof; ++j ) {
-      fprintf( _out, "\t %f", _msg->right[i*n_dof + j]);
-    }
-    fprintf( _out, "\n" );
-  }
+  if( mode == 0 ) {
 
+    fprintf(_out, "Left arm trajectory: \n");
+    for( i = 0; i < _msg->n_steps_left; i++ ) {
+      for( j = 0; j < n_dof; ++j ) {
+	fprintf( _out, "\t %f", _msg->x[i*n_dof + j]);
+      }
+      fprintf( _out, "\n" );
+    }
+
+    
+  } else if( mode == 1 ) {
+  
+    fprintf(_out, "Right arm trajectory: \n");
+    for( i = 0; i < _msg->n_steps_right; i++ ) {
+      for( j = 0; j < n_dof; ++j ) {
+	fprintf( _out, "\t %f", _msg->x[i*n_dof + j]);
+      }
+      fprintf( _out, "\n" );
+    }
+  } else if( mode == 2 ) {
+    fprintf(_out, "Dual mode. Left first then right \n");
+    fprintf(_out, "Left arm trajectory: \n");
+    for( i = 0; i < _msg->n_steps_left; i++ ) {
+      for( j = 0; j < n_dof; ++j ) {
+	fprintf( _out, "\t %f", _msg->x[i*n_dof + j]);
+      }
+      fprintf( _out, "\n" );
+    }
+
+    fprintf(_out, "Right arm trajectory: \n");
+    int start_right = _msg->n_steps_left* n_dof; 
+    for( i = start_right; i < start_right + _msg->n_steps_right; i++ ) {
+      for( j = 0; j < n_dof; ++j ) {
+	fprintf( _out, "\t %f", _msg->x[i*n_dof + j]);
+      }
+      fprintf( _out, "\n" );
+    }
+
+    
+  }
 }
 
 
