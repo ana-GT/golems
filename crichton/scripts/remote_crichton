@@ -94,6 +94,8 @@ case "$1" in
 
 		sudo achd -d push $CONTROL_HOST traj-left 	
 		sudo achd -d push $CONTROL_HOST traj-right
+		
+		sudo achd -d push $CONTROL_HOST bimanual_chan
 		;;
 
 	#**********************

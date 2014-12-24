@@ -9,17 +9,17 @@
 #include "msgs/bimanual_msgs.h"
 #include "base_dual_control.h"
 
-ach_channel_t* bimanual_chan;
+ach_channel_t bimanual_chan;
 
 /** Left arm */
-ach_channel_t* la_state_chan;
-ach_channel_t* la_ref_chan;
+ach_channel_t la_state_chan;
+ach_channel_t la_ref_chan;
 
 std::list<Eigen::VectorXd> la_path;
 
 /** Right arm */
-ach_channel_t* ra_state_chan;
-ach_channel_t* ra_ref_chan;
+ach_channel_t ra_state_chan;
+ach_channel_t ra_ref_chan;
 
 std::list<Eigen::VectorXd> ra_path;
 
@@ -51,21 +51,21 @@ int main( int argc, char* argv[] ) {
   Eigen::VectorXd maxVel, maxAccel;
   
   // Open channels
-  sns_chan_open( bimanual_chan, "bimanual_chan", NULL );
+  sns_chan_open( &bimanual_chan, "bimanual_chan", NULL );
   
-  sns_chan_open( la_state_chan, "state-left", NULL );
-  sns_chan_open( la_ref_chan, "ref-left", NULL );
+  sns_chan_open( &la_state_chan, "state-left", NULL );
+  sns_chan_open( &la_ref_chan, "ref-left", NULL );
   
-  sns_chan_open( ra_state_chan, "state-right", NULL );
-  sns_chan_open( ra_ref_chan, "ref-right", NULL );
+  sns_chan_open( &ra_state_chan, "state-right", NULL );
+  sns_chan_open( &ra_ref_chan, "ref-right", NULL );
 
   // Set channels
-  bdc.set_channels( 0, la_ref_chan, la_state_chan );
-  bdc.set_channels( 1, ra_ref_chan, ra_state_chan );
+  bdc.set_channels( 0, &la_ref_chan, &la_state_chan );
+  bdc.set_channels( 1, &ra_ref_chan, &ra_state_chan );
   
   // Loop waiting for traj
   while( true ) {
-    if( poll_bimanual_chan( bimanual_chan,
+    if( poll_bimanual_chan( &bimanual_chan,
 			    mode,
 			    la_path,
 			    ra_path ) == true ) {

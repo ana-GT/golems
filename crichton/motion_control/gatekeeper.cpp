@@ -9,17 +9,17 @@
 #include "base_control.h"
 
 /** Left arm */
-ach_channel_t* la_state_chan;
-ach_channel_t* la_ref_chan;
-ach_channel_t* la_traj_chan;
+ach_channel_t la_state_chan;
+ach_channel_t la_ref_chan;
+ach_channel_t la_traj_chan;
 BaseControl bc_left;
 
 std::list<Eigen::VectorXd> la_path;
 
 /** Right arm */
-ach_channel_t* ra_state_chan;
-ach_channel_t* ra_ref_chan;
-ach_channel_t* ra_traj_chan;
+ach_channel_t ra_state_chan;
+ach_channel_t ra_ref_chan;
+ach_channel_t ra_traj_chan;
 BaseControl bc_right;
 
 std::list<Eigen::VectorXd> ra_path;
@@ -47,35 +47,35 @@ int main( int argc, char* argv[] ) {
   Eigen::VectorXd maxVel, maxAccel;
   
   // Open channels
-  sns_chan_open( la_state_chan, "state-left", NULL );
-  sns_chan_open( la_ref_chan, "ref-left", NULL );
-  sns_chan_open( la_traj_chan, "traj-left", NULL );
+  sns_chan_open( &la_state_chan, "state-left", NULL );
+  sns_chan_open( &la_ref_chan, "ref-left", NULL );
+  sns_chan_open( &la_traj_chan, "traj-left", NULL );
   
-  sns_chan_open( ra_state_chan, "state-right", NULL );
-  sns_chan_open( ra_ref_chan, "ref-right", NULL );
-  sns_chan_open( ra_traj_chan, "traj-right", NULL );
+  sns_chan_open( &ra_state_chan, "state-right", NULL );
+  sns_chan_open( &ra_ref_chan, "ref-right", NULL );
+  sns_chan_open( &ra_traj_chan, "traj-right", NULL );
 
   // Set channels
-  bc_left.set_channels( la_ref_chan, la_state_chan );
-  bc_right.set_channels( ra_ref_chan, ra_state_chan );
+  bc_left.set_channels( &la_ref_chan, &la_state_chan );
+  bc_right.set_channels( &ra_ref_chan, &ra_state_chan );
   
 
   // Loop waiting for traj
   while( true ) {
-    if( poll_traj_chan( la_traj_chan, la_path ) == true ) {
+    if( poll_traj_chan( &la_traj_chan, la_path ) == true ) {
       int n_dof = (*la_path.begin()).size();
       bc_left.set_numJoints( n_dof );
       maxVel = mMaxVel*Eigen::VectorXd::Ones( n_dof );
       maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dof );
-      //bc_left.followTrajectory( la_path, maxAccel, maxVel );
+      bc_left.followTrajectory( la_path, maxAccel, maxVel );
     }
 
-    if( poll_traj_chan( ra_traj_chan, ra_path ) == true ) {
+    if( poll_traj_chan( &ra_traj_chan, ra_path ) == true ) {
       int n_dof = (*ra_path.begin()).size();
       bc_right.set_numJoints( n_dof );
       maxVel = mMaxVel*Eigen::VectorXd::Ones( n_dof );
       maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dof );
-      //bc_right.followTrajectory( ra_path, maxAccel, maxVel );
+      bc_right.followTrajectory( ra_path, maxAccel, maxVel );
 
     }
 
