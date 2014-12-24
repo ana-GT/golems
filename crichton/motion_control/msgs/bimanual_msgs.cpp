@@ -13,8 +13,9 @@
 struct sns_msg_bimanual *sns_msg_bimanual_alloc( uint16_t _n_steps_left,
 						 uint16_t _n_steps_right,
 						 uint8_t _n_dof ) {
-  size_t size = sns_msg_bimanual_size( &(struct sns_msg_bimanual){
-      .n_dof = _n_dof, .n_steps_left = _n_steps_left, .n_steps_right = _n_steps_right } );
+  size_t size = sns_msg_bimanual_size_tn( _n_steps_left,
+					  _n_steps_right,
+					  _n_dof );
   struct sns_msg_bimanual *msg = (struct sns_msg_bimanual*) malloc( size );
   memset( msg, 0, sizeof(*msg) );
 
