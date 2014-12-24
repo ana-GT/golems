@@ -6,7 +6,7 @@ CHANNELS="$CHANNELS sdhref-left sdhstate-left"
 CHANNELS="$CHANNELS sdhref-right sdhstate-right"
 
 # Trajectory channels
-TRAJ_CHANNELS="traj-left traj-right"
+TRAJ_CHANNELS="traj-left traj-right bimanual_chan"
 
 # Workstations 
 PLANNING_HOST="powell"

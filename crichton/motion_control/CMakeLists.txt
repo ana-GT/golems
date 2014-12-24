@@ -13,7 +13,8 @@ add_library( motionControl base_control.cpp base_control.h
   Control_Interface.cpp Control_Interface.h
   Arm_Interface.cpp Arm_Interface.h
   Hand_Interface.cpp Hand_Interface.h
-  Limb_Interface.cpp Limb_Interface.h )
+  Limb_Interface.cpp Limb_Interface.h
+  DualLimb_Interface.cpp DualLimb_Interface.cpp )
 target_link_libraries( motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} )
 set_target_properties( motionControl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 

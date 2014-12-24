@@ -145,19 +145,21 @@ bool BaseDualControl::followDualTrajectory( const std::list<Eigen::VectorXd> &_p
 
       if( tn < duration[i] ) {
 	vel_cmd[i] = trajectory[i].getVelocity( tn );
+	
+	std::cout << "["<<i<<": "<< tn << "]: "<< vel_cmd[i].transpose() << std::endl;
+	std::cout << " Expected pos: "<< trajectory[i].getPosition(tn).transpose() << std::endl;
+	//std::cout << "Current pos: " << mq.transpose() << std::endl;
+	//std::cout << "Current velocity: " << mdq.transpose() << std::endl;
+	  
+	  // Send command to robot
 	/*
-	  std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
-	  std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
-	  std::cout << "Current position: " << mq.transpose() << std::endl;
-	  std::cout << "Current velocity: " << mdq.transpose() << std::endl;
-	*/
-	// Send command to robot    
 	if( !mBc[i].control_n( mN, vel_cmd[i], 2*mDt, mBc[i].get_refChan(), SNS_MOTOR_MODE_VEL ) ) {
 	  printf("\t[followTrajectory - %d] Sending vel msg error \n", i);
 	  return false;
-	}
+	  }*/
       } else {
-	mBc[i].control_n( mN, zeros, mDt, mBc[i].get_refChan(), SNS_MOTOR_MODE_VEL );
+	printf("Sending 0 vel for arm %d \n", i);
+	//mBc[i].control_n( mN, zeros, mDt, mBc[i].get_refChan(), SNS_MOTOR_MODE_VEL );
       }
     } // end for
     

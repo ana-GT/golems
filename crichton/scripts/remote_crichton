@@ -18,7 +18,7 @@ fi
 #*****************************
 # State & Trajectory channels
 #*****************************
-TRAJ_CHANNELS="traj-left traj-right sdhref-left sdhref-right"
+TRAJ_CHANNELS="traj-left traj-right sdhref-left sdhref-right bimanual_chan"
 CHANNELS="state-left state-right sdhstate-left sdhstate-right"
 
 #*****************************
@@ -32,7 +32,7 @@ CONTROL_HOST="calvin"
 #*****************************
 remote_crichton_ach_mk() {
   for c in $TRAJ_CHANNELS; do
-	 ach mk -m 7 -n 1000 -1 -o 666 $c
+	 ach mk -m 7 -n 3000 -1 -o 666 $c
    done
 
   for c in $CHANNELS; do

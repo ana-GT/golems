@@ -27,8 +27,6 @@ extern "C" {
     sns_real_t right[1]; // Trajectory left, count is: n_dof*n_steps_right;
   };
 
-
-
   /**
    * @function sns_msg_bimanual_size_tn
    * @brief Calculates the size of any message with its n_steps (left and right) and n_dof
