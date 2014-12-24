@@ -22,6 +22,7 @@ class BaseControl {
   void set_numJoints( int _N );
   void set_channels( ach_channel_t* _ref_chan,
 		     ach_channel_t* _state_chan );
+
   bool update();
   void get_state( Eigen::VectorXd &_q,
 		  Eigen::VectorXd &_dq );
@@ -29,6 +30,11 @@ class BaseControl {
 			 const Eigen::VectorXd &_maxAccel,
 			 const Eigen::VectorXd &_maxVel );
   
+  // Getters
+  ach_channel_t* get_refChan() { return mChan_ref; }
+  double get_Dq_thresh() { return mDq_thresh; }
+  double get_maxDev() { return mMaxDev; }
+  Eigen::VectorXd get_q() { return mq; }
   
   /** GENERAL FUNCTIONS */
   bool update_n( size_t n,
@@ -53,7 +59,7 @@ class BaseControl {
   double mFreq;
   double mDt;
   double mDq_thresh;
-	int64_t mVALID_NS;
+  int64_t mVALID_NS;
 
   ach_channel_t* mChan_ref;
   ach_channel_t* mChan_state;

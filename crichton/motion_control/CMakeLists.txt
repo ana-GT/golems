@@ -4,8 +4,12 @@ set( CMAKE_CXX_FLAGS "-fPIC" )
 # Add Tobias' trajectory generation code
 add_subdirectory( trajectories )
 
+# Add bimanual msgs
+add_subdirectory( msgs )
+
 # Add my motionControl code
 add_library( motionControl base_control.cpp base_control.h
+  base_dual_control.cpp base_dual_control.h
   Control_Interface.cpp Control_Interface.h
   Arm_Interface.cpp Arm_Interface.h
   Hand_Interface.cpp Hand_Interface.h
@@ -21,6 +25,11 @@ install( DIRECTORY  ./  DESTINATION include/motion_control FILES_MATCHING PATTER
 add_executable( gatekeeper gatekeeper.cpp )
 target_link_libraries( gatekeeper motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
 set_target_properties( gatekeeper PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+# Trajectory server for dual trajectories
+add_executable( gatekeeper_bimanual gatekeeper_bimanual.cpp )
+target_link_libraries( gatekeeper_bimanual motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
+set_target_properties( gatekeeper_bimanual PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 # Install
 install( TARGETS gatekeeper DESTINATION bin )

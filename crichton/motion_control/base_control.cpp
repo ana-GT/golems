@@ -122,12 +122,13 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
 
     // Build velocity command
     vel_cmd = trajectory.getVelocity( tn );
+    /*
     std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
     std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
     std::cout << "Current position: " << mq.transpose() << std::endl;
     std::cout << "Current velocity: " << mdq.transpose() << std::endl;
-		// Send command to robot
-    
+    */
+    // Send command to robot    
     if( !control_n( mN, vel_cmd, 2*mDt, mChan_ref, SNS_MOTOR_MODE_VEL ) ) {
       printf("\t[followTrajectory] Sending vel msg error \n");
       return false;
