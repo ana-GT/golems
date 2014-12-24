@@ -130,6 +130,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
     
   case ACH_OK:
   case ACH_MISSED_FRAME: {
+	  printf("Gotten something \n");
     struct sns_msg_bimanual* msg = (struct sns_msg_bimanual*) buf;
     if( frame_size == sns_msg_bimanual_size(msg) ) {
       
@@ -139,7 +140,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
       n_steps_left = msg->n_steps_left;
       n_steps_right = msg->n_steps_right;
       _mode = msg->mode;
-      printf("\t * [INFO] Received trajectory with %d left and %d right points and %d dofs \n", n_steps_left, n_steps_right, n_dofs );
+      printf("\t * [INFO] Received trajectory in mode (%d) with %d left and %d right points and %d dofs \n", _mode, n_steps_left, n_steps_right, n_dofs );
       
       if( _mode == 0 ) {
 	int counter = 0;
@@ -164,7 +165,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	  _rightPath.push_back( p );
 	} // for i
 	
-      } else if( mode == 2 ) {
+      } else if( _mode == 2 ) {
 
 	int counter = 0;
 	for( int i = 0; i < n_steps_left; ++i ) {
