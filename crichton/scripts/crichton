@@ -53,7 +53,7 @@ crichton_ach_mk() {
 
     # For trajectories
     for c in $TRAJ_CHANNELS; do
-        ach mk -m 7 -n 1000 -1 -o 666 $c
+        ach mk -m 7 -n 3000 -1 -o 666 $c
     done  
 }
 
