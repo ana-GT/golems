@@ -62,83 +62,81 @@ case "$1" in
 	#**********************
 	start)
 
-		# Create channels
-    remote_crichton_ach_mk
+	    # Create channels
+	    remote_crichton_ach_mk
 
-		# Start SNS
-		$SNS start
+	    
+	    # Create folder /tmp, /var for sns stuff		
+	    sudo mkdir -p /var/tmp/sns/state-left 
+	    sudo mkdir -p /var/run/sns/state-left
+	    
+	    sudo mkdir -p /var/tmp/sns/sdhstate-left 
+	    sudo mkdir -p /var/run/sns/sdhstate-left 
+	    
+	    sudo mkdir -p /var/tmp/sns/state-right 
+	    sudo mkdir -p /var/run/sns/state-right
+	    
+	    sudo mkdir -p /var/tmp/sns/sdhstate-right 
+	    sudo mkdir -p /var/run/sns/sdhstate-right 
+	    
+	    # Pull arm/hand states
+	    sudo achd -d pull $CONTROL_HOST state-left 	
+	    sudo achd -d pull $CONTROL_HOST sdhstate-left		
+	    
+	    sudo achd -d pull $CONTROL_HOST state-right 	
+	    sudo achd -d pull $CONTROL_HOST sdhstate-right		
+	    
+	    # Push arm/hand ref
+	    sudo achd -d push $CONTROL_HOST sdhref-left	
+	    sudo achd -d push $CONTROL_HOST sdhref-right
+	    
+	    sudo achd -d push $CONTROL_HOST traj-left 	
+	    sudo achd -d push $CONTROL_HOST traj-right
+	    
+	    sudo achd -d push $CONTROL_HOST bimanual_chan
+	    ;;
 	
-		# Create folder /tmp, /var for sns stuff		
-		sudo mkdir -p /var/tmp/sns/state-left 
-		sudo mkdir -p /var/run/sns/state-left
-
-		sudo mkdir -p /var/tmp/sns/sdhstate-left 
-		sudo mkdir -p /var/run/sns/sdhstate-left 
-
-		sudo mkdir -p /var/tmp/sns/state-right 
-		sudo mkdir -p /var/run/sns/state-right
-
-		sudo mkdir -p /var/tmp/sns/sdhstate-right 
-		sudo mkdir -p /var/run/sns/sdhstate-right 
-
-		# Pull arm/hand states
-		sudo achd -d pull $CONTROL_HOST state-left 	
-		sudo achd -d pull $CONTROL_HOST sdhstate-left		
-		
-		sudo achd -d pull $CONTROL_HOST state-right 	
-		sudo achd -d pull $CONTROL_HOST sdhstate-right		
-		
-		# Push arm/hand ref
-		sudo achd -d push $CONTROL_HOST sdhref-left	
-		sudo achd -d push $CONTROL_HOST sdhref-right
-
-		sudo achd -d push $CONTROL_HOST traj-left 	
-		sudo achd -d push $CONTROL_HOST traj-right
-		
-		sudo achd -d push $CONTROL_HOST bimanual_chan
-		;;
-
 	#**********************
 	# STOP
 	#**********************
 	stop)
-		remote_crichton_ach_rm
-		#$SNS kill kinectmarkers # This is zhaan's. KILL IT?
-		;;
-
+	    remote_crichton_ach_rm
+	    #$SNS kill kinectmarkers # This is zhaan's. KILL IT?
+	    ;;
+	
 	#**********************
 	# EXPUNGE
 	#**********************
 	expunge)
-
-		sudo rm -rf /var/tmp/sns/state-left	
-		sudo rm -rf /var/run/sns/state-left
-
-		sudo rm -rf /var/tmp/sns/sdhstate-left	
-		sudo rm -rf /var/run/sns/sdhstate-left
-
-		sudo rm -rf /var/tmp/sns/state-right	
-		sudo rm -rf /var/run/sns/state-right
-
-		sudo rm -rf /var/tmp/sns/sdhstate-right	
-		sudo rm -rf /var/run/sns/sdhstate-right
-
-		echo "Expunging!"
-
-		;;
-
+	    
+	    sudo rm -rf /var/tmp/sns/state-left	
+	    sudo rm -rf /var/run/sns/state-left
+	    
+	    sudo rm -rf /var/tmp/sns/sdhstate-left	
+	    sudo rm -rf /var/run/sns/sdhstate-left
+	    
+	    sudo rm -rf /var/tmp/sns/state-right	
+	    sudo rm -rf /var/run/sns/state-right
+	    
+	    sudo rm -rf /var/tmp/sns/sdhstate-right	
+	    sudo rm -rf /var/run/sns/sdhstate-right
+	    
+	    echo "Expunging!"
+	    
+	    ;;
+	
 	#**********************
 	# RM
 	#**********************
 	rm)
-		;;
+	    ;;
 	#**********************
 	# ALL ELSE
 	#**********************
 	*)
-		echo "Invalid command"	
-		exit 1
-		;;
+	    echo "Invalid command"	
+	    exit 1
+	    ;;
 esac
 
 
