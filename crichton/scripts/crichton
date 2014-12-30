@@ -10,7 +10,7 @@ TRAJ_CHANNELS="traj-left traj-right bimanual_chan"
 
 # Workstations 
 PLANNING_HOST="powell"
-CONTROL_HOST="calvin" # 192.168.1.40 
+CONTROL_HOST="calvin" 
 
 #*****************
 # DEFINITIONS
@@ -75,7 +75,7 @@ crichton_start_sns() {
     
     if test -z $snslogd_is_running; then
 	echo "\t * Starting SNS service"
-	sudo $SNS start
+	$SNS start
     else 
 	echo "\t * SNS already is running"
     fi
@@ -91,19 +91,17 @@ crichton_start() {
 
     sudo achd -d pull $PLANNING_HOST bimanual_chan
     
-		crichton_start_sns
+    $SNS run -d -r lwa-left -- \
+		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
 
-#    $SNS run -d -r lwa-left -- \
-#	can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
+     $SNS run  -d -r sdh-left -- \
+     sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
 
-# $SNS run  -d -r sdh-left -- \
-# sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
+     $SNS run -d -r lwa-right -- \
+     can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right    
 
-#    $SNS run -d -r lwa-right -- \
-#	can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right    
-
-# $SNS run  -d -r sdh-right -- \
-# sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
+     $SNS run  -d -r sdh-right -- \
+     sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
 
 }
 
