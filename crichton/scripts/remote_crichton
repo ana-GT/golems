@@ -13,12 +13,10 @@ else
 fi
 
 
-
-
 #*****************************
 # State & Trajectory channels
 #*****************************
-TRAJ_CHANNELS="traj-left traj-right sdhref-left sdhref-right bimanual_chan"
+TRAJ_CHANNELS="sdhref-left sdhref-right bimanual_chan"
 CHANNELS="state-left state-right sdhstate-left sdhstate-right"
 
 #*****************************
@@ -64,20 +62,19 @@ case "$1" in
 
 	    # Create channels
 	    remote_crichton_ach_mk
-
 	    
 	    # Create folder /tmp, /var for sns stuff		
-	    sudo mkdir -p /var/tmp/sns/state-left 
-	    sudo mkdir -p /var/run/sns/state-left
+	    #sudo mkdir -p /var/tmp/sns/state-left 
+	    #sudo mkdir -p /var/run/sns/state-left
 	    
-	    sudo mkdir -p /var/tmp/sns/sdhstate-left 
-	    sudo mkdir -p /var/run/sns/sdhstate-left 
+	    #sudo mkdir -p /var/tmp/sns/sdhstate-left 
+	    #sudo mkdir -p /var/run/sns/sdhstate-left 
 	    
-	    sudo mkdir -p /var/tmp/sns/state-right 
-	    sudo mkdir -p /var/run/sns/state-right
+	    #sudo mkdir -p /var/tmp/sns/state-right 
+	    #sudo mkdir -p /var/run/sns/state-right
 	    
-	    sudo mkdir -p /var/tmp/sns/sdhstate-right 
-	    sudo mkdir -p /var/run/sns/sdhstate-right 
+	    #sudo mkdir -p /var/tmp/sns/sdhstate-right 
+	    #sudo mkdir -p /var/run/sns/sdhstate-right 
 	    
 	    # Pull arm/hand states
 	    sudo achd -d pull $CONTROL_HOST state-left 	
@@ -88,10 +85,7 @@ case "$1" in
 	    
 	    # Push arm/hand ref
 	    sudo achd -d push $CONTROL_HOST sdhref-left	
-	    sudo achd -d push $CONTROL_HOST sdhref-right
-	    
-	    sudo achd -d push $CONTROL_HOST traj-left 	
-	    sudo achd -d push $CONTROL_HOST traj-right
+	    sudo achd -d push $CONTROL_HOST sdhref-right	    
 	    
 	    sudo achd -d push $CONTROL_HOST bimanual_chan
 	    ;;
@@ -101,7 +95,6 @@ case "$1" in
 	#**********************
 	stop)
 	    remote_crichton_ach_rm
-	    #$SNS kill kinectmarkers # This is zhaan's. KILL IT?
 	    ;;
 	
 	#**********************
