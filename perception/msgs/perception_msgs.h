@@ -80,6 +80,34 @@ extern "C" {
   void sns_msg_rgb_img_dump( FILE* _out,
                              const struct sns_msg_rgb_img* _msg );
 
+
+    /**
+   * @struct sns_msg_depth_img
+   * @brief Define a Depth image (XYZ)
+   */
+  struct sns_msg_depth_img {
+    uint32_t width;
+    uint32_t height;
+    struct {
+      float x;
+      float y;
+      float z;
+    } u[1];
+  };
+
+  static inline size_t sns_msg_depth_img_size_tn( uint32_t _width, uint32_t _height ) {
+    static const struct sns_msg_depth_img* msg;
+    return sizeof( *msg ) + sizeof( msg->u[0] ) + sizeof( msg->u[0] )*_width*_height;
+  }
+
+  static inline size_t sns_msg_depth_img_size( const struct sns_msg_depth_img* _msg ) {
+    return sns_msg_depth_img_size_tn( _msg->width, _msg->height );
+  }
+
+  struct sns_msg_depth_img* sns_msg_depth_img_alloc( uint32_t _width, uint32_t _height );
+  void sns_msg_depth_img_dump( FILE* _out,
+			       const struct sns_msg_depth_img* _msg );
+
  
   
 

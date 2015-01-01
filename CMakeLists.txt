@@ -26,4 +26,4 @@ share )
 # Subdirectories
 add_subdirectory( crichton )
 add_subdirectory( perception )
-
+add_subdirectory( projects )

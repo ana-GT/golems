@@ -16,7 +16,7 @@
 
 cv::Mat rgbImg;
 cv::Mat pclMap;
-
+std::string mWindowName( "Crichton View" );
 
 int counter = 0;
 
@@ -24,6 +24,18 @@ int counter = 0;
 /** FUNCTIONS          */
 /***********************/
 void saveData( int state, void* userdata );
+static void onMouse( int event, int x, int y, int, void* ) {
+  
+  if( event != cv::EVENT_LBUTTONDOWN ) {
+    return;
+  }
+
+  // Get (X,Y,Z) from Kinect
+  cv::Point3f p;
+  p = pclMap.at<cv::Point3f>(y,x);
+  printf("Depth: %f %f %f \n", p.x, p.y, p.z);
+ 
+}
 
 /**
  * @function main
@@ -40,7 +52,7 @@ int main( int argc, char* argv[] ) {
   printf("\t * Opened device \n");
 
   capture.set( cv::CAP_PROP_OPENNI2_MIRROR, 1.0 );
-  capture.set( cv::CAP_PROP_OPENNI_REGISTRATION, 1.0 ); // on
+  capture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 ); // on
 
   printf("\t * Common Image dimensions: (%f,%f) \n",
 	 capture.get( cv::CAP_PROP_FRAME_WIDTH ),
@@ -57,7 +69,9 @@ int main( int argc, char* argv[] ) {
   
   // Set control panel
   int value;
-  cv::namedWindow( "Crichton View" );
+  cv::namedWindow( mWindowName );
+  // Set mouse callback 
+  cv::setMouseCallback( mWindowName, onMouse, 0 );
   cv::createButton( "Save", saveData, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
@@ -69,7 +83,7 @@ int main( int argc, char* argv[] ) {
     }
 
     capture.retrieve( rgbImg, cv::CAP_OPENNI_BGR_IMAGE );
-    cv::imshow( "Crichton View", rgbImg );
+    cv::imshow( mWindowName, rgbImg );
 
     capture.retrieve( pclMap, cv::CAP_OPENNI_POINT_CLOUD_MAP );
 

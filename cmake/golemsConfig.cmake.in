@@ -6,8 +6,8 @@
 # golems_LIBRARY_DIRS: Directories that contain golems libraries
 
 
-set( golems_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include"
+set( golems_INCLUDE_DIRS "@CMAKE_INSTALL_PREFIX@/include" "@CMAKE_INSTALL_PREFIX@/include/golems"
        "@EIGEN_INCLUDE_DIRS@" )
 set( golems_LIBRARY_DIRS "@CMAKE_INSTALL_PREFIX@/lib" )
 
-set( golems_LIBRARIES motionControl tkunz )
+set( golems_LIBRARIES motionControl tkunz bimanual_msgs perception_msgs )

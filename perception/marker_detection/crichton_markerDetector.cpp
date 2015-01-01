@@ -25,50 +25,44 @@ bool crichton_markerDetector::detect( cv::Mat &_img ) {
 
   IplImage ipl = _img;
   mMarkerDetector.Detect( &ipl, &mCam, false, false ); // track and visualize
+  mCalibMarkers.resize(0);
 
+  
   for( size_t i = 0; i < mMarkerDetector.markers->size(); ++i ) {
+    
     int id = (*(mMarkerDetector.markers))[i].GetId();
-    printf("Detected marker with id: %d \n", id );
-
-    // DEBUG: Draw it:
+    printf("[%d] Marker ID: %d \n", i, id );
+    
     double sum_x = 0; double sum_y = 0;
+    printf("Corners:");
     for( int j = 0; j < 4; ++j ) {
       alvar::PointDouble p = (*(mMarkerDetector.markers))[i].marker_corners_img[j];
       sum_x += p.x;
       sum_y += p.y;
+      printf("%f %f -- ", p.x, p.y);
     }
-    
-    cv::circle( _img, cv::Point( sum_x/4.0, sum_y/4.0 ), 5, cv::Scalar(0,0,255), -1 );
-    printf("Center: %f %f \n", sum_x, sum_y );
+    printf("\n");
+    sum_x /= 4.0;
+    sum_y /= 4.0;
 
     // Pose
     alvar::Pose p = (*(mMarkerDetector.markers))[i].pose;
     double transf[16];
-
-
     p.GetMatrixGL( transf, false);
-    // Set message
-    /*
-    gMarkerMsgs[i].trans[0][0] = transf[0];
-    gMarkerMsgs[i].trans[0][1] = transf[4];
-    gMarkerMsgs[i].trans[0][2] = transf[8];
-    gMarkerMsgs[i].trans[0][3] = transf[12];
-    gMarkerMsgs[i].trans[1][0] = transf[1];
-    gMarkerMsgs[i].trans[1][1] = transf[5];
-    gMarkerMsgs[i].trans[1][2] = transf[9];
-    gMarkerMsgs[i].trans[1][3] = transf[13];
-    gMarkerMsgs[i].trans[2][0] = transf[2];
-    gMarkerMsgs[i].trans[2][1] = transf[6];
-    gMarkerMsgs[i].trans[2][2] = transf[10];
-    gMarkerMsgs[i].trans[2][3] = transf[14];
-    for( int row = 0; row < 3; ++row ) {
-      for( int col = 0; col <4; ++col ) {
-	//std::cout << gMarkerMsgs[i].trans[row][col] << " ";
-      } //std::cout << std::endl;
-    } 
-    */
+
+    calib_marker cm;
+    cm.id = id;
+    cm.found = true;
+    cm.xc = transf[12]; cm.yc = transf[13]; cm.zc = transf[14];
+    cm.px = sum_x; cm.py = sum_y;
+    mCalibMarkers.push_back( cm );
+
+    // DEBUG: Draw it:
+    cv::circle( _img, cv::Point( sum_x, sum_y ), 5, cv::Scalar(0,0,255), -1 );
     
   }
-  printf("*******************\n");
-  
+  if( mCalibMarkers.size() > 1 ) {
+    return true;
+  }  
+  return false;
 }

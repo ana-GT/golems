@@ -13,7 +13,12 @@ find_package( alvar )
 include_directories( ${ALVAR_INCLUDE_DIRS} )
 
 
-
+# markerDetection
 add_executable( markerDetection marker_detection.cpp crichton_markerDetector.cpp )
 target_link_libraries( markerDetection  ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} )
 set_target_properties( markerDetection PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+# test_alvar3Daccuracy
+add_executable( test_alvar3Daccuracy test_alvar3Daccuracy.cpp crichton_markerDetector.cpp )
+target_link_libraries( test_alvar3Daccuracy  ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} )
+set_target_properties( test_alvar3Daccuracy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )

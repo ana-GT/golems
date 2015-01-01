@@ -33,12 +33,16 @@ add_definitions(${PCL_DEFINITIONS})
 add_subdirectory( msgs )
 
 add_subdirectory( calibration )
+
+#Install
+install( DIRECTORY ./ DESTINATION include/golems/perception FILES_MATCHING PATTERN "*.h" )
+
 add_subdirectory( executables )
-add_subdirectory( marker_detection )
+#add_subdirectory( marker_detection )
 
 
 #add_subdirectory( tabletop_segmentation )
-#add_subdirectory( getKinectTran )
+add_subdirectory( getKinectTran )
 #add_subdirectory( box_detector )
 
 

@@ -32,7 +32,7 @@ crichton_markerDetector mMd;
 int main( int argc, char* argv[] ) {
 
   // Open channel
-  sns_chan_open( &mImg_chan, "image-chan", NULL );
+  sns_chan_open( &mImg_chan, "rgb-chan", NULL );
   sns_chan_open( &mMarkers_chan, "markers-chan", NULL );
 
 
