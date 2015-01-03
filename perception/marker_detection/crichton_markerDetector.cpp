@@ -1,5 +1,6 @@
 
 #include "crichton_markerDetector.h"
+#include <opencv2/imgproc/imgproc.hpp>
 
 /**
  * @function crichton_markerDetector
@@ -31,17 +32,18 @@ bool crichton_markerDetector::detect( cv::Mat &_img ) {
   for( size_t i = 0; i < mMarkerDetector.markers->size(); ++i ) {
     
     int id = (*(mMarkerDetector.markers))[i].GetId();
-    printf("[%d] Marker ID: %d \n", i, id );
+
+//    printf("[%d] Marker ID: %d \n", i, id );
     
     double sum_x = 0; double sum_y = 0;
-    printf("Corners:");
+//    printf("Corners:");
     for( int j = 0; j < 4; ++j ) {
       alvar::PointDouble p = (*(mMarkerDetector.markers))[i].marker_corners_img[j];
       sum_x += p.x;
       sum_y += p.y;
-      printf("%f %f -- ", p.x, p.y);
+    //  printf("%f %f -- ", p.x, p.y);
     }
-    printf("\n");
+  //  printf("\n");
     sum_x /= 4.0;
     sum_y /= 4.0;
 
@@ -58,8 +60,9 @@ bool crichton_markerDetector::detect( cv::Mat &_img ) {
     mCalibMarkers.push_back( cm );
 
     // DEBUG: Draw it:
+    //if( id == 8 ) {
     cv::circle( _img, cv::Point( sum_x, sum_y ), 5, cv::Scalar(0,0,255), -1 );
-    
+    //}
   }
   if( mCalibMarkers.size() > 1 ) {
     return true;

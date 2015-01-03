@@ -29,7 +29,8 @@ class Limb_Interface  {
 		       Eigen::VectorXd &_dq );
 
   bool follow_arm_trajectory( const std::list<Eigen::VectorXd> &_path );
-  
+  bool go_hand_configuration( const Eigen::VectorXd &_config,
+			      double _dt );
  protected:
   Arm_Interface mAi;
   Hand_Interface mHi;  

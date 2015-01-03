@@ -8,3 +8,5 @@ set_target_properties( tabletop_segmentation PROPERTIES
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
+
+

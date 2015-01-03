@@ -39,6 +39,10 @@ class DualLimb_Interface  {
 			      const std::list<Eigen::VectorXd> &_path );
   bool follow_dual_arm_trajectory( const std::list<Eigen::VectorXd> &_leftPath,
 				   const std::list<Eigen::VectorXd> &_rightPath );
+  
+  bool go_hand_configuration( int i,
+			      const Eigen::VectorXd &_config,
+			      double _dt );
  protected:
   Limb_Interface mLi[2];
   struct timespec mNow;

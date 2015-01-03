@@ -249,3 +249,14 @@ bool DualLimb_Interface::follow_dual_arm_trajectory( const std::list<Eigen::Vect
   return true;  
   
 }
+
+/**
+ * @function go_hand_configuration
+ */
+bool DualLimb_Interface::go_hand_configuration( int i,
+						const Eigen::VectorXd &_config,
+						double _dt ) {
+
+  mLi[i].go_hand_configuration( _config, _dt );
+
+}

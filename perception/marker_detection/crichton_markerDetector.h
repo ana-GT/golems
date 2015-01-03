@@ -16,6 +16,10 @@ struct calib_marker {
   double px,py; // Position in pixels coordinates 
 };
 
+struct calib_info {
+  
+};
+
 /**
  * @class crichton_markerDetector
  */

@@ -24,18 +24,7 @@ int counter = 0;
 /** FUNCTIONS          */
 /***********************/
 void saveData( int state, void* userdata );
-static void onMouse( int event, int x, int y, int, void* ) {
-  
-  if( event != cv::EVENT_LBUTTONDOWN ) {
-    return;
-  }
-
-  // Get (X,Y,Z) from Kinect
-  cv::Point3f p;
-  p = pclMap.at<cv::Point3f>(y,x);
-  printf("Depth: %f %f %f \n", p.x, p.y, p.z);
- 
-}
+static void onMouse( int event, int x, int y, int, void* ); 
 
 /**
  * @function main
@@ -51,21 +40,12 @@ int main( int argc, char* argv[] ) {
   }
   printf("\t * Opened device \n");
 
-  capture.set( cv::CAP_PROP_OPENNI2_MIRROR, 1.0 );
+  capture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 ); // off
   capture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 ); // on
 
   printf("\t * Common Image dimensions: (%f,%f) \n",
 	 capture.get( cv::CAP_PROP_FRAME_WIDTH ),
 	 capture.get( cv::CAP_PROP_FRAME_HEIGHT ) );
-
-  printf("\t * Only Image dimensions: (%f,%f) \n",
-	 capture.get( cv::CAP_OPENNI_IMAGE_GENERATOR + cv::CAP_PROP_FRAME_WIDTH ),
-	 capture.get( cv::CAP_OPENNI_IMAGE_GENERATOR + cv::CAP_PROP_FRAME_HEIGHT ) );
-
-  printf("\t * Only Depth dimensions: (%f,%f) \n",
-	 capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR + cv::CAP_PROP_FRAME_WIDTH ),
-	 capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR + cv::CAP_PROP_FRAME_HEIGHT ) );
-
   
   // Set control panel
   int value;
@@ -153,3 +133,19 @@ void saveData( int state, void* userdata ) {
   counter++;
 }
 
+/**
+ * @function onMouse
+ * @brief Prints the depth of the clicked position
+ */
+static void onMouse( int event, int x, int y, int, void* ) {
+  
+  if( event != cv::EVENT_LBUTTONDOWN ) {
+    return;
+  }
+
+  // Get (X,Y,Z) from Kinect
+  cv::Point3f p;
+  p = pclMap.at<cv::Point3f>(y,x);
+  printf("Depth: %f %f %f \n", p.x, p.y, p.z);
+ 
+}

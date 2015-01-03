@@ -71,15 +71,9 @@ int main( int argc, char* argv[] ) {
   capture.set( cv::CAP_PROP_OPENNI2_MIRROR, 1.0 );
   capture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 ); // on
 
-  printf("\t * Common Image dimensions: (%f,%f) \n",
-	 capture.get( cv::CAP_PROP_FRAME_WIDTH ),
-	 capture.get( cv::CAP_PROP_FRAME_HEIGHT ) );
-
-  printf("\t * Only Image dimensions: (%f,%f) \n",
+  printf("\t * Only Image dimensions: (%f,%f) Depth dimensions: (%f,%f) \n",
 	 capture.get( cv::CAP_OPENNI_IMAGE_GENERATOR + cv::CAP_PROP_FRAME_WIDTH ),
-	 capture.get( cv::CAP_OPENNI_IMAGE_GENERATOR + cv::CAP_PROP_FRAME_HEIGHT ) );
-
-  printf("\t * Only Depth dimensions: (%f,%f) \n",
+	 capture.get( cv::CAP_OPENNI_IMAGE_GENERATOR + cv::CAP_PROP_FRAME_HEIGHT ),
 	 capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR + cv::CAP_PROP_FRAME_WIDTH ),
 	 capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR + cv::CAP_PROP_FRAME_HEIGHT ) );
 

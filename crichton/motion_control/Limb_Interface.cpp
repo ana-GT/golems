@@ -83,3 +83,13 @@ bool Limb_Interface::follow_arm_trajectory( const std::list<Eigen::VectorXd> &_p
 
   return mAi.followTrajectory( _path ); 
 }
+
+/**
+ * @function go_hand_configuration
+ */
+bool Limb_Interface::go_hand_configuration( const Eigen::VectorXd &_config,
+					    double _dt ) {
+
+  return mHi.goToConfiguration( _config,
+				_dt );
+}

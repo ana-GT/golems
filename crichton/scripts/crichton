@@ -86,10 +86,10 @@ crichton_start() {
     crichton_ach_mk
 
     # Pull arm/hand states
-    sudo achd -d pull $PLANNING_HOST traj-left 	
-    sudo achd -d pull $PLANNING_HOST traj-right	
+    sudo achd -d push $PLANNING_HOST traj-left 	
+    sudo achd -d push $PLANNING_HOST traj-right	
 
-    sudo achd -d pull $PLANNING_HOST bimanual_chan
+    sudo achd -d push $PLANNING_HOST bimanual_chan
     
     $SNS run -d -r lwa-left -- \
 		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
