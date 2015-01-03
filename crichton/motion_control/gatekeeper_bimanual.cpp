@@ -78,10 +78,10 @@ int main( int argc, char* argv[] ) {
       maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dof );
       if( mode == 0 ) {
 	printf("Follow left \n");
-	//bdc.followTrajectory( 0, la_path, maxAccel, maxVel );
+	bdc.followTrajectory( 0, la_path, maxAccel, maxVel );
       } else if( mode == 1 ) {
 	printf("Follow right \n");
-	//bdc.followTrajectory( 1, ra_path, maxAccel, maxVel );
+	bdc.followTrajectory( 1, ra_path, maxAccel, maxVel );
       } else if( mode == 2 ) {
 	printf("Follow dual path \n");
 	bdc.followDualTrajectory( la_path,
