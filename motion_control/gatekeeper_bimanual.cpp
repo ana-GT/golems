@@ -61,7 +61,7 @@ int main( int argc, char* argv[] ) {
   
   // Open channels
   sns_chan_open( &bimanual_chan, "bimanual_chan", NULL );
-  sns_chan_open( &bimanual_hand_chan, "bihand_chan", NULL );
+  sns_chan_open( &bimanual_hand_chan, "bimanual_hand_chan", NULL );
   
   sns_chan_open( &la_state_chan, "state-left", NULL );
   sns_chan_open( &la_ref_chan, "ref-left", NULL );
