@@ -146,8 +146,8 @@ bool BaseDualControl::followDualTrajectory( const std::list<Eigen::VectorXd> &_p
       if( tn < duration[i] ) {
 	vel_cmd[i] = trajectory[i].getVelocity( tn );
 	
-//	std::cout << "["<<i<<": "<< tn << "]: "<< vel_cmd[i].transpose() << std::endl;
-//	std::cout << " Expected pos: "<< trajectory[i].getPosition(tn).transpose() << std::endl;
+	//std::cout << "["<<i<<": "<< tn << "]: Sent velocity"<< vel_cmd[i].transpose() << std::endl;
+	//std::cout << " Expected pos: "<< trajectory[i].getPosition(tn).transpose() << std::endl;
 	//std::cout << "Current pos: " << mq.transpose() << std::endl;
 	//std::cout << "Current velocity: " << mdq.transpose() << std::endl;
 	  

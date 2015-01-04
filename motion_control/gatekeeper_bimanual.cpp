@@ -40,7 +40,7 @@ double mFreq = 100.0;
 double mDt = 1.0 / mFreq;
 
 double mMaxAccel = 0.1;
-double mMaxVel = 0.18;
+double mMaxVel = 0.4;// 23degrees/s
 
 struct timespec t_now;
 struct timespec t_timeout;
@@ -197,7 +197,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
+	  //std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
 	  _leftPath.push_back( p );
 	} // for i
       } else if( _mode == 1 ) {
@@ -208,7 +208,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;
+	  //std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;
 	  _rightPath.push_back( p );
 	} // for i
 	
@@ -221,7 +221,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
+	  //std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
 	  _leftPath.push_back( p );
 	} // for i
 
@@ -232,7 +232,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;
+	  //std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;
 	  _rightPath.push_back( p );
 	} // for i
 	
