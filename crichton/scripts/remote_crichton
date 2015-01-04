@@ -16,7 +16,7 @@ fi
 #*****************************
 # State & Trajectory channels
 #*****************************
-TRAJ_CHANNELS="sdhref-left sdhref-right bimanual_chan"
+TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
 CHANNELS="state-left state-right sdhstate-left sdhstate-right"
 
 #*****************************
@@ -84,9 +84,7 @@ case "$1" in
 	    sudo achd -d pull $CONTROL_HOST sdhstate-right		
 	    
 	    # Push arm/hand ref
-	    sudo achd -d push $CONTROL_HOST sdhref-left	
-	    sudo achd -d push $CONTROL_HOST sdhref-right	    
-	    
+	    sudo achd -d push $CONTROL_HOST bimanual_hand_chan	
 	    sudo achd -d push $CONTROL_HOST bimanual_chan
 	    ;;
 	

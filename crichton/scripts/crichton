@@ -6,7 +6,7 @@ CHANNELS="$CHANNELS sdhref-left sdhstate-left"
 CHANNELS="$CHANNELS sdhref-right sdhstate-right"
 
 # Trajectory channels
-TRAJ_CHANNELS="bimanual_chan"
+TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
 
 # Workstations 
 PLANNING_HOST="powell"
@@ -92,10 +92,9 @@ crichton_start() {
     sudo achd -d push $PLANNING_HOST sdhstate-left 	
     sudo achd -d push $PLANNING_HOST sdhstate-right	
 
-    sudo achd -d pull $PLANNING_HOST sdhref-left
-	  sudo achd -d pull $PLANNING_HOST sdhref-right    
 		sudo achd -d pull $PLANNING_HOST bimanual_chan
-    
+    sudo achd -d pull $PLANNING_HOST bimanual_hand_chan
+
     $SNS run -d -r lwa-left -- \
 		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
 
