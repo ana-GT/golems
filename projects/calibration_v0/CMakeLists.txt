@@ -2,6 +2,7 @@ project(calibration_v0)
 
 # Link directory
 include_directories( ${CMAKE_SOURCE_DIR}/perception )
+include_directories( ${CMAKE_SOURCE_DIR} )
 link_directories( ${CMAKE_SOURCE_DIR}/lib )
 
 # Find DART

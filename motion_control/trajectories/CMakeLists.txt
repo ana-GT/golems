@@ -9,4 +9,4 @@ set_target_properties( tkunz PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_
 
 # Install
 install( TARGETS tkunz DESTINATION lib )
-install( FILES Trajectory.h DESTINATION include/motion_control/trajectories )
+

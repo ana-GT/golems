@@ -42,6 +42,8 @@ int mId[2][4];
 subject_t mS;
 DualLimb_Interface mDli;
 ach_channel_t mBiTraj_chan;
+ach_channel_t mBiHand_chan;
+
 dart::simulation::World* mWorld;
 crichton_markerDetector mMd;
 
@@ -185,26 +187,22 @@ void openComm() {
   // Open channels to read motor states
   ach_channel_t* arm_state_chan[2];
   ach_channel_t* hand_state_chan[2];
-  ach_channel_t* hand_ref_chan[2];
   
   for( int i = 0; i < 2; ++i ) {
     arm_state_chan[i] = new ach_channel_t();
     hand_state_chan[i] = new ach_channel_t();
-    hand_ref_chan[i] = new ach_channel_t();
   }
   
   for( int i = 0; i < 2; ++i ) {
     sns_chan_open( arm_state_chan[i], mS.limb[i].arm_state_chan.c_str(), NULL );
     sns_chan_open( hand_state_chan[i], mS.limb[i].hand_state_chan.c_str(), NULL );
-    sns_chan_open( hand_ref_chan[i], mS.limb[i].hand_ref_chan.c_str(), NULL );
   }
 
   // BIMANUAL
   sns_chan_open( &mBiTraj_chan, "bimanual_chan", NULL );
+  sns_chan_open( &mBiHand_chan, "bimanual_hand_chan", NULL );
   mDli.set_numJoints(7,7);
-  for( int i = 0; i < 2; ++i ) {
-    mDli.set_hand_channels(i, hand_state_chan[i], hand_ref_chan[i] );
-  }
+  mDli.set_hand_channels( hand_state_chan[0], hand_state_chan[1], &mBiHand_chan );
   mDli.set_arm_channels( arm_state_chan[0], arm_state_chan[1], &mBiTraj_chan );
   
   // Ready

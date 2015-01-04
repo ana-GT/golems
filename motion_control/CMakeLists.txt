@@ -20,6 +20,7 @@ set_target_properties( motionControl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE
 
 # Install
 install( TARGETS motionControl DESTINATION lib )
+install( DIRECTORY  ./  DESTINATION include/golems/motion_control FILES_MATCHING PATTERN "*.h" )
 
 # Trajectory server for one trajectory at a time
 add_executable( gatekeeper gatekeeper.cpp )

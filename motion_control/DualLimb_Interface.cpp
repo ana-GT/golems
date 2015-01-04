@@ -31,14 +31,19 @@ void DualLimb_Interface::set_numJoints( int _num_arm_joints,
 }
 
 /**
- * @function 
- * @brief
+ * @function set_hand_channels
+ * @brief Set states input and dual hand output
  */
-void DualLimb_Interface::set_hand_channels( int _i,
-					    ach_channel_t* _hand_state_chan,
+void DualLimb_Interface::set_hand_channels( ach_channel_t* _hand_left_state_chan,
+					    ach_channel_t* _hand_right_state_chan,
 					    ach_channel_t* _hand_output_chan ) {
-  mLi[_i].set_hand_channels( _hand_state_chan,
-			     _hand_output_chan );
+
+  mChan_bimanualHand = _hand_output_chan;
+  // arm output chan just to fill the argument. We send messages not using the Limb interface
+  mLi[0].set_hand_channels( _hand_left_state_chan,
+			   _hand_output_chan ); // This output is rather wrong. Should not be used
+  mLi[1].set_hand_channels( _hand_right_state_chan,
+			   _hand_output_chan ); // This output is rather wrong. Should not be used
 }
 
 /**
@@ -111,6 +116,7 @@ void DualLimb_Interface::get_hand_state( int _i,
   mLi[_i].get_hand_state( _q, _dq );
 }
 
+
 /**
  * @function 
  * @brief
@@ -118,7 +124,7 @@ void DualLimb_Interface::get_hand_state( int _i,
 bool DualLimb_Interface::follow_arm_trajectory( int _i,
 						const std::list<Eigen::VectorXd> &_path ) {
 
-    // Build a message  
+  // Build a message  
   struct sns_msg_bimanual* msg;
 
   if( _i == 0 ) {
@@ -253,10 +259,76 @@ bool DualLimb_Interface::follow_dual_arm_trajectory( const std::list<Eigen::Vect
 /**
  * @function go_hand_configuration
  */
-bool DualLimb_Interface::go_hand_configuration( int i,
+bool DualLimb_Interface::go_hand_configuration( int _i,
 						const Eigen::VectorXd &_config,
 						double _dt ) {
 
-  mLi[i].go_hand_configuration( _config, _dt );
+  // Build a message  
+  struct sns_msg_bimanual* msg;
+  
+  if( _i == 0 ) {
+    msg = sns_msg_bimanual_alloc( 1, 0,
+				  _config.size() );
+    
+    msg->n_dof = _config.size();
+    msg->n_steps_left = 1;
+    msg->n_steps_right = 0;
+    msg->mode = 0;
+    
+    sns_msg_header_fill( &msg->header );
+    msg->header.n = msg->n_dof;
+    
+    // Fill data in message
+    for( int j = 0; j < _config.size(); ++j ) {
+      msg->x[j] = _config(j);
+    }
+  } else if( _i == 1 ) {
+    msg = sns_msg_bimanual_alloc( 0, 1,
+				  _config.size() );
+    
+    msg->n_dof = _config.size();
+    msg->n_steps_left = 0;
+    msg->n_steps_right = 1;
+    msg->mode = 1;
+    
+    sns_msg_header_fill( &msg->header );
+    msg->header.n = msg->n_dof;
+    
+    // Fill data in message
+    for( int j = 0; j < _config.size(); ++j ) {
+      msg->x[j] = _config(j);
+    }
+  } else {
+    printf("[ERROR] Neither left or right! \n");
+    return false;
+  }
+  
+  // Set message duration
+  double tsec = 0.05;
+  int64_t dt_nsec = tsec*1e9;
+  
+  if( clock_gettime( ACH_DEFAULT_CLOCK, &mNow ) ) {
+    SNS_LOG( LOG_ERR, "Clock_gettime failed: %s \n", strerror(errno) );   
+  }
+  sns_msg_set_time( &msg->header, &mNow, dt_nsec );
+  
+  // Send message
+  ach_status_t r;
+  r = ach_put( mChan_bimanualHand, msg, sns_msg_bimanual_size(msg) );
+  
+  if( r!= ACH_OK ) { printf("\t * [ERROR] Error sending hand config \n"); }
+  else { printf("\t * [INFO] Hand config was sent all right\n"); }
+  
+  return true;  
+
+  
+}
+
+/**
+ * @function go_dual_hand_configuration
+ */
+bool DualLimb_Interface::go_dual_hand_configuration( const std::list<Eigen::VectorXd> &_leftPath,
+						     const std::list<Eigen::VectorXd> &_rightPath ) {
+
 
 }

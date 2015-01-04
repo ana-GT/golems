@@ -24,7 +24,8 @@ install( FILES ${CMAKE_BINARY_DIR}/cmake/golemsConfig.cmake DESTINATION
 share )
 
 # Subdirectories
-add_subdirectory( crichton )
-#add_subdirectory( perception )
-#add_subdirectory( projects )
-#add_subdirectory( global )
+add_subdirectory( motion_control )
+add_subdirectory( global )
+add_subdirectory( perception )
+add_subdirectory( projects )
+
