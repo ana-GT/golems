@@ -140,6 +140,7 @@ int main( int argc, char* argv[] ) {
     }
     
     usleep(1e6*mDt);
+    aa_mem_region_local_release();
   }
 
   return 0;

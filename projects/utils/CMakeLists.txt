@@ -18,6 +18,7 @@ add_definitions(${PCL_DEFINITIONS})
 
 # Include
 include_directories( ${CMAKE_SOURCE_DIR}/perception )
+include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools )
 include_directories( ${CMAKE_SOURCE_DIR} )
 
 # Apps
@@ -43,6 +44,11 @@ target_link_libraries( crichton_eye_v0 perception_msgs tabletop_segmentation ${O
 set_target_properties( crichton_eye_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( crichton_eye_v1 crichton_eye_v1.cpp )
+target_link_libraries( crichton_eye_v1  tabletop_segmentation sq_fitting mindGapper refresher_utils ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( crichton_eye_v1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 
 #add_executable( eye_v1 eye_v1.cpp )
 #target_link_libraries( eye_v1 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
@@ -50,18 +56,9 @@ set_target_properties( crichton_eye_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMA
 #  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
-# FOR EYE_V2
-#find_package( GM )
-#include_directories( ${GM_INCLUDE_DIRS} )
-#include_directories( /home/ana/Research/Code/GM )
-#include_directories( /home/ana/Research/Code/GM/aoi/refresher/sq_fitting/include )
-#include_directories( /home/ana/Research/Code/GM/aoi/refresher/sq_fitting )
-#include_directories( /home/ana/Research/Code/GM/aoi/refresher/)
-#link_directories( /home/ana/Research/Code/GM/lib )
-
-#add_executable( eye_v2 eye_v2.cpp )
-#target_link_libraries( eye_v2  tabletop_segmentation SQ_utils SQ_fitter mindGapper dt Refresher utils  pcl_common pcl_io pcl_kdtree pcl_visualization pcl_search ${OpenCV_LIBRARIES} )
-#set_target_properties( eye_v2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+#add_executable( crichton_eye_v2 crichton_eye_v2.cpp )
+#target_link_libraries( crichton_eye_v2  tabletop_segmentation sq_fitting mindGapper refresher_utils ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} )
+#set_target_properties( crichton_eye_v2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 #  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 

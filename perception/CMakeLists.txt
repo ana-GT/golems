@@ -33,12 +33,13 @@ add_subdirectory( msgs )
 add_subdirectory( calibration )
 add_subdirectory( marker_detection )
 add_subdirectory( tabletop_segmentation )
+add_subdirectory( pointcloud_tools )
 #add_subdirectory( getKinectTran )
 #add_subdirectory( box_detector )
 
 #Install
-install( DIRECTORY msgs DESTINATION include/golems/perception/msgs FILES_MATCHING PATTERN "*.h" )
-install( DIRECTORY calibration DESTINATION include/golems/perception/calibration FILES_MATCHING PATTERN "*.h" )
-install( DIRECTORY marker_detection DESTINATION include/golems/perception/marker_detection FILES_MATCHING PATTERN "*.h" )
-install( DIRECTORY tabletop_segmentation DESTINATION include/golems/perception/tabletop_segmentation FILES_MATCHING PATTERN "*.h" )
+install( DIRECTORY msgs DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" )
+install( DIRECTORY calibration DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" )
+install( DIRECTORY marker_detection DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" )
+install( DIRECTORY tabletop_segmentation DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" )
 
