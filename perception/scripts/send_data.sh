@@ -19,6 +19,9 @@ case "$1" in
     r)
 	echo "RGB info sending"
 	ach mk -1 -o 666 -m 3 -n 921615 $RGB_CHAN
+        echo "Pushing to zhaan"
+        achd -rd push zhaan $RGB_CHAN
+        echo "Sending program"
 	./../../bin/send_data -r $RGB_CHAN
 	;;
     rd)
