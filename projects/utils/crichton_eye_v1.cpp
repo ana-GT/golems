@@ -326,7 +326,8 @@ void fit_SQ( pcl::PointCloud<pcl::PointXYZRGBA> _cluster,
       for( int i = 0; i < 3; ++i ) { _trans[i] = p.trans[i]; }
       for( int i = 0; i < 3; ++i ) { _rot[i] = p.rot[i]; }
       for( int i = 0; i < 2; ++i ) { _e[i] = p.e[i]; }
-      printf("--> SQ location: %f %f %f \n", _dim[0], _dim[1], _dim[2] );
+      printf("--> SQ dimensions: %f %f %f \n", _dim[0], _dim[1], _dim[2] );
+      printf("--> SQ position: %f %f %f \n", _trans[0], _trans[1], _trans[2] );
     }
   
 }
