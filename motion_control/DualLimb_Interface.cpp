@@ -135,6 +135,7 @@ bool DualLimb_Interface::follow_arm_trajectory( int _i,
     msg->n_steps_left = _path.size();
     msg->n_steps_right = 0; // alloc
     msg->mode = 0;
+printf("N dof: %d, steps left: %d steps right: %d \n", msg->n_dof, msg->n_steps_left, msg->n_steps_right );
   
     sns_msg_header_fill( &msg->header );
     msg->header.n = msg->n_dof;
