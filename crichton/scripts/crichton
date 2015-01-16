@@ -68,6 +68,7 @@ crichton_ach_rm() {
     done
 }
 
+
 # SNS service start
 crichton_start_sns() {
     snslogd_is_running=`pgrep snslogd`
@@ -86,15 +87,22 @@ crichton_start() {
     crichton_ach_mk
 
     # Pull arm/hand states
-    sudo achd -d push $PLANNING_HOST state-left 	
-    sudo achd -d push $PLANNING_HOST state-right	
+    $SNS run -d push_state_left -- \
+			achd -r push $PLANNING_HOST state-left 
+		$SNS run -d push_state-right -- \	
+    	achd -r push $PLANNING_HOST state-right	
 
-    sudo achd -d push $PLANNING_HOST sdhstate-left 	
-    sudo achd -d push $PLANNING_HOST sdhstate-right	
+		$SNS run -d push_sdhstate_left -- \
+     	achd -r push $PLANNING_HOST sdhstate-left 	
+  	$SNS run -d push_sdhstate_right -- \  
+			achd -r push $PLANNING_HOST sdhstate-right	
 
-		sudo achd -d pull $PLANNING_HOST bimanual_chan
-    sudo achd -d pull $PLANNING_HOST bimanual_hand_chan
+		$SNS run -d pull_bimanual_chan -- \
+			achd -r pull $PLANNING_HOST bimanual_chan
+    $SNS run -d pull_bimanual_hand_chan -- \
+			achd -r pull $PLANNING_HOST bimanual_hand_chan
 
+    # Run daemons
     $SNS run -d -r lwa-left -- \
 		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
 
@@ -122,6 +130,26 @@ crichton_expunge() {
  
 		sudo rm -rf /var/tmp/sns/sdh-right
     sudo rm -rf /var/run/sns/sdh-right
+
+
+		sudo rm -rf /var/tmp/sns/push_state_left
+    sudo rm -rf /var/run/sns/push_state_left
+		
+		sudo rm -rf /var/tmp/sns/push_state_right
+    sudo rm -rf /var/run/sns/push_state_right
+
+		sudo rm -rf /var/tmp/sns/push_sdhstate_left
+    sudo rm -rf /var/run/sns/push_sdhstate_left
+		
+		sudo rm -rf /var/tmp/sns/push_sdhstate_right
+    sudo rm -rf /var/run/sns/push_sdhstate_right
+
+
+		sudo rm -rf /var/tmp/sns/pull_bimanual_chan
+    sudo rm -rf /var/run/sns/pull_bimanual_chan
+		
+		sudo rm -rf /var/tmp/sns/pull_bimanual_hand_chan
+    sudo rm -rf /var/run/sns/pull_bimanual_hand_chan
 }
 
 
@@ -131,6 +159,13 @@ crichton_stop() {
     $SNS kill sdh-left
     $SNS kill lwa-right
     $SNS kill sdh-right
+
+    $SNS kill push_state_left
+		$SNS kill push_state_right
+		$SNS kill push_sdhstate_left
+    $SNS kill push_sdhstate_right
+    $SNS kill pull_bimanual_chan
+    $SNS kill pull_bimanual_hand_chan
     crichton_ach_rm
 }
 
@@ -143,7 +178,8 @@ crichton_steal() {
 	/var/run/sns/lwa-right \
 	/var/tmp/sns/lwa-right \
   /var/run/sns/sdh-right \
-  /var/tmp/sns/sdh-right
+  /var/tmp/sns/sdh-right \
+ 
 }
 
 #***************************
@@ -169,8 +205,16 @@ case "$1" in
     expunge)
 	crichton_expunge
 	;;
+	  zero)
+  	echo "-- Sending zero velocity to left arm"
+		snsref ref-left -d -- 0 0 0 0 0 0 0 
+		sleep 2
+  	echo "-- Sending zero velocity to right arm"
+  	snsref ref-right -d -- 0 0 0 0 0 0 0 
+  	sleep 2
+	;;	
     *)
-	echo "[ERROR] Invalid command. Options are start/stop/rm/mk/steal NEW_OWNER/expunge"
+	echo "[ERROR] Invalid command. Options are start/stop/rm/mk/steal/zero NEW_OWNER/expunge"
 	exit 1
 	;;
 esac

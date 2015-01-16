@@ -13,11 +13,6 @@ else
 fi
 
 
-#*****************************
-# State & Trajectory channels
-#*****************************
-TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
-CHANNELS="state-left state-right sdhstate-left sdhstate-right"
 
 #*****************************
 # Workstations
@@ -25,30 +20,8 @@ CHANNELS="state-left state-right sdhstate-left sdhstate-right"
 PLANNING_HOST="powell" 
 CONTROL_HOST="calvin"  
 
-#*****************************
-# Make trajectory channels
-#*****************************
-remote_crichton_ach_mk() {
-  for c in $TRAJ_CHANNELS; do
-	 ach mk -m 7 -n 3000 -1 -o 666 $c
-   done
-
-  for c in $CHANNELS; do
-	ach mk -m 1 -o 666 $c
-   done	
-}
 
 
-remote_crichton_ach_rm() {
-  for c in $TRAJ_CHANNELS; do
-    ach rm $c
-  done
-
-  for c in $CHANNELS; do
-    ach rm $c
-  done
-
-}
 
 #==================================
 # Call functions on input argument
@@ -60,39 +33,38 @@ case "$1" in
 	#**********************
 	start)
 
-	    # Create channels
-	    remote_crichton_ach_mk
-	    
-	    # Create folder /tmp, /var for sns stuff		
-	    #sudo mkdir -p /var/tmp/sns/state-left 
-	    #sudo mkdir -p /var/run/sns/state-left
-	    
-	    #sudo mkdir -p /var/tmp/sns/sdhstate-left 
-	    #sudo mkdir -p /var/run/sns/sdhstate-left 
-	    
-	    #sudo mkdir -p /var/tmp/sns/state-right 
-	    #sudo mkdir -p /var/run/sns/state-right
-	    
-	    #sudo mkdir -p /var/tmp/sns/sdhstate-right 
-	    #sudo mkdir -p /var/run/sns/sdhstate-right 
 	    
 	    # Pull arm/hand states
-	    sudo achd -d pull $CONTROL_HOST state-left 	
-	    sudo achd -d pull $CONTROL_HOST sdhstate-left		
-	    
-	    sudo achd -d pull $CONTROL_HOST state-right 	
-	    sudo achd -d pull $CONTROL_HOST sdhstate-right		
+	    $SNS run -d -r pull_state_left -- \
+			  achd -r pull $CONTROL_HOST state-left 	
+
+	    $SNS run -d -r pull_sdhstate_left -- \
+	      achd -r pull $CONTROL_HOST sdhstate-left		   
+
+	    $SNS run -d -r pull_state_right -- \
+	      achd -r pull $CONTROL_HOST state-right 	 
+      
+	    $SNS run -d -r pull_sdhstate_left -- \
+        achd -r pull $CONTROL_HOST sdhstate-right		
 	    
 	    # Push arm/hand ref
-	    sudo achd -d push $CONTROL_HOST bimanual_hand_chan	
-	    sudo achd -d push $CONTROL_HOST bimanual_chan
+	    $SNS run -d -r push_bimanual_hand_chan -- \
+	      achd -r push $CONTROL_HOST bimanual_hand_chan	
+	    
+	    $SNS run -d -r push_bimanual_chan -- \
+        achd -r push $CONTROL_HOST bimanual_chan
 	    ;;
 	
 	#**********************
 	# STOP
 	#**********************
 	stop)
-	    remote_crichton_ach_rm
+	    $SNS stop pull_state_left
+      $SNS stop pull_sdhstate_left
+      $SNS stop pull_state_right
+      $SNS stop pull_sdhstate_right
+      $SNS stop push_bimanual_hand_chan
+      $SNS stop push_bimanual_chan
 	    ;;
 	
 	#**********************
@@ -116,11 +88,6 @@ case "$1" in
 	    
 	    ;;
 	
-	#**********************
-	# RM
-	#**********************
-	rm)
-	    ;;
 	#**********************
 	# ALL ELSE
 	#**********************

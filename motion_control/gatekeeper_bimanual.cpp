@@ -137,6 +137,7 @@ int main( int argc, char* argv[] ) {
 		    2.0,
 		    chan,
 		    SNS_MOTOR_MODE_POS );     
+      usleep(2e6);
     }
     
     usleep(1e6*mDt);
