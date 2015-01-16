@@ -82,10 +82,11 @@ int main( int argc, char* argv[] ) {
 			    mode,
 			    la_path,
 			    ra_path ) == true ) {
-      int n_dof;
+      int n_dof = -1;
       if( mode == 0 ) { n_dof = (*la_path.begin()).size(); }      
       else if( mode == 1 ) { n_dof = (*ra_path.begin()).size(); }
       else if( mode == 2 ) { n_dof = (*la_path.begin()).size(); } // Same as right
+      printf("N: %d \n", n_dof ); return 1;
       bdc.set_numJoints( n_dof );
       maxVel = mMaxVel*Eigen::VectorXd::Ones( n_dof );
       maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dof );
@@ -182,10 +183,11 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 
     struct sns_msg_bimanual* msg = (struct sns_msg_bimanual*) buf;
     if( frame_size == sns_msg_bimanual_size(msg) ) {
-      
+      printf("Frame size: %d size bim: %d \n", frame_size, sns_msg_bimanual_size(msg) );      
       // Store trajectory
       int n_dofs, n_steps_left, n_steps_right, mode;
       n_dofs = msg->n_dof;
+      printf("N dofs: %d \n", n_dofs );
       n_steps_left = msg->n_steps_left;
       n_steps_right = msg->n_steps_right;
       _mode = msg->mode;
