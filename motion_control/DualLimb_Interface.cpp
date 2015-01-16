@@ -125,7 +125,7 @@ bool DualLimb_Interface::follow_arm_trajectory( int _i,
 						const std::list<Eigen::VectorXd> &_path ) {
 
   // Build a message  
-  struct sns_msg_bimanual* msg;
+  struct sns_msg_bimanual* msg = NULL;
 
   if( _i == 0 ) {
     msg = sns_msg_bimanual_alloc( _path.size(), 0,
@@ -204,7 +204,7 @@ bool DualLimb_Interface::follow_dual_arm_trajectory( const std::list<Eigen::Vect
 						     const std::list<Eigen::VectorXd> &_rightPath ) {
 
   // Build a message  
-  struct sns_msg_bimanual* msg;
+  struct sns_msg_bimanual* msg = NULL;
   
   msg = sns_msg_bimanual_alloc( _leftPath.size(),
 				_rightPath.size(),
@@ -265,7 +265,7 @@ bool DualLimb_Interface::go_hand_configuration( int _i,
 						double _dt ) {
 
   // Build a message  
-  struct sns_msg_bimanual* msg;
+  struct sns_msg_bimanual* msg = NULL;
   
   if( _i == 0 ) {
     msg = sns_msg_bimanual_alloc( 1, 0,
