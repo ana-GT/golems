@@ -21,8 +21,6 @@ PLANNING_HOST="powell"
 CONTROL_HOST="calvin"  
 
 
-
-
 #==================================
 # Call functions on input argument
 #==================================
@@ -59,12 +57,12 @@ case "$1" in
 	# STOP
 	#**********************
 	stop)
-	    $SNS stop pull_state_left
-      $SNS stop pull_sdhstate_left
-      $SNS stop pull_state_right
-      $SNS stop pull_sdhstate_right
-      $SNS stop push_bimanual_hand_chan
-      $SNS stop push_bimanual_chan
+	    $SNS kill pull_state_left
+      $SNS kill pull_sdhstate_left
+      $SNS kill pull_state_right
+      $SNS kill pull_sdhstate_right
+      $SNS kill push_bimanual_hand_chan
+      $SNS kill push_bimanual_chan
 	    ;;
 	
 	#**********************
