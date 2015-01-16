@@ -16,6 +16,7 @@ BaseControl::BaseControl() {
 
   mMaxDev = 0.1;
 	mVALID_NS = (int64_t)((1000000000) / 5);
+  mN = 1;
 }
 
 /**
@@ -53,7 +54,7 @@ bool BaseControl::update() {
   }
 
   struct timespec timeout = sns_time_add_ns( mNow, 1000*1000*1 );
-  
+printf("***Num dofs: %d \n", mN);  
   return update_n( mN,
 		   mq, mdq, mChan_state, &timeout );
 }
@@ -177,7 +178,7 @@ bool BaseControl::update_n( size_t n,
       }
       return true;
     } else {
-      SNS_LOG( LOG_ERR, "[update_n] Invalid motor_state message \n" );
+      SNS_LOG( LOG_ERR, "[update_n] Invalid motor_state message: frame size: %d sns motor size: %d, n: %d, header n: %d  \n", frame_size, sns_msg_motor_state_size_n(n), n, msg->header.n );
       return false;
     }
     
