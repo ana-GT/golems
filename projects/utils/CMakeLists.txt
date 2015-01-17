@@ -54,6 +54,11 @@ target_link_libraries( crichton_eye_v1  tabletop_segmentation sq_fitting mindGap
 set_target_properties( crichton_eye_v1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( store_segmented_pointcloud store_segmented_pointcloud.cpp )
+target_link_libraries( store_segmented_pointcloud  tabletop_segmentation sq_fitting mindGapper refresher_utils ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( store_segmented_pointcloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 
 #add_executable( eye_v1 eye_v1.cpp )
 #target_link_libraries( eye_v1 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
