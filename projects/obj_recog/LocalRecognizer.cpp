@@ -1,8 +1,8 @@
 /**
- * @file GlobalRecognizer.cpp
+ * @file LocalRecognizer.cpp
  * @brief Implementation of global recognizer 
  */
-#include "GlobalRecognizer.h"
+#include "LocalRecognizer.h"
 
 #include <pcl/keypoints/uniform_sampling.h>
 #include <pcl/visualization/pcl_visualizer.h>
@@ -24,10 +24,10 @@ model::model() :
 
 
 /**
- * @function GlobalRecognizer
+ * @function LocalRecognizer
  * @brief Constructor
  */
-GlobalRecognizer::GlobalRecognizer() :
+LocalRecognizer::LocalRecognizer() :
   mModel_scene_corrs( new pcl::Correspondences() ) {
   mModels.resize(0);
   mRadius = 0.01f;
@@ -38,10 +38,10 @@ GlobalRecognizer::GlobalRecognizer() :
 
 
 /**
- * @function GlobalRecognizer
+ * @function LocalRecognizer
  * @brief Destructor
  */
-GlobalRecognizer::~GlobalRecognizer() {
+LocalRecognizer::~LocalRecognizer() {
 
 }
 
@@ -50,7 +50,7 @@ GlobalRecognizer::~GlobalRecognizer() {
  * @function load 
  * @brief Load json file with info from objects to be recognized 
  */
-bool GlobalRecognizer::load( std::string _obj_input ) {
+bool LocalRecognizer::load( std::string _obj_input ) {
 
   mModels.resize(0);
   
@@ -75,7 +75,7 @@ bool GlobalRecognizer::load( std::string _obj_input ) {
 /**
  * @function viewModel
  */
-void GlobalRecognizer::viewModels() {
+void LocalRecognizer::viewModels() {
   pcl::visualization::PCLVisualizer viewer("View Keypoints");
   viewer.addCoordinateSystem(1.0);
  
@@ -95,7 +95,7 @@ void GlobalRecognizer::viewModels() {
  * @function prepareModels
  * @brief Get information from models (keypoints, descriptors
  */
-bool GlobalRecognizer::prepareModels() {
+bool LocalRecognizer::prepareModels() {
 
   for( int i = 0; i < mModels.size(); ++i ) {
     prepareModel( mModels[i], 0.01f );
@@ -108,7 +108,7 @@ bool GlobalRecognizer::prepareModels() {
  * @function prepareModel
  * @brief Set normal, keypoints and descriptor
  */
-void GlobalRecognizer::prepareModel( model &_model, float _radius ) {
+void LocalRecognizer::prepareModel( model &_model, float _radius ) {
 
   pcl::PointCloud<int> indices;
   pcl::UniformSampling<PointType> us;
@@ -143,7 +143,7 @@ void GlobalRecognizer::prepareModel( model &_model, float _radius ) {
  * @function
  * @brief
  */
-void GlobalRecognizer::setScene( pcl::PointCloud<PointType>::Ptr _scene ) {
+void LocalRecognizer::setScene( pcl::PointCloud<PointType>::Ptr _scene ) {
   mScene.points = _scene;
   prepareModel( mScene, 0.03f );
 }
@@ -152,7 +152,7 @@ void GlobalRecognizer::setScene( pcl::PointCloud<PointType>::Ptr _scene ) {
  * @function
  * @brief
  */
-bool GlobalRecognizer::matching() {
+bool LocalRecognizer::matching() {
 
   pcl::KdTreeFLANN<DescriptorType> match_search;
   match_search.setInputCloud( mModels[0].descriptors );
@@ -178,7 +178,7 @@ bool GlobalRecognizer::matching() {
  * @function correspondenceGrouping
  * @brief Discard matches that do not make sense geometrically
  */
-bool GlobalRecognizer::correspondenceGrouping() {
+bool LocalRecognizer::correspondenceGrouping() {
 
   std::vector<pcl::Correspondences> clustered_corrs;
 
@@ -203,7 +203,7 @@ bool GlobalRecognizer::correspondenceGrouping() {
  * @function printInfo
  * @brief Print models info
  */
-void GlobalRecognizer::printInfo() {
+void LocalRecognizer::printInfo() {
 
   for( int i = 0; i < mModels.size(); ++i ) {
     std::cout << "********************** " << std::endl;
@@ -218,7 +218,7 @@ void GlobalRecognizer::printInfo() {
 /**
  * @function loadModel
  */
-model GlobalRecognizer::loadModel( Json::Value var ) {
+model LocalRecognizer::loadModel( Json::Value var ) {
   
   model mo;
 
@@ -243,9 +243,9 @@ model GlobalRecognizer::loadModel( Json::Value var ) {
  * @function viewRecognition
  * @brief View correspondences
  */
-void GlobalRecognizer::viewRecognition() {
+void LocalRecognizer::viewRecognition() {
   
-  pcl::visualization::PCLVisualizer viewer ("Global Recognizer");
+  pcl::visualization::PCLVisualizer viewer ("Local Recognizer");
   viewer.addPointCloud ( mScene.points, "scene_cloud");
 
   for (size_t i = 0; i < mRotTrans.size (); ++i) {

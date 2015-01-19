@@ -1,11 +1,11 @@
 /**
- * @file global_recognition.cpp
+ * @file local_recognition.cpp
  */
 #include <pcl/io/pcd_io.h>
 #include <tabletop_segmentation/tabletop_segmentation.h>
-#include "GlobalRecognizer.h"
+#include "LocalRecognizer.h"
 
-GlobalRecognizer mGr;
+LocalRecognizer mLr;
 std::string objects_input("/home/ana/Research/golems/projects/obj_recog/models_input.json");
 pcl::PointCloud<PointType>::Ptr scene( new pcl::PointCloud<PointType>() );
 
@@ -20,9 +20,9 @@ int main( int argc, char* argv[] ) {
   pcl::io::loadPCDFile( argv[1], *scene );
 
   // Load models
-  mGr.load( objects_input );
-  mGr.prepareModels();
-  mGr.printInfo();
+  mLr.load( objects_input );
+  mLr.prepareModels();
+  mLr.printInfo();
   printf("\t ** Prepare models \n");
 
 
@@ -30,17 +30,17 @@ int main( int argc, char* argv[] ) {
   //mLr.viewModels();
 
   // Load scene & set descriptors
-  mGr.setScene( scene );
+  mLr.setScene( scene );
 
   // Matching
-  mGr.matching();
+  mLr.matching();
 
   // Alignment
-  mGr.correspondenceGrouping();
+  mLr.correspondenceGrouping();
 
   // Absolute transform
   
-  mGr.viewRecognition();
+  mLr.viewRecognition();
 
   return 0;
 }

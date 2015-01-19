@@ -8,8 +8,6 @@ set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules" )
 include_directories( /usr/include/eigen3 )
 
 # OpenCV
-set( OpenCV_DIR /home/ana/local/share/OpenCV )
-set( OpenCV_CONFIG_PATH /home/ana/local/share/OpenCV )
 find_package( OpenCV  REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
@@ -31,7 +29,7 @@ add_definitions(${PCL_DEFINITIONS})
 # Libraries
 add_subdirectory( msgs )
 add_subdirectory( calibration )
-add_subdirectory( marker_detection )
+#add_subdirectory( marker_detection )
 add_subdirectory( tabletop_segmentation )
 add_subdirectory( pointcloud_tools )
 #add_subdirectory( getKinectTran )

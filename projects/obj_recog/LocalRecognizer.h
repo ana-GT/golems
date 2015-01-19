@@ -1,5 +1,5 @@
 /**
- * @file GlobalRecognizer.h
+ * @file LocalRecognizer.h
  * @brief Object recognition class using global descriptors
  */
 
@@ -30,13 +30,13 @@ struct model {
 };
 
 /**
- * @class GlobalRecognizer
+ * @class LocalRecognizer
  */
-class GlobalRecognizer {
+class LocalRecognizer {
   
  public:
-  GlobalRecognizer();
-  ~GlobalRecognizer();
+  LocalRecognizer();
+  ~LocalRecognizer();
   bool load( std::string _obj_input );
   model loadModel( Json::Value var );
   bool prepareModels();
