@@ -1,79 +1,146 @@
 /**
- * @file build_object_model.cpp
+ * @file build_all_object_models.cpp
  */
-
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <pcl/console/parse.h>
 #include <pcl/io/pcd_io.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <boost/filesystem.hpp>
 
 #include <obj_recog/object_recognition.h>
-
 #include <json/json.h>
+
+namespace bf = boost::filesystem;
 
 bool parse_RecogParams( ObjectRecognitionParameters &_params,
 			std::string filename );
 void print( ObjectRecognitionParameters _params );
 
-/**
- * @function main
- */
-int main (int argc, char *argv[] ) {
+inline void
+getModelsInDirectory (bf::path & dir, std::string & rel_path_so_far, std::vector<std::string> & relative_paths)
+{
+  bf::directory_iterator end_itr;
+  for (bf::directory_iterator itr (dir); itr != end_itr; ++itr)
+  {
+    //check if its a directory, then get models in it
+    if (bf::is_directory (*itr))
+    {
+#if BOOST_FILESYSTEM_VERSION == 3
+      std::string so_far = rel_path_so_far + itr->path ().filename ().string () + "/";
+#else
+      std::string so_far = rel_path_so_far + itr->path ().filename () + "/";
+#endif
+      bf::path curr_path = itr->path ();
+      getModelsInDirectory (curr_path, so_far, relative_paths);
+    }
+    else
+    {
+      std::vector<std::string> strs;
+#if BOOST_FILESYSTEM_VERSION == 3
+      std::string file = itr->path ().filename ().string ();
+#else
+      std::string file = itr->path ().filename ();
+#endif
+      boost::split (strs, file, boost::is_any_of ("."));
+      std::string extension = strs[strs.size () - 1];
 
-  if( argc != 4 ) {
-    printf( " Syntax: %s  recog_params.json pointcloud.pcd output_name \n", argv[0] );
-    return -1;
+      if((file.compare (0, 3, "raw") == 0) && extension == "pcd") {
+#if BOOST_FILESYSTEM_VERSION == 3
+        std::string path = rel_path_so_far + itr->path ().filename ().string ();
+#else
+        std::string path = rel_path_so_far + itr->path ().filename ();
+#endif
+        relative_paths.push_back (path);
+      }
+    }
   }
-  
-  // Load input file
-  PointCloudPtr input (new PointCloud);
-  
-  pcl::io::loadPCDFile (argv[2], *input);
-  pcl::console::print_info ("Loaded %s (%lu points)\n", argv[2], input->size ());    
-  
-  // Load object recognition parameters
-  ObjectRecognitionParameters params;
-
-  //Parse filter parameters
-  if( !parse_RecogParams( params, argv[1] ) ) {
-    printf("Did not parse recognition parameters well \n");
-    return -1;
-  } else {
-    printf("Parsed recognition parameters fine \n");
-  }
-
-  // Construct the object model
-  ObjectRecognition obj_rec (params);
-  ObjectModel model;
-  obj_rec.constructObjectModel (input, model);
- 
-  // Save the model files
-  std::string base_filename (argv[3]), output_filename;
-
-  output_filename = base_filename;
-  output_filename.append ("_points.pcd");
-  pcl::io::savePCDFile (output_filename, *(model.points));
-  pcl::console::print_info ("Saved points as %s\n", output_filename.c_str ());
-
-  output_filename = base_filename;
-  output_filename.append ("_keypoints.pcd");
-  pcl::io::savePCDFile (output_filename, *(model.keypoints));
-  pcl::console::print_info ("Saved keypoints as %s\n", output_filename.c_str ());
-  
-  output_filename = base_filename;
-  output_filename.append ("_localdesc.pcd");
-  pcl::io::savePCDFile (output_filename, *(model.local_descriptors));
-  pcl::console::print_info ("Saved local descriptors as %s\n", output_filename.c_str ());
-  
-  output_filename = base_filename;
-  output_filename.append ("_globaldesc.pcd");
-  pcl::io::savePCDFile (output_filename, *(model.global_descriptor));
-  pcl::console::print_info ("Saved global descriptor as %s\n", output_filename.c_str ());
-  
-  return (0); 
 }
+
+int
+main (int argc, char ** argv)
+{
+  if (argc < 3)
+  {
+    pcl::console::print_info ("Syntax is: %s input_directory <options>\n", argv[0]);
+    pcl::console::print_info ("  where options are:\n");
+    pcl::console::print_info ("Note: The output's base filename must be specified without the .pcd extension\n");
+    pcl::console::print_info ("      Four output files will be created with the following suffixes:\n");
+    pcl::console::print_info ("        * '_points.pcd'\n");
+    pcl::console::print_info ("        * '_keypoints.pcd'\n");
+    pcl::console::print_info ("        * '_localdesc.pcd'\n");
+    pcl::console::print_info ("        * '_globaldesc.pcd'\n");
+
+    return (1);
+  }
+
+  ObjectRecognitionParameters params;
+  
+
+
+  std::string directory (argv[1]);
+  //Find all raw* files in input_directory
+  bf::path dir_path = directory;
+  std::vector < std::string > files;
+  std::string start = "";
+  getModelsInDirectory (dir_path, start, files);
+
+  for(size_t i=0; i < files.size(); i++) {
+    // Load input file
+
+    std::string filename = directory;
+    filename.append("/");
+    filename.append(files[i]);
+    PointCloudPtr input (new PointCloud);
+    pcl::io::loadPCDFile (filename, *input);
+    pcl::console::print_info ("Loaded %s (%lu points)\n", filename.c_str(), input->size ());
+
+    std::cout << files[i] << std::endl;
+    // Construct the object model
+    ObjectRecognition obj_rec (params);
+    ObjectModel model;
+    obj_rec.constructObjectModel (input, model);
+
+    //get directory name
+    std::vector < std::string > strs;
+    boost::split (strs, files[i], boost::is_any_of ("/\\"));
+
+    std::string id = strs[0];
+    std::string raw_file = strs[1];
+
+    strs.clear();
+    boost::split (strs, raw_file, boost::is_any_of ("_"));
+
+    std::stringstream base_filestream;
+    base_filestream << directory << "/" << id << "/" << id << strs[1].substr(0,1);
+    // Save the model files
+    std::string base_filename (base_filestream.str()), output_filename;
+
+    output_filename = base_filename;
+    output_filename.append ("_points.pcd");
+    pcl::io::savePCDFile (output_filename, *(model.points));
+    pcl::console::print_info ("Saved points as %s\n", output_filename.c_str ());
+
+    output_filename = base_filename;
+    output_filename.append ("_keypoints.pcd");
+    pcl::io::savePCDFile (output_filename, *(model.keypoints));
+    pcl::console::print_info ("Saved keypoints as %s\n", output_filename.c_str ());
+
+    output_filename = base_filename;
+    output_filename.append ("_localdesc.pcd");
+    pcl::io::savePCDFile (output_filename, *(model.local_descriptors));
+    pcl::console::print_info ("Saved local descriptors as %s\n", output_filename.c_str ());
+
+    output_filename = base_filename;
+    output_filename.append ("_globaldesc.pcd");
+    pcl::io::savePCDFile (output_filename, *(model.global_descriptor));
+    pcl::console::print_info ("Saved global descriptor as %s\n", output_filename.c_str ());
+  }
+
+  return (0);
+}
+
 
 /**
  * @function parse_RecogParams
@@ -126,7 +193,7 @@ bool parse_RecogParams( ObjectRecognitionParameters &_params,
   _params.icp_max_iterations = registration_params.get( "icp_max_iterations", 1 ).asInt();
 
      
-  // print( _params );
+  print( _params );
     
   return true;
 }

@@ -19,6 +19,15 @@ set_target_properties( build_object_model PROPERTIES
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+
+add_executable ( build_all_object_models build_all_object_models.cpp)
+target_link_libraries ( build_all_object_models obj_recog jsoncpp  ${PCL_LIBRARIES} )
+set_target_properties( build_all_object_models PROPERTIES 
+		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable ( tutorial tutorial.cpp tutorial.hpp )
+target_link_libraries ( tutorial ${PCL_LIBRARIES}  )
 		     
 #add_executable (iccv2011_capture_tool src/capture_tool.cpp src/openni2_capture.cpp)
 #target_link_libraries (iccv2011_capture_tool ${PCL_LIBRARIES})
@@ -44,8 +53,4 @@ set_target_properties( build_object_model PROPERTIES
 #add_executable (iccv2011_test_object_recognition src/test_object_recognition.cpp)
 #target_link_libraries (iccv2011_test_object_recognition ${PCL_LIBRARIES} obj_recog )
 
-#add_executable (iccv2011_build_all_object_models src/build_all_object_models.cpp)
-#target_link_libraries (iccv2011_build_all_object_models ${PCL_LIBRARIES} obj_recog )
 
-#add_executable (iccv2011_tutorial src/tutorial.cpp)
-#target_link_libraries (iccv2011_tutorial ${PCL_LIBRARIES} obj_recog )
