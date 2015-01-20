@@ -26,6 +26,7 @@ share )
 # Subdirectories
 add_subdirectory( motion_control )
 add_subdirectory( global )
+add_subdirectory( jsoncpp )
 add_subdirectory( perception )
 add_subdirectory( projects )
 

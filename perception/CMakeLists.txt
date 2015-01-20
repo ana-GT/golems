@@ -32,6 +32,7 @@ add_subdirectory( calibration )
 #add_subdirectory( marker_detection )
 add_subdirectory( tabletop_segmentation )
 add_subdirectory( pointcloud_tools )
+add_subdirectory( obj_recog )
 #add_subdirectory( getKinectTran )
 #add_subdirectory( box_detector )
 
