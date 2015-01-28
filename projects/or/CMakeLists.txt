@@ -38,6 +38,7 @@ set_target_properties( objRecog_ui PROPERTIES
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 		     
+
 		     
 #add_executable (iccv2011_capture_tool src/capture_tool.cpp src/openni2_capture.cpp)
 #target_link_libraries (iccv2011_capture_tool ${PCL_LIBRARIES})
@@ -64,5 +65,3 @@ set_target_properties( objRecog_ui PROPERTIES
 #target_link_libraries (iccv2011_test_object_recognition ${PCL_LIBRARIES} obj_recog )
 
 
-#add_executable (iccv2011_tutorial src/tutorial.cpp)
-#target_link_libraries (iccv2011_tutorial ${PCL_LIBRARIES} obj_recog )

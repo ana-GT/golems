@@ -239,16 +239,22 @@ void ObjectRecognition::constructObjectModel( const PointCloudPtr & points,
 PointCloudPtr ObjectRecognition::applyFiltersAndSegment (const PointCloudPtr & input,
 							 const ObjectRecognitionParameters & params) const {
   PointCloudPtr cloud;
+  printf("Trheshold \n");
   cloud = thresholdDepth (input, params.min_depth, params.max_depth);
+  printf("Downsample \n");
   cloud = downsample (cloud, params.downsample_leaf_size);
+  printf("Remove outliers \n");
   cloud = removeOutliers (cloud, params.outlier_rejection_radius, params.outlier_rejection_min_neighbors);
   
+  printf("Substract plane \n");
   cloud = findAndSubtractPlane (cloud, params.plane_inlier_distance_threshold, params.max_ransac_iterations);
   std::vector<pcl::PointIndices> cluster_indices;
+  printf("Cluster objects \n");
   clusterObjects (cloud, params.cluster_tolerance, params.min_cluster_size, 
 		  params.max_cluster_size, cluster_indices);
-  
+  printf("Num of clusters: %d \n", cluster_indices.size());
   PointCloudPtr largest_cluster (new PointCloud);
+  printf("Copy cluster \n");
   pcl::copyPointCloud (*cloud, cluster_indices[0], *largest_cluster);
   
   return (largest_cluster);
@@ -267,13 +273,13 @@ void ObjectRecognition::estimateFeatures ( const PointCloudPtr & points,
   printf("Estimate normals \n");
   normals_out = estimateSurfaceNormals (points, params.surface_normal_radius);
   printf("Size of normals: %d \n", normals_out->points.size() );
-  printf("Detect keypoints \n");
+ printf("Detect keypoints \n");
   keypoints_out = detectKeypoints( points, normals_out,
 				   params.keypoints_min_scale,
 				   params.keypoints_nr_octaves,
 				   params.keypoints_nr_scales_per_octave,
 				   params.keypoints_min_contrast );
-  printf("Size of keypoints: %d \n", keypoints_out->points.size() );
+ printf("Size of keypoints: %d \n", keypoints_out->points.size() );
   printf("Get local descriptors \n");
   local_descriptors_out = computeLocalDescriptors (points, normals_out, keypoints_out, 
 						   params.local_descriptor_radius);
