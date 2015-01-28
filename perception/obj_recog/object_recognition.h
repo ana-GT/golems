@@ -15,6 +15,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/kdtree/kdtree_flann.h>
 
+#include <json/json.h>
 
 /**
  * @structure ObjectRecognitionParameters
@@ -50,6 +51,10 @@ struct ObjectRecognitionParameters {
   float icp_outlier_rejection_threshold;
   float icp_transformation_epsilon;
   int icp_max_iterations;
+
+  bool loadParams( std::string _filename );
+  friend std::ostream& operator<<( std::ostream& os,
+				   const ObjectRecognitionParameters& _params );
 };
 
 /**
@@ -67,34 +72,37 @@ struct ObjectModel
  * @class ObjectRecognition
  */
 class ObjectRecognition {
-  public:
-    ObjectRecognition (const ObjectRecognitionParameters & params) : params_ (params)
-    {}
-
-    void populateDatabase (const std::vector<std::string> & filenames);
-    const ObjectModel& recognizeObject (const PointCloudPtr & query_cloud);
-    PointCloudPtr recognizeAndAlignPoints(const PointCloudPtr & query_cloud);
-    void constructObjectModel (const PointCloudPtr & points, ObjectModel & output) const;
-
-  protected: 
-
-    PointCloudPtr applyFiltersAndSegment (const PointCloudPtr & input,
-					  const ObjectRecognitionParameters & params) const;
-
-    void estimateFeatures (const PointCloudPtr & points,
-			   const ObjectRecognitionParameters & params,
-			   SurfaceNormalsPtr & normals_out,
-			   PointCloudPtr & keypoints_out, 
-			   LocalDescriptorsPtr & local_descriptors_out,
-			   GlobalDescriptorsPtr & global_descriptor_out) const;
-
-    PointCloudPtr alignModelPoints (const ObjectModel & source,
-				    const ObjectModel & target, 
-				    const ObjectRecognitionParameters & params) const;
-
-    /** Members */
-    ObjectRecognitionParameters params_;
-    std::vector<ObjectModel> models_;
-    GlobalDescriptorsPtr descriptors_;
-    pcl::KdTreeFLANN<GlobalDescriptorT>::Ptr kdtree_;
+ public:
+  ObjectRecognition (const ObjectRecognitionParameters & params) : params_ (params)
+  {}
+  
+  bool populateDatabase( std::string _fileToParse );
+  bool populateDatabase (const std::vector<std::string> & filenames);
+  const ObjectModel& recognizeObject (const PointCloudPtr & query_cloud);
+  PointCloudPtr recognizeAndAlignPoints(const PointCloudPtr & query_cloud);
+  void constructObjectModel (const PointCloudPtr & points,
+			     ObjectModel & output,
+			     bool _alreadySegmented = false ) const;
+  
+ protected: 
+  
+  PointCloudPtr applyFiltersAndSegment (const PointCloudPtr & input,
+					const ObjectRecognitionParameters & params) const;
+  
+  void estimateFeatures (const PointCloudPtr & points,
+			 const ObjectRecognitionParameters & params,
+			 SurfaceNormalsPtr & normals_out,
+			 PointCloudPtr & keypoints_out, 
+			 LocalDescriptorsPtr & local_descriptors_out,
+			 GlobalDescriptorsPtr & global_descriptor_out) const;
+  
+  PointCloudPtr alignModelPoints (const ObjectModel & source,
+				  const ObjectModel & target, 
+				  const ObjectRecognitionParameters & params) const;
+  
+  /** Members */
+  ObjectRecognitionParameters params_;
+  std::vector<ObjectModel> models_;
+  GlobalDescriptorsPtr descriptors_;
+  pcl::KdTreeFLANN<GlobalDescriptorT>::Ptr kdtree_;
 };

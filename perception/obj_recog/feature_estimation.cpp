@@ -1,7 +1,7 @@
 /**
  * @file feature_estimation.cpp
  */
-
+#include <pcl/keypoints/iss_3d.h>
 #include "feature_estimation.h"
 
 
@@ -50,16 +50,44 @@ PointCloudPtr detectKeypoints ( const PointCloudPtr & points,
 				int nr_octaves,
 				int nr_scales_per_octave,
 				float min_contrast ) {
+
+  pcl::PointCloud<pcl::PointWithScale> keypoints_temp;
+  PointCloudPtr keypoints (new PointCloud);
+  
+  /*
+  printf("Keypoints: min scale: %f, nr octaves: %d nr scales per octave: %d min_contrast: %f \n",
+	 min_scale, nr_octaves, nr_scales_per_octave, min_contrast );
   pcl::SIFTKeypoint<PointT, pcl::PointWithScale> sift_detect;
   sift_detect.setSearchMethod (pcl::search::Search<PointT>::Ptr (new pcl::search::KdTree<PointT>));
   sift_detect.setScales (min_scale, nr_octaves, nr_scales_per_octave);
   sift_detect.setMinimumContrast (min_contrast);
   sift_detect.setInputCloud (points);
-  pcl::PointCloud<pcl::PointWithScale> keypoints_temp;
   sift_detect.compute (keypoints_temp);
-  PointCloudPtr keypoints (new PointCloud);
   pcl::copyPointCloud (keypoints_temp, *keypoints);
+  */
 
+  // ISS keypoint detector object.
+  pcl::ISSKeypoint3D<PointT, PointT> detector;
+  detector.setInputCloud(points);
+  pcl::search::KdTree<PointT>::Ptr kdtree(new pcl::search::KdTree<PointT>);
+  detector.setSearchMethod(kdtree);
+  //double resolution = computeCloudResolution(points);
+  double resolution = 0.005;
+  // Set the radius of the spherical neighborhood used to compute the scatter matrix.
+  detector.setSalientRadius(6 * resolution);
+  // Set the radius for the application of the non maxima supression algorithm.
+  detector.setNonMaxRadius(4 * resolution);
+  // Set the minimum number of neighbors that has to be found while applying the non maxima suppression algorithm.
+  detector.setMinNeighbors(5);
+  // Set the upper bound on the ratio between the second and the first eigenvalue.
+  detector.setThreshold21(0.975);
+  // Set the upper bound on the ratio between the third and the second eigenvalue.
+  detector.setThreshold32(0.975);
+  // Set the number of prpcessing threads to use. 0 sets it to automatic.
+  detector.setNumberOfThreads(4);
+  
+  detector.compute(*keypoints);
+  
   return (keypoints);
 }
 
@@ -106,6 +134,7 @@ GlobalDescriptorsPtr computeGlobalDescriptor (const PointCloudPtr & points,
   vfh_estimation.setInputCloud (points);
   vfh_estimation.setInputNormals (normals);
   GlobalDescriptorsPtr global_descriptor (new GlobalDescriptors);
+  printf("Computing global \n");
   vfh_estimation.compute (*global_descriptor);
   
   return (global_descriptor);

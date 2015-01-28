@@ -10,7 +10,14 @@ add_definitions(${PCL_DEFINITIONS})
 #json
 include_directories( ${CMAKE_SOURCE_DIR}/jsoncpp )
 
+# OpenCV
+find_package( OpenCV REQUIRED )
+include_directories( ${OpenCV_INCLUDE_DIRECTORIES} )
+
 #perception
+include_directories( ${CMAKE_SOURCE_DIR}/perception )
+
+# Object recognition
 include_directories( ${CMAKE_SOURCE_DIR}/perception )
 
 add_executable ( build_object_model build_object_model.cpp)
@@ -19,6 +26,18 @@ set_target_properties( build_object_model PROPERTIES
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable ( build_all_object_models build_all_object_models.cpp )
+target_link_libraries ( build_all_object_models obj_recog jsoncpp ${PCL_LIBRARIES} )
+set_target_properties( build_all_object_models PROPERTIES 
+		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+		     
+add_executable ( objRecog_ui objRecog_ui.cpp)
+target_link_libraries ( objRecog_ui obj_recog jsoncpp ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} )
+set_target_properties( objRecog_ui PROPERTIES 
+		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+		     
 		     
 #add_executable (iccv2011_capture_tool src/capture_tool.cpp src/openni2_capture.cpp)
 #target_link_libraries (iccv2011_capture_tool ${PCL_LIBRARIES})
@@ -44,8 +63,6 @@ set_target_properties( build_object_model PROPERTIES
 #add_executable (iccv2011_test_object_recognition src/test_object_recognition.cpp)
 #target_link_libraries (iccv2011_test_object_recognition ${PCL_LIBRARIES} obj_recog )
 
-#add_executable (iccv2011_build_all_object_models src/build_all_object_models.cpp)
-#target_link_libraries (iccv2011_build_all_object_models ${PCL_LIBRARIES} obj_recog )
 
 #add_executable (iccv2011_tutorial src/tutorial.cpp)
 #target_link_libraries (iccv2011_tutorial ${PCL_LIBRARIES} obj_recog )
