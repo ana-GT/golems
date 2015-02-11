@@ -26,5 +26,3 @@ bool saveMeshFile( pcl::PointCloud<pcl::PointXYZ> _points,
 void pointcloudToBB( pcl::PointCloud<pcl::PointXYZ>::Ptr _cloud,
 		     double dim[3],
 		     Eigen::Isometry3d &_Tf );
-
-
