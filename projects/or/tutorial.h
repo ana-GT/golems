@@ -35,6 +35,8 @@
 #include <pcl/surface/gp3.h>
 #include <pcl/surface/marching_cubes_hoppe.h>
 
+typedef pcl::PointXYZ PointT;
+
 /**
  * @class ICCVTutorial
  */
@@ -42,11 +44,11 @@ template<typename FeatureType>
 class ICCVTutorial {
   
  public:
-  ICCVTutorial (boost::shared_ptr<pcl::Keypoint<pcl::PointXYZRGB, pcl::PointXYZI> > keypoint_detector,
-		typename pcl::Feature<pcl::PointXYZRGB, FeatureType>::Ptr feature_extractor,
-		boost::shared_ptr<pcl::PCLSurfaceBase<pcl::PointXYZRGBNormal> > surface_reconstructor,
-		typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr source,
-		typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr target);
+  ICCVTutorial (boost::shared_ptr<pcl::Keypoint<PointT, pcl::PointXYZI> > keypoint_detector,
+		typename pcl::Feature<PointT, FeatureType>::Ptr feature_extractor,
+		boost::shared_ptr<pcl::PCLSurfaceBase<pcl::PointNormal> > surface_reconstructor,
+		typename pcl::PointCloud<PointT>::ConstPtr source,
+		typename pcl::PointCloud<PointT>::ConstPtr target);
 
   
     /**
@@ -56,15 +58,15 @@ class ICCVTutorial {
   protected:
 
     /** Remove plane and select largest cluster as input object */
-    void segmentation (typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr input, 
-		       typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr segmented) const;
+    void segmentation (typename pcl::PointCloud<PointT>::ConstPtr input, 
+		       typename pcl::PointCloud<PointT>::Ptr segmented) const;
     
     /**
      * @brief Detects key points in the input point cloud
      * @param input the input point cloud
      * @param keypoints the resulting key points. Note that they are not necessarily a subset of the input cloud
      */
-    void detectKeypoints (typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr input, pcl::PointCloud<pcl::PointXYZI>::Ptr keypoints) const;
+    void detectKeypoints (typename pcl::PointCloud<PointT>::ConstPtr input, pcl::PointCloud<pcl::PointXYZI>::Ptr keypoints) const;
     
     /**
      * @brief extract descriptors for given key points
@@ -72,7 +74,7 @@ class ICCVTutorial {
      * @param keypoints locations where descriptors are to be extracted
      * @param features resulting descriptors
      */
-    void extractDescriptors (typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr input, typename pcl::PointCloud<pcl::PointXYZI>::Ptr keypoints, typename pcl::PointCloud<FeatureType>::Ptr features);
+    void extractDescriptors (typename pcl::PointCloud<PointT>::ConstPtr input, typename pcl::PointCloud<pcl::PointXYZI>::Ptr keypoints, typename pcl::PointCloud<FeatureType>::Ptr features);
     
     /**
      * @brief find corresponding features based on some metric
@@ -113,15 +115,15 @@ class ICCVTutorial {
     pcl::visualization::PCLVisualizer visualizer_;
     pcl::PointCloud<pcl::PointXYZI>::Ptr source_keypoints_;
     pcl::PointCloud<pcl::PointXYZI>::Ptr target_keypoints_;
-    boost::shared_ptr<pcl::Keypoint<pcl::PointXYZRGB, pcl::PointXYZI> > keypoint_detector_;
-    typename pcl::Feature<pcl::PointXYZRGB, FeatureType>::Ptr feature_extractor_;
-    boost::shared_ptr<pcl::PCLSurfaceBase<pcl::PointXYZRGBNormal> > surface_reconstructor_;
-    typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr source_;
-    typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr target_;
-    typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr source_segmented_;
-    typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr target_segmented_;
-    typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr source_transformed_;
-    typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr source_registered_;
+    boost::shared_ptr<pcl::Keypoint<PointT, pcl::PointXYZI> > keypoint_detector_;
+    typename pcl::Feature<PointT, FeatureType>::Ptr feature_extractor_;
+    boost::shared_ptr<pcl::PCLSurfaceBase<pcl::PointNormal> > surface_reconstructor_;
+    typename pcl::PointCloud<PointT>::ConstPtr source_;
+    typename pcl::PointCloud<PointT>::ConstPtr target_;
+    typename pcl::PointCloud<PointT>::Ptr source_segmented_;
+    typename pcl::PointCloud<PointT>::Ptr target_segmented_;
+    typename pcl::PointCloud<PointT>::Ptr source_transformed_;
+    typename pcl::PointCloud<PointT>::Ptr source_registered_;
     typename pcl::PolygonMesh surface_;
     typename pcl::PointCloud<FeatureType>::Ptr source_features_;
     typename pcl::PointCloud<FeatureType>::Ptr target_features_;

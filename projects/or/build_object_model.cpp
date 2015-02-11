@@ -46,7 +46,7 @@ int main (int argc, char *argv[] ) {
   output_filename.append ("_points.pcd");
   pcl::io::savePCDFile (output_filename, *(model.points));
   pcl::console::print_info ("Saved points as %s\n", output_filename.c_str ());
-
+/*
   output_filename = base_filename;
   output_filename.append ("_keypoints.pcd");
   pcl::io::savePCDFile (output_filename, *(model.keypoints));
@@ -56,7 +56,7 @@ int main (int argc, char *argv[] ) {
   output_filename.append ("_localdesc.pcd");
   pcl::io::savePCDFile (output_filename, *(model.local_descriptors));
   pcl::console::print_info ("Saved local descriptors as %s\n", output_filename.c_str ());
-  
+  */
   output_filename = base_filename;
   output_filename.append ("_globaldesc.pcd");
   pcl::io::savePCDFile (output_filename, *(model.global_descriptor));

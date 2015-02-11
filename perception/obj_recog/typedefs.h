@@ -11,7 +11,7 @@
 
 
 // Define "PointCloud" to be a pcl::PointCloud of pcl::PointXYZRGB points
-typedef pcl::PointXYZRGB PointT;
+typedef pcl::PointXYZ PointT;
 typedef pcl::PointCloud<PointT> PointCloud;
 typedef pcl::PointCloud<PointT>::Ptr PointCloudPtr;
 typedef pcl::PointCloud<PointT>::ConstPtr PointCloudConstPtr;
@@ -29,7 +29,7 @@ typedef pcl::PointCloud<LocalDescriptorT>::Ptr LocalDescriptorsPtr;
 typedef pcl::PointCloud<LocalDescriptorT>::ConstPtr LocalDescriptorsConstPtr;
 
 // Define "GlobalDescriptors" to be a pcl::PointCloud of pcl::VFHSignature308 points
-typedef pcl::VFHSignature308 GlobalDescriptorT;
+typedef pcl::FPFHSignature33 GlobalDescriptorT;
 typedef pcl::PointCloud<GlobalDescriptorT> GlobalDescriptors;
 typedef pcl::PointCloud<GlobalDescriptorT>::Ptr GlobalDescriptorsPtr;
 typedef pcl::PointCloud<GlobalDescriptorT>::ConstPtr GlobalDescriptorsConstPtr;

@@ -37,8 +37,38 @@ target_link_libraries ( objRecog_ui obj_recog jsoncpp ${OpenCV_LIBRARIES} ${PCL_
 set_target_properties( objRecog_ui PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-		     
 
+add_executable ( tutorial tutorial.cpp)
+target_link_libraries ( tutorial jsoncpp ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} )
+set_target_properties( tutorial PROPERTIES 
+		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+# UTILS
+add_executable ( threshold_depth thresholdDepth.cpp)
+target_link_libraries( threshold_depth ${PCL_LIBRARIES} )
+set_target_properties( threshold_depth PROPERTIES 
+		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable ( utility_keypoints utility_keypoints.cpp)
+target_link_libraries( utility_keypoints ${PCL_LIBRARIES} )
+set_target_properties( utility_keypoints PROPERTIES 
+		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+		    
+add_executable ( utility_virtual_scanner utility_virtual_scanner.cpp)
+target_link_libraries( utility_virtual_scanner ${PCL_LIBRARIES} )
+set_target_properties( utility_virtual_scanner PROPERTIES 
+		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+#add_executable ( test_object_recognition test_object_recognition.cpp)
+#target_link_libraries ( test_object_recognition ${PCL_LIBRARIES} obj_recog )
+#set_target_properties( test_object_recognition PROPERTIES 
+#		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+#		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 		     
 #add_executable (iccv2011_capture_tool src/capture_tool.cpp src/openni2_capture.cpp)
 #target_link_libraries (iccv2011_capture_tool ${PCL_LIBRARIES})
@@ -61,7 +91,5 @@ set_target_properties( objRecog_ui PROPERTIES
 #add_executable (iccv2011_test_surface src/test_surface.cpp)
 #target_link_libraries (iccv2011_test_surface ${PCL_LIBRARIES})
 
-#add_executable (iccv2011_test_object_recognition src/test_object_recognition.cpp)
-#target_link_libraries (iccv2011_test_object_recognition ${PCL_LIBRARIES} obj_recog )
 
 

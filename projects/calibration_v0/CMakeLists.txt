@@ -22,8 +22,6 @@ find_package( alvar )
 include_directories( ${ALVAR_INCLUDE_DIRS} )
 
 # OpenCV
-set( OpenCV_DIR /home/ana/local/share/OpenCV )
-set( OpenCV_CONFIG_PATH /home/ana/local/share/OpenCV )
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 

@@ -41,7 +41,7 @@ PointCloudPtr removeOutliers (const PointCloudPtr & input,
 			      float radius,
 			      int min_neighbors ) {
 
-  pcl::RadiusOutlierRemoval<pcl::PointXYZRGB> radius_outlier_removal;
+  pcl::RadiusOutlierRemoval<PointT> radius_outlier_removal;
   radius_outlier_removal.setInputCloud (input);
   radius_outlier_removal.setRadiusSearch (radius);
   radius_outlier_removal.setMinNeighborsInRadius (min_neighbors);

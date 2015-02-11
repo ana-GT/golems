@@ -1,5 +1,6 @@
 # tabletop_symmetry: From paper by Bohg et al, 2010
 project( tabletop_symmetry )
+set( CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -fPIC" )
 
 include_directories( ${PROJECT_SOURCE_DIR} )
 

@@ -8,11 +8,11 @@
  * @brief Constructor
  */
 template<typename FeatureType>
-ICCVTutorial<FeatureType>::ICCVTutorial(boost::shared_ptr<pcl::Keypoint<pcl::PointXYZRGB, pcl::PointXYZI> >keypoint_detector,
-                                        typename pcl::Feature<pcl::PointXYZRGB, FeatureType>::Ptr feature_extractor,
-                                        boost::shared_ptr<pcl::PCLSurfaceBase<pcl::PointXYZRGBNormal> > surface_reconstructor,
-                                        typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr source,
-                                        typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr target )
+ICCVTutorial<FeatureType>::ICCVTutorial(boost::shared_ptr<pcl::Keypoint<PointT, pcl::PointXYZI> >keypoint_detector,
+                                        typename pcl::Feature<PointT, FeatureType>::Ptr feature_extractor,
+                                        boost::shared_ptr<pcl::PCLSurfaceBase<pcl::PointNormal> > surface_reconstructor,
+                                        typename pcl::PointCloud<PointT>::ConstPtr source,
+                                        typename pcl::PointCloud<PointT>::ConstPtr target )
   : source_keypoints_ (new pcl::PointCloud<pcl::PointXYZI> ())
   , target_keypoints_ (new pcl::PointCloud<pcl::PointXYZI> ())
   , keypoint_detector_ (keypoint_detector)
@@ -20,10 +20,10 @@ ICCVTutorial<FeatureType>::ICCVTutorial(boost::shared_ptr<pcl::Keypoint<pcl::Poi
   , surface_reconstructor_ (surface_reconstructor)
   , source_ (source)
   , target_ (target)
-  , source_segmented_ (new pcl::PointCloud<pcl::PointXYZRGB>)
-  , target_segmented_ (new pcl::PointCloud<pcl::PointXYZRGB>)
-  , source_transformed_ (new pcl::PointCloud<pcl::PointXYZRGB>)
-  , source_registered_ (new pcl::PointCloud<pcl::PointXYZRGB>)
+  , source_segmented_ (new pcl::PointCloud<PointT>)
+  , target_segmented_ (new pcl::PointCloud<PointT>)
+  , source_transformed_ (new pcl::PointCloud<PointT>)
+  , source_registered_ (new pcl::PointCloud<PointT>)
   , source_features_ (new pcl::PointCloud<FeatureType>)
   , target_features_ (new pcl::PointCloud<FeatureType>)
   , correspondences_ (new pcl::Correspondences)
@@ -35,25 +35,38 @@ ICCVTutorial<FeatureType>::ICCVTutorial(boost::shared_ptr<pcl::Keypoint<pcl::Poi
   
   // PIPELINE FOR GLOBAL DESCRIPTORS
   // 1. Segment
-  segmentation (source_, source_segmented_);
+  printf("Segment source \n");
+  //segmentation (source_, source_segmented_);
+  *source_segmented_ = *source_;
+  printf("Segment target \n");
   segmentation (target_, target_segmented_);  
   // 2. Detect Keypoints
+  printf("Detect keypoints source \n");
   detectKeypoints (source_segmented_, source_keypoints_);
+  printf("Detect keypoints target \n");
   detectKeypoints (target_segmented_, target_keypoints_);
-  
+  /*
   // 3. Extract Descriptors
+  printf("Extract descriptors source \n");
   extractDescriptors (source_segmented_, source_keypoints_, source_features_);
+  printf("Extract descriptors target \n");
   extractDescriptors (target_segmented_, target_keypoints_, target_features_);
   // 4. Find correspondences
+  printf("Correspondences source target  \n");
   findCorrespondences (source_features_, target_features_, source2target_);
+  printf("Correspondences target source  \n");
   findCorrespondences (target_features_, source_features_, target2source_);
-  
+  // 5. Filter correspondences
+  printf("Filter correspondences \n");
   filterCorrespondences ();
-  
+  printf("Initial transformation \n");
   determineInitialTransformation ();
+  printf("Final transformation \n");
   determineFinalTransformation ();
-  
+  // 7. Reconstruct surface
+  printf("Reconstruct surface \n");
   reconstructSurface ();
+  */
 }
 
 /**
@@ -62,15 +75,15 @@ ICCVTutorial<FeatureType>::ICCVTutorial(boost::shared_ptr<pcl::Keypoint<pcl::Poi
  * @param segmented the resulting segmented point cloud containing only points of the largest cluster
  */
 template<typename FeatureType>
-void ICCVTutorial<FeatureType>::segmentation ( typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr source, 
-					       typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr segmented ) const {
+void ICCVTutorial<FeatureType>::segmentation ( typename pcl::PointCloud<PointT>::ConstPtr source, 
+					       typename pcl::PointCloud<PointT>::Ptr segmented ) const {
 
   std::cout << "Segmentation step starts... " << std::flush;
   // fit plane and keep points above that plane
   pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
   pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
   // Create the segmentation object
-  pcl::SACSegmentation<pcl::PointXYZRGB> seg;
+  pcl::SACSegmentation<PointT> seg;
   // Optional
   seg.setOptimizeCoefficients (true);
   // Mandatory
@@ -81,7 +94,7 @@ void ICCVTutorial<FeatureType>::segmentation ( typename pcl::PointCloud<pcl::Poi
   seg.setInputCloud (source);
   seg.segment (*inliers, *coefficients);
   
-  pcl::ExtractIndices<pcl::PointXYZRGB> extract;
+  pcl::ExtractIndices<PointT> extract;
   extract.setInputCloud (source);
   extract.setIndices (inliers);
   extract.setNegative (true);
@@ -93,11 +106,11 @@ void ICCVTutorial<FeatureType>::segmentation ( typename pcl::PointCloud<pcl::Poi
   
   cout << "\t Clustering points above table..." << std::flush;
   // Euclidean clustering
-  typename pcl::search::KdTree<pcl::PointXYZRGB>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGB>);
+  typename pcl::search::KdTree<PointT>::Ptr tree (new pcl::search::KdTree<PointT>);
   tree->setInputCloud (segmented);
   
   std::vector<pcl::PointIndices> cluster_indices;
-  pcl::EuclideanClusterExtraction<pcl::PointXYZRGB> clustering;
+  pcl::EuclideanClusterExtraction<PointT> clustering;
   clustering.setClusterTolerance (0.02); // 2cm
   clustering.setMinClusterSize (1000);
   clustering.setMaxClusterSize (250000);
@@ -127,12 +140,12 @@ void ICCVTutorial<FeatureType>::segmentation ( typename pcl::PointCloud<pcl::Poi
  * @function detectKeypoints
  */
 template<typename FeatureType>
-void ICCVTutorial<FeatureType>::detectKeypoints (typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr input, 
+void ICCVTutorial<FeatureType>::detectKeypoints (typename pcl::PointCloud<PointT>::ConstPtr input, 
 						 pcl::PointCloud<pcl::PointXYZI>::Ptr keypoints) const {
 
   std::cout << "Keypoint detection..." << std::flush;
   keypoint_detector_->setInputCloud(input);
-  keypoint_detector_->setSearchSurface(input);
+  //keypoint_detector_->setSearchSurface(input);
   keypoint_detector_->compute(*keypoints);
   std::cout << "OK. keypoints found: " << keypoints->points.size() << endl;
 }
@@ -141,16 +154,16 @@ void ICCVTutorial<FeatureType>::detectKeypoints (typename pcl::PointCloud<pcl::P
  * @function extractDescriptors
  */
 template<typename FeatureType>
-void ICCVTutorial<FeatureType>::extractDescriptors (typename pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr input, 
+void ICCVTutorial<FeatureType>::extractDescriptors (typename pcl::PointCloud<PointT>::ConstPtr input, 
 						    typename pcl::PointCloud<pcl::PointXYZI>::Ptr keypoints, 
 						    typename pcl::PointCloud<FeatureType>::Ptr features ) {
 
-  typename pcl::PointCloud<pcl::PointXYZRGB>::Ptr kpts(new pcl::PointCloud<pcl::PointXYZRGB>);
+  typename pcl::PointCloud<PointT>::Ptr kpts(new pcl::PointCloud<PointT>);
   kpts->points.resize(keypoints->points.size());
   
   pcl::copyPointCloud(*keypoints, *kpts);
           
-  typename pcl::FeatureFromNormals<pcl::PointXYZRGB, pcl::Normal, FeatureType>::Ptr feature_from_normals = boost::dynamic_pointer_cast<pcl::FeatureFromNormals<pcl::PointXYZRGB, pcl::Normal, FeatureType> > (feature_extractor_);
+  typename pcl::FeatureFromNormals<PointT, pcl::Normal, FeatureType>::Ptr feature_from_normals = boost::dynamic_pointer_cast<pcl::FeatureFromNormals<PointT, pcl::Normal, FeatureType> > (feature_extractor_);
   
   feature_extractor_->setSearchSurface(input);
   feature_extractor_->setInputCloud(kpts);
@@ -158,8 +171,8 @@ void ICCVTutorial<FeatureType>::extractDescriptors (typename pcl::PointCloud<pcl
   if (feature_from_normals) {
     cout << "normal estimation..." << std::flush;
     typename pcl::PointCloud<pcl::Normal>::Ptr normals (new  pcl::PointCloud<pcl::Normal>);
-    pcl::NormalEstimation<pcl::PointXYZRGB, pcl::Normal> normal_estimation;
-    normal_estimation.setSearchMethod (pcl::search::Search<pcl::PointXYZRGB>::Ptr (new pcl::search::KdTree<pcl::PointXYZRGB>));
+    pcl::NormalEstimation<PointT, pcl::Normal> normal_estimation;
+    normal_estimation.setSearchMethod (pcl::search::Search<PointT>::Ptr (new pcl::search::KdTree<PointT>));
     normal_estimation.setRadiusSearch (0.01);
     normal_estimation.setInputCloud (input);
     normal_estimation.compute (*normals);
@@ -219,8 +232,8 @@ void ICCVTutorial<FeatureType>::filterCorrespondences ()
   }
   
   pcl::registration::CorrespondenceRejectorSampleConsensus<pcl::PointXYZI> rejector;
-  rejector.setInputCloud(source_keypoints_);
-  rejector.setTargetCloud(target_keypoints_);
+  rejector.setInputSource(source_keypoints_);
+  rejector.setInputTarget(target_keypoints_);
   rejector.setInputCorrespondences(correspondences_);
   rejector.getCorrespondences(*correspondences_);
   cout << "OK" << endl;
@@ -242,8 +255,8 @@ template<typename FeatureType>
 void ICCVTutorial<FeatureType>::determineFinalTransformation ()
 {
   cout << "final registration..." << std::flush;
-  pcl::Registration<pcl::PointXYZRGB, pcl::PointXYZRGB>::Ptr registration (new pcl::IterativeClosestPoint<pcl::PointXYZRGB, pcl::PointXYZRGB>);
-  registration->setInputCloud(source_transformed_);
+  pcl::Registration<PointT, PointT>::Ptr registration (new pcl::IterativeClosestPoint<PointT, PointT>);
+  registration->setInputSource(source_transformed_);
   //registration->setInputCloud(source_segmented_);
   registration->setInputTarget (target_segmented_);
   registration->setMaxCorrespondenceDistance(0.05);
@@ -260,27 +273,27 @@ void ICCVTutorial<FeatureType>::reconstructSurface ()
 {
   cout << "surface reconstruction..." << std::flush;
   // merge the transformed and the target point cloud
-  pcl::PointCloud<pcl::PointXYZRGB>::Ptr merged (new pcl::PointCloud<pcl::PointXYZRGB>);
+  pcl::PointCloud<PointT>::Ptr merged (new pcl::PointCloud<PointT>);
   *merged = *source_transformed_;
   *merged += *target_segmented_;
   
   // apply grid filtering to reduce amount of points as well as to make them uniform distributed
-  pcl::VoxelGrid<pcl::PointXYZRGB> voxel_grid;
+  pcl::VoxelGrid<PointT> voxel_grid;
   voxel_grid.setInputCloud(merged);
   voxel_grid.setLeafSize(0.002, 0.002, 0.002);
   voxel_grid.setDownsampleAllData(true);
   voxel_grid.filter(*merged);
 
-  pcl::PointCloud<pcl::PointXYZRGBNormal>::Ptr vertices (new pcl::PointCloud<pcl::PointXYZRGBNormal>);
+  pcl::PointCloud<pcl::PointNormal>::Ptr vertices (new pcl::PointCloud<pcl::PointNormal>);
   pcl::copyPointCloud(*merged, *vertices);
 
-  pcl::NormalEstimation<pcl::PointXYZRGB, pcl::PointXYZRGBNormal> normal_estimation;
-  normal_estimation.setSearchMethod (pcl::search::Search<pcl::PointXYZRGB>::Ptr (new pcl::search::KdTree<pcl::PointXYZRGB>));
+  pcl::NormalEstimation<PointT, pcl::PointNormal> normal_estimation;
+  normal_estimation.setSearchMethod (pcl::search::Search<PointT>::Ptr (new pcl::search::KdTree<PointT>));
   normal_estimation.setRadiusSearch (0.01);
   normal_estimation.setInputCloud (merged);
   normal_estimation.compute (*vertices);
   
-  pcl::search::KdTree<pcl::PointXYZRGBNormal>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZRGBNormal>);
+  pcl::search::KdTree<pcl::PointNormal>::Ptr tree (new pcl::search::KdTree<pcl::PointNormal>);
   tree->setInputCloud (vertices);
 
   surface_reconstructor_->setSearchMethod(tree);
@@ -334,7 +347,6 @@ void ICCVTutorial<FeatureType>::keyboard_callback (const pcl::visualization::Key
         if (!visualizer_.removePointCloud("source_keypoints"))
         {
           pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> keypoint_color (source_keypoints_, 0, 0, 255);
-          //pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI> keypoint_color (source_keypoints_, "intensity");
           visualizer_.addPointCloud(source_keypoints_, keypoint_color, "source_keypoints");
         }
         break;

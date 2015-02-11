@@ -182,23 +182,86 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform( const double &_a1,
   s1 = sampleSE_uniform( 1, _a3, _e1, _N );
   s2 = sampleSE_uniform( _a1, _a2, _e2, _N );
 
-  pcl::PointCloud<pcl::PointXYZ>::iterator it1;
-  pcl::PointCloud<pcl::PointXYZ>::iterator it2;
 
-  for( it1 = s1->begin(); it1 != s1->end(); ++it1 ) {
-    for( it2 = s2->begin(); it2 != s2->end(); ++it2 ) {
+  // s1 and s2 have angles like these: [-180, -90] [0,-90], [0,90], [180,90]
+
+  // s1: From -PI/2 o PI/2. s2: From PI to PI
+  pcl::PointXYZ p1, p2;
+  int n = s1->points.size() / 4; // -PI/2 to PI/2
+  
+  for( int i = n; i < 3*n; ++i ) {
+    p1 = s1->points[i];
+    for( int j = 0; j < s2->points.size(); ++j ) {
+      p2 = s2->points[j];
       pcl::PointXYZ p;
-      p.x = (*it1).x*(*it2).x;
-      p.y = (*it1).x*(*it2).y;
-      p.z = (*it1).y;
+      p.x = p1.x*p2.x;
+      p.y = p1.x*p2.y;
+      p.z = p1.y;
       cloud->points.push_back(p);
     }
   }
-
+  
   cloud->width = cloud->points.size();
   cloud->height = 1;
 
   return cloud;
+}
+
+void sampleSQ_uniform_pn( const double &_a1, 
+			  const double &_a2,
+			  const double &_a3,
+			  const double &_e1,
+			  const double &_e2,
+			  const int &_N,
+			  pcl::PointCloud<pcl::PointNormal>::Ptr &_pn ) {
+
+  // Reset, just in case
+  _pn->points.resize(0);
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr se1( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr se2( new pcl::PointCloud<pcl::PointXYZ>() );
+  std::vector<double> c1, s1, c2, s2;
+  sampleSE_uniform_pcs( 1, _a3, _e1, _N, se1, c1, s1 );
+  sampleSE_uniform_pcs( _a1, _a2, _e2, _N, se2, c2, s2 );
+  
+
+  // s1 and s2 have angles like these: [-180, -90] [0,-90], [0,90], [180,90]
+
+  // s1: From -PI/2 o PI/2. 
+  pcl::PointXYZ p1, p2;
+  
+  for( int i = se1->points.size()/4; i < se1->points.size()*3/4; ++i ) {
+    p1 = se1->points[i];
+    // s2: From PI to PI
+    for( int j = 0; j < se2->points.size(); ++j ) {
+      p2 = se2->points[j];
+      
+      pcl::PointNormal p;
+      p.x = p1.x*p2.x;
+      p.y = p1.x*p2.y;
+      p.z = p1.y;
+
+      Eigen::Vector3d nv;
+      nv(0) = (1.0/_a1)*pow( fabs(c1[i]), (2.0-_e1) )*pow( fabs(c2[j]), (2.0-_e2) );
+      nv(1) = (1.0/_a2)*pow( fabs(c1[i]), (2.0-_e1) )*pow( fabs(s2[j]), (2.0-_e2) );
+      nv(2) = (1.0/_a3)*pow( fabs(s1[i]), (2.0-_e1) );
+      
+      if( c1[i]*c2[j] < 0 ) { nv(0) = -nv(0); }
+      if( c1[i]*s2[j] < 0 ) { nv(1) = -nv(1); }
+      if( s1[i] < 0 ) { nv(2) = -nv(2); }
+      nv.normalize();
+
+      p.normal_x = nv(0);
+      p.normal_y = nv(1);
+      p.normal_z = nv(2);
+      
+      _pn->points.push_back(p);
+    }
+  }
+  
+  _pn->width = _pn->points.size();
+  _pn->height = 1;
+
 }
 
 /**
@@ -210,11 +273,33 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSE_uniform( const double &_a1,
 						      const double &_e,
 						      const int &_N ) {
   
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ>() );
-  pcl::PointCloud<pcl::PointXYZ> cloud_base;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr points( new pcl::PointCloud<pcl::PointXYZ>() );
+  std::vector<double> ca, sa;
 
+  sampleSE_uniform_pcs( _a1, _a2, _e, _N, points, ca, sa );
+  return points;
+} 
+
+/**
+ * @function sampleSE_uniform_pa
+ */
+void sampleSE_uniform_pcs( const double &_a1, 
+			   const  double &_a2,
+			   const double &_e,
+			   const int &_N,
+			   pcl::PointCloud<pcl::PointXYZ>::Ptr &_points,
+			   std::vector<double> &_ca,
+			   std::vector<double> &_sa ) {
+  
+  // Reset, just in case
+  _points->points.resize(0);
+  _ca.resize(0); _sa.resize(0);
+  
+  pcl::PointCloud<pcl::PointXYZ> cloud_base;
+  std::vector<double> cos_base, sin_base;
+  
   double theta;
-  double thresh = 0.01;
+  double thresh = 0.1;
   int numIter;
   int maxIter = 500;
   double K;
@@ -225,7 +310,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSE_uniform( const double &_a1,
   // theta \in [0,thresh]
   theta = 0;
   numIter = 0;
-  
   do {
     double dt = dTheta_0(K, _e, _a1, _a2, theta );
     theta += dt;
@@ -237,9 +321,13 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSE_uniform( const double &_a1,
       p.y = _a2*pow( fabs(sin(theta)), _e );
       p.z = 0;
       cloud_base.push_back(p);
+      cos_base.push_back(cos(theta));
+      sin_base.push_back(sin(theta));
     }
   } while( theta < thresh   && numIter < maxIter );
- 
+
+  printf("Number of points in [0,thresh]: %d \n", numIter);
+  
   // theta \in [thresh, PI/2 - thresh]
   if( theta < thresh ) { theta = thresh; }
   numIter = 0;
@@ -252,41 +340,53 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSE_uniform( const double &_a1,
     p.y = _a2*pow( fabs(sin(theta)), _e );
     p.z = 0;
     cloud_base.push_back(p);
-
+    cos_base.push_back(cos(theta));
+    sin_base.push_back(sin(theta));
   } while( theta < M_PI/2.0 - thresh  && numIter < maxIter );
 
+  printf("Number of points in [thresh, 90-thresh]: %d \n", numIter);
+  
  // theta \in [PI/2 - thresh, PI/2]
  double alpha = M_PI/2.0 - theta;
  numIter = 0;
- do {
+ while( alpha > 0 && numIter < maxIter ) {
    alpha -= dTheta( K, _e, _a2, _a1, alpha );
-   numIter;
-
-    pcl::PointXYZ p;
-    p.x = _a1*pow( fabs(sin(alpha)), _e );
-    p.y = _a2*pow( fabs(cos(alpha)), _e );
-    p.z = 0;
-    cloud_base.push_back(p);
- } while( alpha > 0 && numIter < maxIter );
-
- // Put in final version
- double x_signs[4] = {-1,1,1,-1};
- double y_signs[4] = {1,1,-1,-1};
-
- pcl::PointCloud<pcl::PointXYZ>::iterator it;
+   numIter++;
+   
+   pcl::PointXYZ p;
+   p.x = _a1*pow( fabs(sin(alpha)), _e );
+   p.y = _a2*pow( fabs(cos(alpha)), _e );
+   p.z = 0;
+   cloud_base.push_back(p);
+   cos_base.push_back(sin(alpha));
+   sin_base.push_back(cos(alpha));
+ }
+ 
+ printf("Number of points in [90-thresh,90]: %d \n", numIter);
+  
+ // Store points [-PI, -PI/2], [0,-PI/2], [0,PI/2],[PI,PI/2] (notice the order, in case it is important
+ double xsign[4] = {-1,1,1,-1};
+ double ysign[4] = {-1,-1,1,1};
+ 
  for( int i = 0; i < 4; ++i ) {
-   for( it = cloud_base.begin(); it != cloud_base.end(); ++it ) {
-     pcl::PointXYZ p;
-     p.x = x_signs[i]*(*it).x;
-     p.y = y_signs[i]*(*it).y;
-     p.z = (*it).z;
-     cloud->points.push_back(p);
+   
+   for( int j = 0; j < cloud_base.points.size(); ++j ) {
+     pcl::PointXYZ p,b;
+     b = cloud_base.points[j];
+     p.x = xsign[i]*b.x;
+     p.y = ysign[i]*b.y;
+     p.z = b.z;
+     
+     _points->points.push_back(p);
+     
+     _ca.push_back( xsign[i]*cos_base[j] );
+     _sa.push_back( ysign[i]*sin_base[j] );   
    }
  }
-  cloud->width = 1;
-  cloud->height = cloud->points.size();
+  
+ _points->width = 1;
+ _points->height = _points->points.size();
 
-  return cloud;
 }
 
 

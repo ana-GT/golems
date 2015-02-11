@@ -273,6 +273,7 @@ void ObjectRecognition::estimateFeatures ( const PointCloudPtr & points,
   printf("Estimate normals \n");
   normals_out = estimateSurfaceNormals (points, params.surface_normal_radius);
   printf("Size of normals: %d \n", normals_out->points.size() );
+/*
  printf("Detect keypoints \n");
   keypoints_out = detectKeypoints( points, normals_out,
 				   params.keypoints_min_scale,
@@ -283,6 +284,7 @@ void ObjectRecognition::estimateFeatures ( const PointCloudPtr & points,
   printf("Get local descriptors \n");
   local_descriptors_out = computeLocalDescriptors (points, normals_out, keypoints_out, 
 						   params.local_descriptor_radius);
+*/
   printf("Get global descriptors \n");
   global_descriptor_out = computeGlobalDescriptor (points, normals_out);
 }

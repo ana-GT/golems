@@ -129,13 +129,15 @@ LocalDescriptorsPtr computeLocalDescriptors (const PointCloudPtr & points,
  */
 GlobalDescriptorsPtr computeGlobalDescriptor (const PointCloudPtr & points,
 					      const SurfaceNormalsPtr & normals) {
-  pcl::VFHEstimation<PointT, NormalT, GlobalDescriptorT> vfh_estimation;
-  vfh_estimation.setSearchMethod (pcl::search::Search<PointT>::Ptr (new pcl::search::KdTree<PointT>));
-  vfh_estimation.setInputCloud (points);
-  vfh_estimation.setInputNormals (normals);
+  
+  pcl::FPFHEstimation<PointT, NormalT, GlobalDescriptorT> fpfh_est;
+  fpfh_est.setSearchMethod (pcl::search::Search<PointT>::Ptr (new pcl::search::KdTree<PointT>));
+  fpfh_est.setInputCloud (points);
+  fpfh_est.setInputNormals (normals);
+  fpfh_est.setRadiusSearch(0.08); // normal radius=0.04, This radius has to be bigger
   GlobalDescriptorsPtr global_descriptor (new GlobalDescriptors);
   printf("Computing global \n");
-  vfh_estimation.compute (*global_descriptor);
+  fpfh_est.compute (*global_descriptor);
   
   return (global_descriptor);
 }

@@ -35,6 +35,14 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform( const double &_a1,
 						      const double &_e2,
 						      const int &_N=100);
 
+void sampleSQ_uniform_pn( const double &_a1, 
+			  const double &_a2,
+			  const double &_a3,
+			  const double &_e1,
+			  const double &_e2,
+			  const int &_N,
+			  pcl::PointCloud<pcl::PointNormal>::Ptr &_pn );
+
 pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform( const SQ_parameters &_par );
 
 
@@ -42,6 +50,14 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSE_uniform( const double &_a1,
 						      const  double &_a2,
 						      const double &_e,
 						      const int &_N=100);
+
+void sampleSE_uniform_pcs( const double &_a1, 
+			   const  double &_a2,
+			   const double &_e,
+			   const int &_N,
+			   pcl::PointCloud<pcl::PointXYZ>::Ptr &_points,
+			   std::vector<double> &_ca,
+			   std::vector<double> &_sa );
 
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_naive( const SQ_parameters &_par );

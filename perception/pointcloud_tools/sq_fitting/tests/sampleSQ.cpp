@@ -10,6 +10,10 @@
 #include <unistd.h>
 #include <stdlib.h> 
 
+#include <pcl/surface/poisson.h>
+#include <pcl/io/obj_io.h>
+#include "perception/pointcloud_tools/refresher_utils/Refresher_utils.h"
+
 #include "SQ_utils.h"
 
 void printHelp();
@@ -100,11 +104,58 @@ int main( int argc, char* argv[] ) {
     // Generate samples
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ>() );
     cloud = sampleSQ_uniform( par );
+    printf("Sampe uniform pn \n");
+    pcl::PointCloud<pcl::PointNormal>::Ptr pn( new pcl::PointCloud<pcl::PointNormal>() );
+    sampleSQ_uniform_pn( a, b, c, e1, e2, 25, pn );
+    
+    pcl::io::savePCDFileASCII( "pntest.pcd", *pn );        
+    pcl::Poisson<pcl::PointNormal> poisson;
+    poisson.setDepth(9);
+    poisson.setInputCloud(pn);
+    pcl::PolygonMesh mesh;
+    poisson.reconstruct( mesh );
+    pcl::io::saveOBJFile("pntest.obj", mesh);
     
     // Save
     pcl::io::savePCDFileASCII( filename, *cloud );        
     std::cout <<"\t [*] Saved "<< filename  << std::endl;
+    
+    pcl::PointCloud<pcl::PointXYZ>::Ptr ct( new pcl::PointCloud<pcl::PointXYZ>() );
+    pcl::PointCloud<pcl::Normal>::Ptr nt( new pcl::PointCloud<pcl::Normal>() );
 
+    for( int i = 0; i < pn->points.size(); ++i ) {
+      pcl::PointXYZ a; pcl::Normal b;
+      a.x = pn->points[i].x;
+      a.y = pn->points[i].y;
+      a.z = pn->points[i].z;
+
+      b.normal_x = pn->points[i].normal_x;
+      b.normal_y = pn->points[i].normal_y;
+      b.normal_z = pn->points[i].normal_z;
+      
+      ct->points.push_back(a);
+      nt->points.push_back(b);
+    }
+
+    Eigen::Vector3i color;
+    pointcloudToMesh( ct, "testOldMethod.off", color );
+    
+    /*
+    boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer (new pcl::visualization::PCLVisualizer ("3D Viewer"));
+    viewer->setBackgroundColor (0, 0, 0);
+
+    viewer->addPointCloud<pcl::PointXYZ> (ct, "sample cloud");
+    viewer->setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "sample cloud");
+    viewer->addPointCloudNormals<pcl::PointXYZ, pcl::Normal> (ct, nt, 1, 0.05, "normals");
+    viewer->addCoordinateSystem (1.0);
+    viewer->initCameraParameters ();
+
+    while (!viewer->wasStopped ())
+      {
+	viewer->spinOnce (100);
+	boost::this_thread::sleep (boost::posix_time::microseconds (100000));
+      }
+    */
     return 0;
 }
 
