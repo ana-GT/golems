@@ -6,9 +6,24 @@
 #include <pcl/common/common.h>
 #include <pcl/point_types.h>
 #include <pcl/Vertices.h>
+#include <pcl/filters/voxel_grid.h>
 
 namespace dart { namespace dynamics { class Skeleton; } }
 
+template<typename T>
+void downsample( const boost::shared_ptr<const pcl::PointCloud<T> > &_cloud,
+		 const double &_voxelSize,
+		 pcl::PointCloud<T> &_cloud_downsampled ) {
+
+  // Create the filtering object
+  pcl::VoxelGrid<T> downsampler;
+  // Set input cloud
+  downsampler.setInputCloud( _cloud );
+  // Set size of voxel
+  downsampler.setLeafSize( _voxelSize, _voxelSize, _voxelSize );
+  // Downsample
+  downsampler.filter( _cloud_downsampled );  
+}
 
 void downsample( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
 		 const double &_voxelSize,
