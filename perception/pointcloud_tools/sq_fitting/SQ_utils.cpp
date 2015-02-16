@@ -326,8 +326,6 @@ void sampleSE_uniform_pcs( const double &_a1,
     }
   } while( theta < thresh   && numIter < maxIter );
 
-  printf("Number of points in [0,thresh]: %d \n", numIter);
-  
   // theta \in [thresh, PI/2 - thresh]
   if( theta < thresh ) { theta = thresh; }
   numIter = 0;
@@ -344,8 +342,6 @@ void sampleSE_uniform_pcs( const double &_a1,
     sin_base.push_back(sin(theta));
   } while( theta < M_PI/2.0 - thresh  && numIter < maxIter );
 
-  printf("Number of points in [thresh, 90-thresh]: %d \n", numIter);
-  
  // theta \in [PI/2 - thresh, PI/2]
  double alpha = M_PI/2.0 - theta;
  numIter = 0;
@@ -362,7 +358,6 @@ void sampleSE_uniform_pcs( const double &_a1,
    sin_base.push_back(cos(alpha));
  }
  
- printf("Number of points in [90-thresh,90]: %d \n", numIter);
   
  // Store points [-PI, -PI/2], [0,-PI/2], [0,PI/2],[PI,PI/2] (notice the order, in case it is important
  double xsign[4] = {-1,1,1,-1};
