@@ -26,6 +26,6 @@ install( TARGETS sq_fitting DESTINATION lib )
 
 
 # Add tests
-#add_subdirectory( tests )
+add_subdirectory( tests )
 
 

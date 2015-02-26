@@ -6,7 +6,6 @@
 #include <pcl/common/common.h>
 
 #include <pcl/surface/concave_hull.h>
-#include <pcl/filters/voxel_grid.h>
 #include <iostream>
 #include <fstream>
 
