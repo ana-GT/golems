@@ -86,8 +86,7 @@ int main( int argc, char* argv[] ) {
       if( mode == 0 ) { n_dof = (*la_path.begin()).size(); }      
       else if( mode == 1 ) { n_dof = (*ra_path.begin()).size(); }
       else if( mode == 2 ) { n_dof = (*la_path.begin()).size(); } // Same as right
-      printf("N: %d \n", n_dof );
-      bdc.set_numJoints( n_dof );
+     bdc.set_numJoints( n_dof );
       maxVel = mMaxVel*Eigen::VectorXd::Ones( n_dof );
       maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dof );
 
@@ -183,12 +182,10 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 
     struct sns_msg_bimanual* msg = (struct sns_msg_bimanual*) buf;
     if( frame_size == sns_msg_bimanual_size(msg) ) {
-      printf("Frame size: %d size bim: %d \n", frame_size, sns_msg_bimanual_size(msg) );      
-      // Store trajectory
+     // Store trajectory
       int n_dofs, n_steps_left, n_steps_right, mode;
       n_dofs = msg->n_dof;
-      printf("N dofs: %d \n", n_dofs );
-      n_steps_left = msg->n_steps_left;
+     n_steps_left = msg->n_steps_left;
       n_steps_right = msg->n_steps_right;
       _mode = msg->mode;
       printf("\t * [INFO] Received trajectory in mode (%d) with %d left and %d right points and %d dofs \n", _mode, n_steps_left, n_steps_right, n_dofs );
@@ -201,8 +198,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  //std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
-	  _leftPath.push_back( p );
+  _leftPath.push_back( p );
 	} // for i
       } else if( _mode == 1 ) {
 	int counter = 0;
@@ -212,8 +208,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  //std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;
-	  _rightPath.push_back( p );
+  _rightPath.push_back( p );
 	} // for i
 	
       } else if( _mode == 2 ) {
@@ -225,8 +220,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  //std::cout << "Pl["<<i<<"]: "<< p.transpose() << std::endl;
-	  _leftPath.push_back( p );
+  _leftPath.push_back( p );
 	} // for i
 
 	counter = n_steps_left * n_dofs;
@@ -236,8 +230,7 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 	    p(j) = msg->x[counter];
 	    counter++;
 	  }
-	  //std::cout << "Pr["<<i<<"]: "<< p.transpose() << std::endl;
-	  _rightPath.push_back( p );
+  _rightPath.push_back( p );
 	} // for i
 	
 	
