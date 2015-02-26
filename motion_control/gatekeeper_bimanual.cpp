@@ -86,7 +86,7 @@ int main( int argc, char* argv[] ) {
       if( mode == 0 ) { n_dof = (*la_path.begin()).size(); }      
       else if( mode == 1 ) { n_dof = (*ra_path.begin()).size(); }
       else if( mode == 2 ) { n_dof = (*la_path.begin()).size(); } // Same as right
-      printf("N: %d \n", n_dof ); return 1;
+      printf("N: %d \n", n_dof );
       bdc.set_numJoints( n_dof );
       maxVel = mMaxVel*Eigen::VectorXd::Ones( n_dof );
       maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dof );
