@@ -27,6 +27,7 @@ int main( int argc, char* argv[] ) {
     int v;
     double a,b,c;
     double e1,e2;
+    int n;
     double x,y,z, ra,pa,ya;
     std::string filename;
 
@@ -34,11 +35,12 @@ int main( int argc, char* argv[] ) {
     a = 0.5; b = 0.5; c = 0.5;
     e1 = 0.5; e2 = 0.5;
     x = 0; y = 0; z = 0;
-    ra = 0.0; pa = 0; ya = 0; 
+    ra = 0.0; pa = 0; ya = 0;
+    n = 100; 
     filename = std::string("sampleSQ_output.pcd");
 
     opterr = 0;
-    while( (v = getopt(argc, argv, "N:a:b:c:x:y:z:R:P:Y:e:f:hn")) != -1 ) {
+    while( (v = getopt(argc, argv, "N:a:b:c:x:y:z:R:P:Y:e:f:n:hn")) != -1 ) {
 	
 	switch(v) {
 	case 'N': {
@@ -77,6 +79,9 @@ int main( int argc, char* argv[] ) {
 	case 'f': {
 	    e2 = atof( optarg );
 	} break;
+	case 'n': {
+            n = atoi( optarg );
+        } break;
 	case 'h': {
 	  printHelp();
 	  return 1;
@@ -106,7 +111,7 @@ int main( int argc, char* argv[] ) {
     cloud = sampleSQ_uniform( par );
     printf("Sampe uniform pn \n");
     pcl::PointCloud<pcl::PointNormal>::Ptr pn( new pcl::PointCloud<pcl::PointNormal>() );
-    sampleSQ_uniform_pn( a, b, c, e1, e2, 25, pn );
+    sampleSQ_uniform_pn( a, b, c, e1, e2, n, pn );
     
     pcl::io::savePCDFileASCII( "pntest.pcd", *pn );        
     pcl::Poisson<pcl::PointNormal> poisson;
@@ -163,6 +168,6 @@ int main( int argc, char* argv[] ) {
  * @function printHelp
  */
 void printHelp() {
-  std::cout <<" Syntax: ./sampleSQ  -a A -b B -c C -e E1 -f E2 -x X -y Y -z Z -R roll -P pitch -Y yaw -N filename.pcd "<< std::endl;
+  std::cout <<" Syntax: ./sampleSQ  -a A -b B -c C -e E1 -f E2 -x X -y Y -z Z -R roll -P pitch -Y yaw -n NumIter -N filename.pcd "<< std::endl;
   return;
 }

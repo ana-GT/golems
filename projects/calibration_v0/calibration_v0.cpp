@@ -382,13 +382,13 @@ void updateKinematics() {
       mDli.get_hand_state( i, hand_q[i], hand_dq[i] );
       
       // Update simulation      
-      mS.limb[i].arm->setConfig( mS.limb[i].armDofs, 
-				 arm_q[i] );
+      mS.limb[i].arm->setPositionSegment( mS.limb[i].armDofs, 
+					  arm_q[i] );
       
       if( hand_dq[i].size() == 7 ) { 
 	Eigen::VectorXd q(8); 
 	q << hand_q[i](0), hand_q[i](1), hand_q[i](2), hand_q[i](0), hand_q[i](5), hand_q[i](6), hand_q[i](3), hand_q[i](4);
-	mS.limb[i].hand->setConfig( mS.limb[i].fingerDofs, q );
+	mS.limb[i].hand->setPositionSegment( mS.limb[i].fingerDofs, q );
       } // end if hand_dq
       
     } // end if update
@@ -410,11 +410,11 @@ void updateTf() {
   // Get the poses of the finger markers
   for( int i = 0; i < 2; ++i ) {
     
-    Twa = mS.limb[i].arm->getRootBodyNode()->getWorldTransform();
+    Twa = mS.limb[i].arm->getRootBodyNode()->getTransform();
     Taw = Twa.inverse();
     for( int j = 0; j < 4; ++j ) {
       
-      Twj = mS.limb[i].hand->getBodyNode(mJointNames[j])->getWorldTransform();
+      Twj = mS.limb[i].hand->getBodyNode(mJointNames[j])->getTransform();
       Twm = Twj*mTjm[j];
       Tam = Taw* Twm;
       mPam[i][j] = Tam.translation();

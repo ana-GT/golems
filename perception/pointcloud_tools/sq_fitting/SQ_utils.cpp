@@ -214,19 +214,15 @@ void sampleSQ_uniform_pn( const double &_a1,
 			  const double &_e2,
 			  const int &_N,
 			  pcl::PointCloud<pcl::PointNormal>::Ptr &_pn ) {
-
-  // Reset, just in case
+  // Reset, just in casei
   _pn->points.resize(0);
-
   pcl::PointCloud<pcl::PointXYZ>::Ptr se1( new pcl::PointCloud<pcl::PointXYZ>() );
   pcl::PointCloud<pcl::PointXYZ>::Ptr se2( new pcl::PointCloud<pcl::PointXYZ>() );
   std::vector<double> c1, s1, c2, s2;
   sampleSE_uniform_pcs( 1, _a3, _e1, _N, se1, c1, s1 );
   sampleSE_uniform_pcs( _a1, _a2, _e2, _N, se2, c2, s2 );
-  
 
   // s1 and s2 have angles like these: [-180, -90] [0,-90], [0,90], [180,90]
-
   // s1: From -PI/2 o PI/2. 
   pcl::PointXYZ p1, p2;
   
@@ -258,10 +254,9 @@ void sampleSQ_uniform_pn( const double &_a1,
       _pn->points.push_back(p);
     }
   }
-  
+
   _pn->width = _pn->points.size();
   _pn->height = 1;
-
 }
 
 /**
