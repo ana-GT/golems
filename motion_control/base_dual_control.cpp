@@ -33,7 +33,6 @@ void BaseDualControl::set_numJoints( int _N ) {
   mN = _N;
   
   for( size_t i = 0; i < 2; ++i ) {
-    printf("N dof: %d \n", mN);
     mBc[i].set_numJoints( mN );
   }
   
