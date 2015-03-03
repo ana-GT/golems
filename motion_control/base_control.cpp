@@ -54,8 +54,7 @@ bool BaseControl::update() {
   }
 
   struct timespec timeout = sns_time_add_ns( mNow, 1000*1000*1 );
-printf("***Num dofs: %d \n", mN);  
-  return update_n( mN,
+ return update_n( mN,
 		   mq, mdq, mChan_state, &timeout );
 }
 
@@ -84,6 +83,9 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   while( !update() ) {}
   if( ( *(path.begin()) - mq).norm() > mDq_thresh ) {
     printf("\t [followTrajectory] First point of trajectory is too far from init path point \n");
+    std::cout <<"Path first element: "<< (*(path.begin())).transpose() << std::endl;
+    std::cout << "Current joint configuration: "<< mq.transpose() << std::endl;
+    std::cout << "Norm: "<< (*(path.begin()) - mq).norm() <<" limit in code: "<< mDq_thresh<< std::endl;
     return false;
   }
   

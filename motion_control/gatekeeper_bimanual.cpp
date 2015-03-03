@@ -82,6 +82,8 @@ int main( int argc, char* argv[] ) {
 			    mode,
 			    la_path,
 			    ra_path ) == true ) {
+  printf("Received something! \n");
+
       int n_dof = -1;
       if( mode == 0 ) { n_dof = (*la_path.begin()).size(); }      
       else if( mode == 1 ) { n_dof = (*ra_path.begin()).size(); }
