@@ -236,6 +236,12 @@ void send( int state, void* userData ) {
   } break;
   case SQ_FLAG: {
     fit_SQ( clusters[selectedSegmentedCloud], dim, trans, rot, e );
+    // Store segmented cloud
+    pcl::io::savePCDFileASCII( "segmented_sq.pcd", clusters[selectedSegmentedCloud] );
+    std::cout << "Stored pointcloud "<< std::endl;
+    // Print parameters
+    std::cout << "Parameters: " << e[0] << " and " << e[1] << std::endl;
+
     msg = sns_msg_vector_heap_alloc(11);
     msg->header.n = 11;
     for(int i = 0; i < 3; ++i ) { msg->x[i] = dim[i]; }
