@@ -12,7 +12,7 @@
 BaseControl::BaseControl() {
   mFreq = 100;
   mDt = 1.0 / mFreq;
-  mDq_thresh = 0.1;
+  mDq_thresh = 0.184; // sqrt(7)*4degrees
 
   mMaxDev = 0.1;
 	mVALID_NS = (int64_t)((1000000000) / 5);
