@@ -63,6 +63,12 @@ case "$1" in
       $SNS kill pull_sdhstate_right
       $SNS kill push_bimanual_hand_chan
       $SNS kill push_bimanual_chan
+      ach rm state-left
+      ach rm state-right
+      ach rm sdhstate-left
+      ach rm sdhstate-right
+      ach rm bimanual_hand_chan
+      ach rm bimanual_chan
 	    ;;
 	
 	#**********************
