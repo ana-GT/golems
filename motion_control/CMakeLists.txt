@@ -32,6 +32,11 @@ add_executable( gatekeeper_bimanual gatekeeper_bimanual.cpp )
 target_link_libraries( gatekeeper_bimanual motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
 set_target_properties( gatekeeper_bimanual PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+
+add_executable( gatekeeper_crippled gatekeeper_crippled.cpp )
+target_link_libraries( gatekeeper_crippled motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
+set_target_properties( gatekeeper_crippled PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 # Install
 install( TARGETS gatekeeper DESTINATION bin )
 
