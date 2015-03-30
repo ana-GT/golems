@@ -1,0 +1,220 @@
+#!/bin/bash
+
+CHANNELS="ref-left state-left"
+CHANNELS="$CHANNELS ref-right state-right"
+CHANNELS="$CHANNELS gripref-left gripstate-left"
+CHANNELS="$CHANNELS gripref-right gripstate-right"
+
+# Trajectory channels
+TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
+
+# Workstations 
+PLANNING_HOST="powell"
+CONTROL_HOST="baley" 
+
+#*****************
+# DEFINITIONS
+#*****************
+
+# SocketCAN interfaces
+BUS_1_L=0 # Left arm
+BUS_2_L=1 # Left arm
+BUS_1_R=2 # Right arm first bus (first 4 modules)
+BUS_2_R=3 # Right arm second bus (last 3 modules + gripper)
+
+
+# Check where SNS is located
+if test -z $SNS; then
+    if test -x /home/ana/local/etc/init.d/sns; then
+	SNS=/home/ana/local/etc/init.d/sns
+    elif test -x /usr/local/etc/init.d/sns; then
+	SNS=/usr/local/etc/init.d/sns
+    elif test -x /etc/init.d/sns; then
+	SNS=/etc/init.d/sns
+    else 
+	echo "[ERROR] Could not find SNS program"
+	exit 1
+    fi
+fi
+
+#**************
+# FUNCTIONS
+#**************
+
+# Make channels
+alita_ach_mk() {
+    for c in $CHANNELS; do
+	ach mk -1 -o 666 $c
+    done
+
+    # For trajectories
+    for c in $TRAJ_CHANNELS; do
+        ach mk -m 7 -n 3000 -1 -o 666 $c
+    done  
+}
+
+# Remove channels
+alita_ach_rm() {
+    for c in $CHANNELS; do
+	ach rm $c
+    done
+
+    for c in $TRAJ_CHANNELS; do
+	ach rm $c
+    done
+}
+
+
+# SNS service start
+alita_start_sns() {
+    snslogd_is_running=`pgrep snslogd`
+	echo "snslogd (if exists) has pid:: ${snslogd_is_running}"
+    
+    if test -z $snslogd_is_running; then
+	echo "\t * Starting SNS service"
+	$SNS start
+    else 
+	echo "\t * SNS already is running"
+    fi
+}
+
+# Start : Create channels + start SNS + run daemons
+alita_start() {
+    crichton_ach_mk
+
+    # Pull arm/hand states
+#    $SNS run -d push_state_left -- \
+    achd -d push $PLANNING_HOST state-left 	
+
+#    $SNS run -d push_state_right -- \
+    achd -d push $PLANNING_HOST state-right	
+
+#		$SNS run -d push_sdhstate_left -- \
+    achd -d push $PLANNING_HOST gripstate-left 	
+   
+#		$SNS run -d push_sdhstate_right -- \
+		achd -d push $PLANNING_HOST gripstate-right	
+
+#		$SNS run -d pull_bimanual_chan -- \
+	  achd -d pull $PLANNING_HOST bimanual_chan
+
+#    $SNS run -d pull_bimanual_hand_chan -- \
+		achd -d pull $PLANNING_HOST bimanual_hand_chan
+
+    # Run daemons
+    $SNS run -d -r lwa-left -- \
+		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
+
+     $SNS run  -d -r sdh-left -- \
+     sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
+
+     $SNS run -d -r lwa-right -- \
+     can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right    
+
+     $SNS run  -d -r sdh-right -- \
+     sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
+
+}
+
+# Expunge: Remove temporal folders for log
+alita_expunge() {
+    sudo rm -rf /var/tmp/sns/lwa-left
+    sudo rm -rf /var/run/sns/lwa-left
+
+    sudo rm -rf /var/tmp/sns/sdh-left
+    sudo rm -rf /var/run/sns/sdh-left
+    
+		sudo rm -rf /var/tmp/sns/lwa-right
+    sudo rm -rf /var/run/sns/lwa-right
+ 
+		sudo rm -rf /var/tmp/sns/sdh-right
+    sudo rm -rf /var/run/sns/sdh-right
+
+
+		sudo rm -rf /var/tmp/sns/push_state_left
+    sudo rm -rf /var/run/sns/push_state_left
+		
+		sudo rm -rf /var/tmp/sns/push_state_right
+    sudo rm -rf /var/run/sns/push_state_right
+
+		sudo rm -rf /var/tmp/sns/push_sdhstate_left
+    sudo rm -rf /var/run/sns/push_sdhstate_left
+		
+		sudo rm -rf /var/tmp/sns/push_sdhstate_right
+    sudo rm -rf /var/run/sns/push_sdhstate_right
+
+
+		sudo rm -rf /var/tmp/sns/pull_bimanual_chan
+    sudo rm -rf /var/run/sns/pull_bimanual_chan
+		
+		sudo rm -rf /var/tmp/sns/pull_bimanual_hand_chan
+    sudo rm -rf /var/run/sns/pull_bimanual_hand_chan
+}
+
+
+# Stop: Stop daemons and programs
+crichton_stop() {
+    $SNS kill lwa-left
+    $SNS kill sdh-left
+    $SNS kill lwa-right
+    $SNS kill sdh-right
+
+    $SNS kill push_state_left
+		$SNS kill push_state_right
+		$SNS kill push_sdhstate_left
+    $SNS kill push_sdhstate_right
+    $SNS kill pull_bimanual_chan
+    $SNS kill pull_bimanual_hand_chan
+    crichton_ach_rm
+}
+
+# Change ownerships of SNS temporal files
+crichton_steal() {
+    chown -R $1 /var/run/sns/lwa-left \
+	/var/tmp/sns/lwa-left \
+	/var/run/sns/sdh-left \
+	/var/tmp/sns/sdh-left \
+	/var/run/sns/lwa-right \
+	/var/tmp/sns/lwa-right \
+  /var/run/sns/sdh-right \
+  /var/tmp/sns/sdh-right \
+ 
+}
+
+#***************************
+# SET SCRIPT OPTIONS
+#***************************
+case "$1" in
+    start)
+	crichton_start
+	;;
+    stop)
+	crichton_stop
+	;;
+    rm) 
+	crichton_ach_rm
+	;;
+    mk)
+	crichton_ach_mk
+	;;
+    steal)
+	shift
+	crichton_steal $@
+	;;
+    expunge)
+	crichton_expunge
+	;;
+	  zero)
+  	echo "-- Sending zero velocity to left arm"
+		snsref ref-left -d -- 0 0 0 0 0 0 0 
+		sleep 2
+  	echo "-- Sending zero velocity to right arm"
+  	snsref ref-right -d -- 0 0 0 0 0 0 0 
+  	sleep 2
+	;;	
+    *)
+	echo "[ERROR] Invalid command. Options are start/stop/rm/mk/steal/zero NEW_OWNER/expunge"
+	exit 1
+	;;
+esac
+

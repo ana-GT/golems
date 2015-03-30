@@ -20,6 +20,8 @@
 
 #include <pcl/surface/convex_hull.h>
 
+#include <pcl/sample_consensus/sac_model_perpendicular_plane.h>
+
 // NOTES
 // READ WHAT RADU SAID!
 //http://www.pcl-users.org/Point-Cloud-processing-in-grabber-callback-td3928466.html
@@ -123,19 +125,66 @@ TabletopSegmentor<PointT>::TabletopSegmentor() {
   plane_detection_voxel_size_ = 0.01;
   
   clustering_voxel_size_ = 0.003;
+/*
   z_filter_min_ = 0.4;
   z_filter_max_ = 1.6;
   y_filter_min_ = -1.0;
   y_filter_max_ = 1.0;
   x_filter_min_ = -1.0;
   x_filter_max_ = 1.0;
+
   table_z_filter_min_= 0.01;
   table_z_filter_max_= 0.50;
+*/
+
   cluster_distance_ = 0.03;
   min_cluster_size_ = 300;
   processing_frame_ = "";
   up_direction_ = -1.0;   
   table_padding_ = 0.0;     
+
+
+
+ //****************************
+ // FOR APC, CHANGE BACK!!!!
+
+  // SUNDAY
+  /*
+  min_cluster_size_ = 100;
+  inlier_threshold_ = 200;
+  z_filter_min_ = 0.7;
+  z_filter_max_ = 1.0;
+  y_filter_min_ = -0.01;
+  y_filter_max_ = 0.3;
+  x_filter_min_ = -0.34;
+  x_filter_max_ = 0.40;
+
+  table_z_filter_min_= 0.01;
+  table_z_filter_max_= 0.20;
+  */
+  // MONDAY
+  min_cluster_size_ = 100;
+  inlier_threshold_ = 200;
+  z_filter_min_ = 0.7;
+  z_filter_max_ = 0.94;
+ // FIRST CABINET (UP)
+  y_filter_min_ = -0.03;
+  y_filter_max_ = 0.3;
+
+/* // SECOND CABINET (DOWN)
+  y_filter_min_ = -0.29;
+  y_filter_max_ = -0.03;
+*/
+
+  x_filter_min_ = -0.19;
+  x_filter_max_ = 0.40;
+
+  table_z_filter_min_= 0.01;
+  table_z_filter_max_= 0.20;
+
+  
+ //****************************
+
 }
 
 /**
@@ -175,15 +224,19 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   n3d_.setKSearch (10);  
   n3d_.setSearchMethod (normals_tree_);
   // Table model fitting parameters
-  seg_.setDistanceThreshold (0.05); 
+  seg_.setDistanceThreshold (0.01); // REGULAR VALUE:  0.05 FOR APC : 0.01 (CHANGED MARCH 15, 2015, SEND IT BACK!!) 
   seg_.setMaxIterations (10000);
   seg_.setNormalDistanceWeight (0.1);
   seg_.setOptimizeCoefficients (true);
-  seg_.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+//  seg_.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+  seg_.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
   seg_.setMethodType (pcl::SAC_RANSAC);
   seg_.setProbability (0.99);
 
-  proj_.setModelType (pcl::SACMODEL_PLANE);
+  // APC!!!!!
+  proj_.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
+  seg_.setEpsAngle(15*M_PI/180.0);
+//  proj_.setModelType (pcl::SACMODEL_PLANE);
 
   // Clustering parameters
   pcl_cluster_.setClusterTolerance (cluster_distance_);
@@ -256,7 +309,10 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   /**     if table is not given, otherwise use given table      */  
   Eigen::Matrix4d table_plane_trans; 
   Eigen::Matrix4d table_plane_trans_flat;
-  
+
+    // FOR APC
+  seg_.setAxis(Eigen::Vector3f(0,1,0) );
+
   pcl::PointIndices::Ptr table_inliers_ptr (new pcl::PointIndices); 
   pcl::ModelCoefficients::Ptr table_coefficients_ptr (new pcl::ModelCoefficients); 
   seg_.setInputCloud (cloud_downsampled_ptr);
