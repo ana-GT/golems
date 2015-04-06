@@ -93,17 +93,17 @@ crichton_start() {
 #    $SNS run -d push_state_right -- \
     achd -d push $PLANNING_HOST state-right	
 
-#		$SNS run -d push_sdhstate_left -- \
+#   $SNS run -d push_sdhstate_left -- \
     achd -d push $PLANNING_HOST sdhstate-left 	
    
-#		$SNS run -d push_sdhstate_right -- \
-		achd -d push $PLANNING_HOST sdhstate-right	
+#   $SNS run -d push_sdhstate_right -- \
+    achd -d push $PLANNING_HOST sdhstate-right	
 
-#		$SNS run -d pull_bimanual_chan -- \
-	  achd -d pull $PLANNING_HOST bimanual_chan
+#   $SNS run -d pull_bimanual_chan -- \
+    achd -d pull $PLANNING_HOST bimanual_chan
 
 #    $SNS run -d pull_bimanual_hand_chan -- \
-		achd -d pull $PLANNING_HOST bimanual_hand_chan
+     achd -d pull $PLANNING_HOST bimanual_hand_chan
 
     # Run daemons
     $SNS run -d -r lwa-left -- \
