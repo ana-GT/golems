@@ -43,7 +43,6 @@ fi
 
 # Load drivers
 alita_load_drivers() {
-
     # Load esdcan module
     lsmod | grep -q esdcan
     if [ $? -eq 1 ]
@@ -61,7 +60,7 @@ alita_load_drivers() {
       name="can${i}";
       if ! [ -e $name ]
       then
-        sudo mknod --mode=a+rw $name c 53 $i
+        sudo mknod --mode=a+rw $name c 53 $i;
       fi
     done
 
@@ -204,7 +203,7 @@ alita_steal() {
 	/var/run/sns/lwa-right \
 	/var/tmp/sns/lwa-right \
   	/var/run/sns/grip-right \
-  	/var/tmp/sns/grip-right \
+  	/var/tmp/sns/grip-right
 }
 
 #***************************
