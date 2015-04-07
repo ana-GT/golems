@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#*****************
+# DEFINITIONS
+#*****************
+
 CHANNELS="ref-left state-left"
 CHANNELS="$CHANNELS ref-right state-right"
 CHANNELS="$CHANNELS gripref-left gripstate-left"
@@ -12,10 +16,6 @@ TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
 PLANNING_HOST="powell"
 CONTROL_HOST="baley" 
 
-#*****************
-# DEFINITIONS
-#*****************
-
 # SocketCAN interfaces
 BUS_1_L=0 # Left arm first bus (first 4 modules)
 BUS_2_L=1 # Left arm second bus (last 3 modules + gripper)
@@ -23,7 +23,9 @@ BUS_1_R=2 # Right arm first bus (first 4 modules)
 BUS_2_R=3 # Right arm second bus (last 3 modules + gripper)
 
 
+#*******************************
 # Check where SNS is located
+#*******************************
 if test -z $SNS; then
     if test -x ${HOME}/local/etc/init.d/sns; then
 	SNS=${HOME}/local/etc/init.d/sns
@@ -37,7 +39,6 @@ if test -z $SNS; then
     fi
 fi
 
-echo "SNS is located in ${SNS}"
 
 #**************
 # FUNCTIONS
@@ -111,23 +112,23 @@ alita_start() {
     alita_ach_mk
 
     # Pull arm/hand states
-#    $SNS run -d push_state_left -- \
-    achd -d push $PLANNING_HOST state-left 	
+    $SNS run -d push_state_left -- \
+    achd push $PLANNING_HOST state-left 	
 
-#    $SNS run -d push_state_right -- \
-    achd -d push $PLANNING_HOST state-right	
+    $SNS run -d push_state_right -- \
+    achd push $PLANNING_HOST state-right	
 
-#   $SNS run -d push_gripstate_left -- \
-    achd -d push $PLANNING_HOST gripstate-left 	
+   $SNS run -d push_gripstate_left -- \
+    achd push $PLANNING_HOST gripstate-left 	
    
-#   $SNS run -d push_gripstate_right -- \
-    achd -d push $PLANNING_HOST gripstate-right	
+   $SNS run -d push_gripstate_right -- \
+    achd push $PLANNING_HOST gripstate-right	
 
-#   $SNS run -d pull_bimanual_chan -- \
-    achd -d pull $PLANNING_HOST bimanual_chan
+   $SNS run -d pull_bimanual_chan -- \
+    achd pull $PLANNING_HOST bimanual_chan
 
-#    $SNS run -d pull_bimanual_hand_chan -- \
-    achd -d pull $PLANNING_HOST bimanual_hand_chan
+    $SNS run -d pull_bimanual_hand_chan -- \
+    achd pull $PLANNING_HOST bimanual_hand_chan
 
     # Run daemons
     $SNS run -d -r lwa-left -- \
@@ -146,18 +147,6 @@ alita_start() {
 
 # Expunge: Remove temporal folders for log
 alita_expunge() {
-    sudo rm -rf /var/tmp/sns/lwa-left
-    sudo rm -rf /var/run/sns/lwa-left
-
-    sudo rm -rf /var/tmp/sns/grip-left
-    sudo rm -rf /var/run/sns/grip-left
-    
-    sudo rm -rf /var/tmp/sns/lwa-right
-    sudo rm -rf /var/run/sns/lwa-right
- 
-    sudo rm -rf /var/tmp/sns/grip-right
-    sudo rm -rf /var/run/sns/grip-right
-
 
     sudo rm -rf /var/tmp/sns/push_state_left
     sudo rm -rf /var/run/sns/push_state_left
@@ -177,6 +166,19 @@ alita_expunge() {
 		
     sudo rm -rf /var/tmp/sns/pull_bimanual_hand_chan
     sudo rm -rf /var/run/sns/pull_bimanual_hand_chan
+
+    sudo rm -rf /var/tmp/sns/lwa-left
+    sudo rm -rf /var/run/sns/lwa-left
+
+    sudo rm -rf /var/tmp/sns/grip-left
+    sudo rm -rf /var/run/sns/grip-left
+    
+    sudo rm -rf /var/tmp/sns/lwa-right
+    sudo rm -rf /var/run/sns/lwa-right
+ 
+    sudo rm -rf /var/tmp/sns/grip-right
+    sudo rm -rf /var/run/sns/grip-right
+
 }
 
 

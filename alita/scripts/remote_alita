@@ -1,5 +1,25 @@
 #!/bin/sh
 
+#*****************
+# DEFINITIONS
+#*****************
+
+CHANNELS="ref-left state-left"
+CHANNELS="$CHANNELS ref-right state-right"
+CHANNELS="$CHANNELS gripref-left gripstate-left"
+CHANNELS="$CHANNELS gripref-right gripstate-right"
+
+# Trajectory channels
+TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
+
+# Workstations 
+PLANNING_HOST="powell"
+CONTROL_HOST="baley" 
+
+#*******************************
+# Check where SNS is located
+#*******************************
+
 # Find SNS
 if test -x ~/local/etc/init.d/sns; then
    SNS=~/local/etc/init.d/sns
@@ -12,91 +32,57 @@ else
    exit 1
 fi
 
+#**************
+# FUNCTIONS
+#**************
 
+# Make channels
+alita_ach_mk() {
+    for c in $CHANNELS; do
+	ach mk -1 -o 666 $c
+    done
 
-#*****************************
-# Workstations
-#*****************************
-PLANNING_HOST="powell" 
-CONTROL_HOST="calvin"  
+    # For trajectories
+    for c in $TRAJ_CHANNELS; do
+        ach mk -m 7 -n 3000 -1 -o 666 $c
+    done  
+}
 
+# Remove channels
+alita_ach_rm() {
+    for c in $CHANNELS; do
+	ach rm $c
+    done
 
-#==================================
-# Call functions on input argument
-#==================================
+    for c in $TRAJ_CHANNELS; do
+	ach rm $c
+    done
+}
+
+#***************************
+# SET SCRIPT OPTIONS
+#***************************
 case "$1" in
 
 	#**********************
 	# START
 	#**********************
-	start)
-
-	    
-	    # Pull arm/hand states
-#	    $SNS run -d -r pull_state_left -- \
-			  achd -d pull $CONTROL_HOST state-left 	
-
-#	    $SNS run -d -r pull_sdhstate_left -- \
-	      achd -d pull $CONTROL_HOST sdhstate-left		   
-
-#	    $SNS run -d -r pull_state_right -- \
-	      achd -d pull $CONTROL_HOST state-right 	 
-      
-#	    $SNS run -d -r pull_sdhstate_left -- \
-        achd -d pull $CONTROL_HOST sdhstate-right		
-	    
-	    # Push arm/hand ref
-#	    $SNS run -d -r push_bimanual_hand_chan -- \
-	      achd -d push $CONTROL_HOST bimanual_hand_chan	
-	    
-#	    $SNS run -d -r push_bimanual_chan -- \
-        achd -d push $CONTROL_HOST bimanual_chan
+	mk)
+        alita_ach_mk
 	    ;;
 	
 	#**********************
 	# STOP
 	#**********************
-	stop)
-	    $SNS kill pull_state_left
-      $SNS kill pull_sdhstate_left
-      $SNS kill pull_state_right
-      $SNS kill pull_sdhstate_right
-      $SNS kill push_bimanual_hand_chan
-      $SNS kill push_bimanual_chan
-      ach rm state-left
-      ach rm state-right
-      ach rm sdhstate-left
-      ach rm sdhstate-right
-      ach rm bimanual_hand_chan
-      ach rm bimanual_chan
+	rm)
+        alita_ach_rm
 	    ;;
-	
-	#**********************
-	# EXPUNGE
-	#**********************
-	expunge)
-	    
-	    sudo rm -rf /var/tmp/sns/state-left	
-	    sudo rm -rf /var/run/sns/state-left
-	    
-	    sudo rm -rf /var/tmp/sns/sdhstate-left	
-	    sudo rm -rf /var/run/sns/sdhstate-left
-	    
-	    sudo rm -rf /var/tmp/sns/state-right	
-	    sudo rm -rf /var/run/sns/state-right
-	    
-	    sudo rm -rf /var/tmp/sns/sdhstate-right	
-	    sudo rm -rf /var/run/sns/sdhstate-right
-	    
-	    echo "Expunging!"
-	    
-	    ;;
-	
+		
 	#**********************
 	# ALL ELSE
 	#**********************
 	*)
-	    echo "Invalid command"	
+	    echo "[ERROR] Invalid command. Options are mk/rm"	
 	    exit 1
 	    ;;
 esac
