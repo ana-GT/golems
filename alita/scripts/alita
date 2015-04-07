@@ -37,6 +37,8 @@ if test -z $SNS; then
     fi
 fi
 
+echo "SNS is located in ${SNS}"
+
 #**************
 # FUNCTIONS
 #**************
