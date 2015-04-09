@@ -141,7 +141,7 @@ alita_start() {
     pcio-sns -c ref-right -s state-right -b $BUS_1_R -m 1 -m 2 -m 3 -m 4 -b $BUS_2_R -m 5 -m 6 -m 7  
 
      $SNS run  -d -r grip-right -- \
-     pcio-sns -c gripref-right -s gripstate-right  -b $BUS_2_L -m 8 -H 
+     pcio-sns -c gripref-right -s gripstate-right  -b $BUS_2_R -m 8 -H 
 
 }
 
@@ -191,11 +191,11 @@ alita_stop() {
 
     $SNS kill push_state_left
     $SNS kill push_state_right
-    $SNS kill push_sdhstate_left
-    $SNS kill push_sdhstate_right
+    $SNS kill push_gripstate_left
+    $SNS kill push_gripstate_right
     $SNS kill pull_bimanual_chan
     $SNS kill pull_bimanual_hand_chan
-    crichton_ach_rm
+    alita_ach_rm
 }
 
 # Change ownerships of SNS temporal files
