@@ -37,6 +37,11 @@ target_link_libraries( calibration_v0 utils aoi_utils motionControl bimanual_msg
 set_target_properties( calibration_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
 ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
+# Calibration v1
+add_executable( calibration_v1_alita calibration_v1_alita.cpp ) 
+target_link_libraries( calibration_v1_alita utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
+set_target_properties( calibration_v1_alita PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
+ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
 #add_library( test_alvar3Daccuracy test_alvar3Daccuracy.cpp ) # ${SRCS} )
 #target_link_libraries( test_alvar3Daccuracy ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES}  ${QT_LIBRARIES}    ${DART_LIBRARIES}  ${GRIP_LIBRARIES} ) 
