@@ -53,7 +53,7 @@ std::vector<Eigen::Vector3d> mPk[2];
 std::vector<Eigen::Vector3d> mPr[2];
 
 int counter = 0;
-bool stop_flag = false;
+bool stop_flag = true;
 
 /***********************/
 /** FUNCTIONS          */
@@ -378,8 +378,8 @@ void loadDefault() {
 
 
   // mMarkerIndices
-  mId[0][0] = 23; mId[0][1] = 23; mId[0][2] = 23; mId[0][3] = 23;// Left
-  mId[1][0] = 2; mId[1][1] = 2; mId[1][2] = 2; mId[1][3] = 2;// Right
+  mId[0][0] = 23; mId[0][1] = 29; mId[0][2] = 100; mId[0][3] = 100;// Left
+  mId[1][0] = 200; mId[1][1] = 200; mId[1][2] = 200; mId[1][3] = 200;// Right
   
 }
 
@@ -434,7 +434,7 @@ void updateTf() {
     Twa = mS.limb[i].arm->getRootBodyNode()->getTransform();
     Taw = Twa.inverse();
 
-    Twj = mS.limb[i].arm->getBodyNode(mJointNames[j])->getTransform();
+    Twj = mS.limb[i].arm->getBodyNode(mJointNames[i])->getTransform();
 
     for( int j = 0; j < 4; ++j ) {
       

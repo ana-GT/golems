@@ -52,7 +52,19 @@ extern "C" {
     double q[4]; // Rotation (quaternion in Eigen order)
     double s[4]; // Size (a,b,c,width)
   };
-
+  
+  /**
+   * @struct sns_msg_skel
+   * @brief Define a Skeleton (with 9 joints)
+   */
+  struct sns_msg_skel {
+    struct sns_msg_header header;
+    // (x,y,z) coordinates of each of the 9 joints
+    double x[9];
+    double y[9];
+    double z[9];
+  };
+  
   /**
    * @struct sns_msg_rgb_img
    * @brief Define a RGB image
