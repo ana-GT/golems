@@ -1,9 +1,7 @@
 #!/bin/bash
 
 CHANNELS="ref-left state-left"
-CHANNELS="$CHANNELS ref-right state-right"
 CHANNELS="$CHANNELS sdhref-left sdhstate-left"
-CHANNELS="$CHANNELS sdhref-right sdhstate-right"
 
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
@@ -26,8 +24,8 @@ CAN_SDH_L=0 # Left hand
 
 # Check where SNS is located
 if test -z $SNS; then
-    if test -x /home/ana/local/etc/init.d/sns; then
-	SNS=/home/ana/local/etc/init.d/sns
+    if test -x ${HOME}/local/etc/init.d/sns; then
+	SNS=${HOME}/local/etc/init.d/sns
     elif test -x /usr/local/etc/init.d/sns; then
 	SNS=/usr/local/etc/init.d/sns
     elif test -x /etc/init.d/sns; then
@@ -84,27 +82,27 @@ crichton_start() {
     crichton_ach_mk
 
     # Pull arm/hand states
-#    $SNS run -d push_state_left -- \
-			achd -d push $PLANNING_HOST state-left 	
+    $SNS run -d push_state_left -- \
+     achd -d push $PLANNING_HOST state-left 	
 
-#    $SNS run -d push_state_right -- \
+    $SNS run -d push_state_right -- \
     achd -d push $PLANNING_HOST state-right	
 
-#		$SNS run -d push_sdhstate_left -- \
+    $SNS run -d push_sdhstate_left -- \
     achd -d push $PLANNING_HOST sdhstate-left 	
    
-#		$SNS run -d push_sdhstate_right -- \
-		achd -d push $PLANNING_HOST sdhstate-right	
+    $SNS run -d push_sdhstate_right -- \
+    achd -d push $PLANNING_HOST sdhstate-right	
 
-#		$SNS run -d pull_bimanual_chan -- \
-	  achd -d pull $PLANNING_HOST bimanual_chan
+    $SNS run -d pull_bimanual_chan -- \
+    achd -d pull $PLANNING_HOST bimanual_chan
 
-#    $SNS run -d pull_bimanual_hand_chan -- \
-		achd -d pull $PLANNING_HOST bimanual_hand_chan
+    $SNS run -d pull_bimanual_hand_chan -- \
+    achd -d pull $PLANNING_HOST bimanual_hand_chan
 
     # Run daemons
     $SNS run -d -r lwa-left -- \
-		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
+    can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
 
      $SNS run  -d -r sdh-left -- \
      sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
