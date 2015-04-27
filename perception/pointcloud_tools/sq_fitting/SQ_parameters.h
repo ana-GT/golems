@@ -20,3 +20,14 @@ struct SQ_parameters {
   double rot[3];
 
 };
+
+/**
+ * @struct SQ_parameters msg
+ */
+struct SQ_parameters_msg {
+
+  SQ_parameters param;
+  char mesh_filename[255];
+  bool mesh_generated;
+
+};

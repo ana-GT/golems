@@ -53,17 +53,17 @@ void getPixelClusters();
  * @function main
  */
 int main( int argc, char* argv[] ) {
-
+printf("Main \n");
   // Initialization
   srand( time(NULL) );
-
+printf("Open NI 2 \n");
   // Open device
   cv::VideoCapture capture( cv::CAP_OPENNI2 );
   
   if( !capture.isOpened() ) {
     std::cout << "\t * Could not open the capture object"<<std::endl;
     return -1;
-  }
+  } printf("Return panel \n");
   // Set control panel
   cv::namedWindow( windowName, cv::WINDOW_AUTOSIZE );
 

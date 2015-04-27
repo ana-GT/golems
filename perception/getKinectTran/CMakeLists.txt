@@ -23,13 +23,6 @@ include_directories( ${ACH_INCLUDE_DIRS} )
 find_package( sns REQUIRED )
 include_directories( ${SNS_INCLUDE_DIRS} )
 
-# PCL
-find_package(PCL 1.7 REQUIRED)
-
-include_directories(${PCL_INCLUDE_DIRS})
-link_directories(${PCL_LIBRARY_DIRS})
-add_definitions(${PCL_DEFINITIONS})
-
 
 # Add levmar
 add_subdirectory( levmar )
@@ -63,6 +56,6 @@ add_subdirectory( levmar )
 include_directories( ${CMAKE_SOURCE_DIR} )
 
 add_executable( testMethods testMethods.cpp levmar_eqs.cpp )
-target_link_libraries( testMethods levmar ${PCL_LIBRARIES} lapack blas gfortran )
+target_link_libraries( testMethods levmar ${PCL_COMMON_LIBRARIES} lapack blas gfortran )
 set_target_properties( testMethods PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )

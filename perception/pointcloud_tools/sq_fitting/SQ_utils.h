@@ -8,17 +8,17 @@
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
-#include <pcl/visualization/pcl_visualizer.h>
+//#include <pcl/visualization/pcl_visualizer.h>
 
 #include "SQ_parameters.h"
 
 void printParamsInfo( const SQ_parameters &_par );
-
+/*
 void visualizeSQ(  boost::shared_ptr<pcl::visualization::PCLVisualizer> &_viewer,
 		   const SQ_parameters &_par,
 		   std::string _name,
 		   int _r, int _g, int _b );
-
+*/
 double dTheta_0( double K, double e,
 		      double a1, double a2,
 		      double t );

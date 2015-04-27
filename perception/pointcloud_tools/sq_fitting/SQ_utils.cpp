@@ -24,6 +24,7 @@ void printParamsInfo( const SQ_parameters &_par ) {
  * @function visualizeSQ
  * @brief Add sampled Super Quadric to viewer (red color by default)
  */
+/*
 void visualizeSQ(  boost::shared_ptr<pcl::visualization::PCLVisualizer> &_viewer,
 		   const SQ_parameters &_par,
 		   std::string _name,
@@ -37,7 +38,7 @@ void visualizeSQ(  boost::shared_ptr<pcl::visualization::PCLVisualizer> &_viewer
   pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> color( sq_pcd, _r, _g, _b );
   _viewer->addPointCloud<pcl::PointXYZ> ( sq_pcd, color, _name );	
   
-}
+}*/
 
 /**
  * @function sampleSQ_uniform

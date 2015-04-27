@@ -10,7 +10,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # Symmetry
 add_library( mindGapper mindGapper.cpp dt/dt.cpp )
-target_link_libraries( mindGapper ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} )
+target_link_libraries( mindGapper ${OpenCV_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} )
 set_target_properties( mindGapper PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )

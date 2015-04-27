@@ -3,8 +3,12 @@
 #******************
 project( executables )
 
+# Qt
+find_package( Qt5Core REQUIRED )
+ find_package(Qt5Gui REQUIRED)
+
 # OpenCV
-find_package( OpenCV  REQUIRED )
+find_package( OpenCV  REQUIRED ) # videoio highgui imgproc core )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # OpenNI2 (for Tracker)
@@ -16,7 +20,7 @@ include_directories( ${OpenNI2_INCLUDE_DIRS} )
 
 
 # PCL
-find_package(PCL 1.7 REQUIRED)
+find_package(PCL REQUIRED COMPONENTS common search visualization segmentation surface io )
 
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
@@ -29,7 +33,7 @@ include_directories( ${CMAKE_SOURCE_DIR} )
 
 # Apps
 add_executable( grab_data grab_data.cpp )
-target_link_libraries( grab_data ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
+target_link_libraries( grab_data ${OpenCV_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
 set_target_properties( grab_data PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
@@ -48,27 +52,34 @@ add_executable( onePerson_tracker onePerson_tracker.cpp )
 target_link_libraries( onePerson_tracker perception_msgs ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran skeleton_tracker )
 set_target_properties( onePerson_tracker PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+# See module
+add_executable( see_module see_module.cpp )
+target_link_libraries( see_module  tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( see_module PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
 
 # Alita's eyes 
 add_executable( eye_v0 eye_v0.cpp )
-target_link_libraries( eye_v0 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
+target_link_libraries( eye_v0 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} Qt5::Gui Qt5::Core ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
 set_target_properties( eye_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 # Crichton's eyes
 add_executable( crichton_eye_v0 crichton_eye_v0.cpp )
-target_link_libraries( crichton_eye_v0 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
+target_link_libraries( crichton_eye_v0 perception_msgs tabletop_segmentation ${OpenCV_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
 set_target_properties( crichton_eye_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 # Crichton sending 1 superquadric object
 add_executable( crichton_eye_v1 crichton_eye_v1.cpp )
-target_link_libraries( crichton_eye_v1  tabletop_segmentation sq_fitting mindGapper refresher_utils ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+target_link_libraries( crichton_eye_v1  tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
 set_target_properties( crichton_eye_v1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable( store_segmented_pointcloud store_segmented_pointcloud.cpp )
-target_link_libraries( store_segmented_pointcloud  tabletop_segmentation sq_fitting mindGapper refresher_utils ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+target_link_libraries( store_segmented_pointcloud  tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
 set_target_properties( store_segmented_pointcloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
