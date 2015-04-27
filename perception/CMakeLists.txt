@@ -20,7 +20,7 @@ find_package( sns REQUIRED )
 include_directories( ${SNS_INCLUDE_DIRS} )
 
 # PCL
-find_package(PCL 1.7 REQUIRED)
+find_package(PCL 1.7 REQUIRED COMPONENTS common search visualization)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -29,6 +29,7 @@ add_definitions(${PCL_DEFINITIONS})
 # Libraries
 add_subdirectory( msgs )
 add_subdirectory( calibration )
+add_subdirectory( skeleton_tracker )
 add_subdirectory( marker_detection )
 add_subdirectory( tabletop_segmentation )
 add_subdirectory( pointcloud_tools )

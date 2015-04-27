@@ -15,7 +15,7 @@
 ach_channel_t mImg_chan;
 ach_channel_t mMarkers_chan;
 cv::Mat mImg;
-std::string mWindowName( "Crichton View" );
+std::string mWindowName( "Marker Test" );
 
 struct timespec t_now;
 struct timespec t_timeout;

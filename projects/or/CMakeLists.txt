@@ -2,7 +2,7 @@
 project(or)
 
 #PCL
-find_package(PCL REQUIRED)
+find_package(PCL REQUIRED COMPONENT recognition common search features)
 include_directories(${PCL_INCLUDE_DIRS} include)
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -21,44 +21,44 @@ include_directories( ${CMAKE_SOURCE_DIR}/perception )
 include_directories( ${CMAKE_SOURCE_DIR}/perception )
 
 add_executable ( build_object_model build_object_model.cpp)
-target_link_libraries ( build_object_model obj_recog jsoncpp  ${PCL_LIBRARIES} )
+target_link_libraries ( build_object_model obj_recog jsoncpp  ${PCL_RECOGNITION_LIBRARIES} )
 set_target_properties( build_object_model PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable ( build_all_object_models build_all_object_models.cpp )
-target_link_libraries ( build_all_object_models obj_recog jsoncpp ${PCL_LIBRARIES} )
+target_link_libraries ( build_all_object_models obj_recog jsoncpp ${PCL_RECOGNITION_LIBRARIES} )
 set_target_properties( build_all_object_models PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 		     
 add_executable ( objRecog_ui objRecog_ui.cpp)
-target_link_libraries ( objRecog_ui obj_recog jsoncpp ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} )
+target_link_libraries ( objRecog_ui obj_recog jsoncpp ${OpenCV_LIBRARIES} ${PCL_RECOGNITION_LIBRARIES} )
 set_target_properties( objRecog_ui PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable ( tutorial tutorial.cpp)
-target_link_libraries ( tutorial jsoncpp ${OpenCV_LIBRARIES} ${PCL_LIBRARIES} )
+target_link_libraries ( tutorial jsoncpp ${OpenCV_LIBRARIES} ${PCL_RECOGNITION_LIBRARIES} )
 set_target_properties( tutorial PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 # UTILS
 add_executable ( threshold_depth thresholdDepth.cpp)
-target_link_libraries( threshold_depth ${PCL_LIBRARIES} )
+target_link_libraries( threshold_depth ${PCL_RECOGNITION_LIBRARIES} )
 set_target_properties( threshold_depth PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable ( utility_keypoints utility_keypoints.cpp)
-target_link_libraries( utility_keypoints ${PCL_LIBRARIES} )
+target_link_libraries( utility_keypoints ${PCL_RECOGNITION_LIBRARIES} )
 set_target_properties( utility_keypoints PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 		    
 add_executable ( utility_virtual_scanner utility_virtual_scanner.cpp)
-target_link_libraries( utility_virtual_scanner ${PCL_LIBRARIES} )
+target_link_libraries( utility_virtual_scanner ${PCL_RECOGNITION_LIBRARIES} )
 set_target_properties( utility_virtual_scanner PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )

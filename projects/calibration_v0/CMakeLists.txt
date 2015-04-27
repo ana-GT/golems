@@ -12,7 +12,7 @@ include_directories(${DART_INCLUDE_DIRS})
 link_directories(${DART_LIBRARY_DIRS})
 
 # PCL
-find_package( PCL )
+find_package( PCL COMPONENTS common search )
 include_directories( ${PCL_INCLUDE_DIRS} )
 link_directories( ${PCL_LIBRARY_DIRS} )
 add_definitions( ${PCL_DEFINITIONS} )
@@ -33,10 +33,15 @@ link_directories( ${GM_LIBRARY_DIRS} )
 
 # Calibration v0
 add_executable( calibration_v0 calibration_v0.cpp ) 
-target_link_libraries( calibration_v0 utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
+target_link_libraries( calibration_v0 utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
 set_target_properties( calibration_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
 ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
+# Calibration v1
+add_executable( calibration_v1_alita calibration_v1_alita.cpp ) 
+target_link_libraries( calibration_v1_alita utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${AMINO_LIBRARIES} ) 
+set_target_properties( calibration_v1_alita PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
+ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
 #add_library( test_alvar3Daccuracy test_alvar3Daccuracy.cpp ) # ${SRCS} )
 #target_link_libraries( test_alvar3Daccuracy ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES}  ${QT_LIBRARIES}    ${DART_LIBRARIES}  ${GRIP_LIBRARIES} ) 

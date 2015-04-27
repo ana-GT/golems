@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <pcl/visualization/cloud_viewer.h>
+//#include <pcl/visualization/cloud_viewer.h>
 #include <pcl/common/pca.h>
 #include <pcl/common/centroid.h>
 
@@ -335,7 +335,7 @@ typename mindGapper<PointT>::PointCloudPtr mindGapper<PointT>::mirrorFromPlane( 
  */
 template<typename PointT>
 bool mindGapper<PointT>::viewMirror( int _ind ) {
-
+/*
   if( _ind >= mCandidates.size() || _ind < 0 ) {
     return false; 
   }
@@ -357,7 +357,7 @@ bool mindGapper<PointT>::viewMirror( int _ind ) {
   }
   
   return true;
-
+*/
 }
 
 /**
@@ -416,7 +416,7 @@ void mindGapper<PointT>::printMirror( int _ind ) {
  */
 template<typename PointT>
 bool mindGapper<PointT>::viewInitialParameters() {
-
+/*
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Initial") );
   viewer->setBackgroundColor(0,0,0);
   viewer->addCoordinateSystem(1.0, 0 );
@@ -453,7 +453,7 @@ bool mindGapper<PointT>::viewInitialParameters() {
 
   
   return true;
-
+*/
 }
 
 
