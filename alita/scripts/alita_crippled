@@ -1,0 +1,229 @@
+#!/bin/bash
+
+#*****************
+# DEFINITIONS
+#*****************
+
+CHANNELS="ref-left state-left"
+CHANNELS="$CHANNELS gripref-left gripstate-left"
+CHANNELS="$CHANNELS state-right gripstate-right"
+
+# Trajectory channels
+TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
+
+# Workstations 
+PLANNING_HOST="powell"
+CONTROL_HOST="baley" 
+
+# SocketCAN interfaces
+BUS_1_L=0 # Left arm first bus (first 4 modules)
+BUS_2_L=1 # Left arm second bus (last 3 modules + gripper)
+
+
+#*******************************
+# Check where SNS is located
+#*******************************
+if test -z $SNS; then
+    if test -x ${HOME}/local/etc/init.d/sns; then
+	SNS=${HOME}/local/etc/init.d/sns
+    elif test -x /usr/local/etc/init.d/sns; then
+	SNS=/usr/local/etc/init.d/sns
+    elif test -x /etc/init.d/sns; then
+	SNS=/etc/init.d/sns
+    else 
+	echo "[ERROR] Could not find SNS program"
+	exit 1
+    fi
+fi
+
+
+#**************
+# FUNCTIONS
+#**************
+
+# Load drivers
+alita_load_drivers() {
+    # Load esdcan module
+    lsmod | grep -q esdcan
+    if [ $? -eq 1 ]
+    then
+      echo "esdcan module is not loaded yet";
+      cd /usr/src/esdcan-pci405-linux-2.6.x-x86_64-3.9.5/src
+      sudo insmod esdcan-pci405.ko
+    else
+      echo "esdcan module is already loaded"
+    fi
+    # Create device files can0/1/2/3
+    cd /dev
+    for i in `seq 0 3`
+    do
+      name="can${i}";
+      if ! [ -e $name ]
+      then
+        sudo mknod --mode=a+rw $name c 53 $i;
+      fi
+    done
+
+  echo "Finished alita_load_drivers";
+}
+
+# Make channels
+alita_ach_mk() {
+    for c in $CHANNELS; do
+	ach mk -1 -o 666 $c
+    done
+
+    # For trajectories
+    for c in $TRAJ_CHANNELS; do
+        ach mk -m 7 -n 3000 -1 -o 666 $c
+    done  
+}
+
+# Remove channels
+alita_ach_rm() {
+    for c in $CHANNELS; do
+	ach rm $c
+    done
+
+    for c in $TRAJ_CHANNELS; do
+	ach rm $c
+    done
+}
+
+
+# SNS service start
+alita_start_sns() {
+    snslogd_is_running=`pgrep snslogd`
+	echo "snslogd (if exists) has pid:: ${snslogd_is_running}"
+    
+    if test -z $snslogd_is_running; then
+	echo "\t * Starting SNS service"
+	$SNS start
+    else 
+	echo "\t * SNS already is running"
+    fi
+}
+
+# Start : Create channels + start SNS + run daemons
+alita_start() {
+    alita_ach_mk
+
+    # Pull arm/hand states
+    $SNS run -d push_state_left -- \
+    achd push $PLANNING_HOST state-left 	
+
+    $SNS run -d push_state_right -- \
+    achd push $PLANNING_HOST state-right	
+
+   $SNS run -d push_gripstate_left -- \
+    achd push $PLANNING_HOST gripstate-left 	
+   
+   $SNS run -d push_gripstate_right -- \
+    achd push $PLANNING_HOST gripstate-right	
+
+   $SNS run -d pull_bimanual_chan -- \
+    achd pull $PLANNING_HOST bimanual_chan
+
+    $SNS run -d pull_bimanual_hand_chan -- \
+    achd pull $PLANNING_HOST bimanual_hand_chan
+
+    # Run daemons
+    $SNS run -d -r lwa-left -- \
+    pcio-sns -c ref-left -s state-left -b $BUS_1_L -m 1 -m 2 -m 3 -m 4 -b $BUS_2_L -m 5 -m 6 -m 7  
+
+     $SNS run  -d -r grip-left -- \
+     pcio-sns -c gripref-left -s gripstate-left  -b $BUS_2_L -m 8 -H 
+
+
+}
+
+# Expunge: Remove temporal folders for log
+alita_expunge() {
+    sudo rm -rf /var/tmp/sns/lwa-left
+    sudo rm -rf /var/run/sns/lwa-left
+
+    sudo rm -rf /var/tmp/sns/grip-left
+    sudo rm -rf /var/run/sns/grip-left
+    
+
+    sudo rm -rf /var/tmp/sns/push_state_left
+    sudo rm -rf /var/run/sns/push_state_left
+		
+    sudo rm -rf /var/tmp/sns/push_state_right
+    sudo rm -rf /var/run/sns/push_state_right
+
+    sudo rm -rf /var/tmp/sns/push_gripstate_left
+    sudo rm -rf /var/run/sns/push_gripstate_left
+		
+    sudo rm -rf /var/tmp/sns/push_gripstate_right
+    sudo rm -rf /var/run/sns/push_gripstate_right
+
+
+    sudo rm -rf /var/tmp/sns/pull_bimanual_chan
+    sudo rm -rf /var/run/sns/pull_bimanual_chan
+		
+    sudo rm -rf /var/tmp/sns/pull_bimanual_hand_chan
+    sudo rm -rf /var/run/sns/pull_bimanual_hand_chan
+
+}
+
+
+# Stop: Stop daemons and programs
+alita_stop() {
+    $SNS kill lwa-left
+    $SNS kill grip-left
+
+    $SNS kill push_state_left
+    $SNS kill push_state_right
+    $SNS kill push_gripstate_left
+    $SNS kill push_gripstate_right
+    $SNS kill pull_bimanual_chan
+    $SNS kill pull_bimanual_hand_chan
+    alita_ach_rm
+}
+
+# Change ownerships of SNS temporal files
+alita_steal() {
+    chown -R $1 /var/run/sns/lwa-left \
+	/var/tmp/sns/lwa-left \
+	/var/run/sns/grip-left \
+	/var/tmp/sns/grip-left \
+}
+
+#***************************
+# SET SCRIPT OPTIONS
+#***************************
+case "$1" in
+    load)
+         alita_load_drivers
+	 ;;
+    start)
+	alita_start
+	;;
+    stop)
+	alita_stop
+	;;
+    rm) 
+	alita_ach_rm
+	;;
+    mk)
+	alita_ach_mk
+	;;
+    steal)
+	shift
+	alita_steal $@
+	;;
+    expunge)
+	alita_expunge
+	;;
+	  zero)
+  	echo "-- Sending zero velocity to left arm"
+		snsref ref-left -d -- 0 0 0 0 0 0 0 
+		sleep 2
+	;;	
+    *)
+	echo "[ERROR] Invalid command. Options are load/start/stop/rm/mk/steal/zero NEW_OWNER/expunge"
+	exit 1
+	;;
+esac
+
