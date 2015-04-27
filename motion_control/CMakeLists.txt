@@ -38,6 +38,11 @@ add_executable( gatekeeper_alita gatekeeper_alita.cpp )
 target_link_libraries( gatekeeper_alita motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
 set_target_properties( gatekeeper_alita PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+
+add_executable( gatekeeper_alita_crippled gatekeeper_alita_crippled.cpp )
+target_link_libraries( gatekeeper_alita_crippled motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
+set_target_properties( gatekeeper_alita_crippled PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 add_executable( gatekeeper_crippled gatekeeper_crippled.cpp )
 target_link_libraries( gatekeeper_crippled motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} rt blas lapack gfortran )
 set_target_properties( gatekeeper_crippled PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
