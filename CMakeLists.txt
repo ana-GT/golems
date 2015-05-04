@@ -29,7 +29,7 @@ add_subdirectory( global )
 add_subdirectory( perception )
 add_subdirectory( projects )
 add_subdirectory( communication )
-#add_subdirectory( jsoncpp )
+add_subdirectory( jsoncpp )
 #add_subdirectory( perception )
 #add_subdirectory( projects )
 

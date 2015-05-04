@@ -6,11 +6,19 @@ Eigen::VectorXd gKnownConfs[NUM_SIDES_MSG][TOTAL_CONF];
 
 
 void loadGlobals_golems() {    
+/*
+gTrk[0].linear() <<  0.987236, -0.0643039,  -0.145705,  
+  0.117983,   0.909823,   0.397871,   
+  0.106981,  -0.409984,   0.905797;   
+
+gTrk[0].translation() << 0.0734403, 0.111031, 0.092753;
+*/
 
 gTrk[0].linear() <<  0.0263018,   0.897194,   0.440852,   
   0.999606, -0.0279231, -0.0028104,  
 0.00978852,   0.440753,  -0.897575;    
 gTrk[0].translation() <<0.157548, 0.0393149, 0.10766;
+
 
 /*
 // Crichton saturday, April 25th, 2015

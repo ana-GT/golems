@@ -1,0 +1,103 @@
+{
+    "bin_contents": {
+        "bin_A": [
+            "stanley_66_052",
+            "rolodex_jumbo_pencil_cup"
+        ],
+        "bin_B": [
+            "mark_twain_huckleberry_finn",
+            "elmers_washable_no_run_school_glue",
+            "laugh_out_loud_joke_book"
+        ],
+        "bin_C": [
+            "crayola_64_ct",
+            "feline_greenies_dental_treats"
+        ],
+        "bin_D": [
+            "cheezit_big_original"
+        ],
+        "bin_F": [
+            "munchkin_white_hot_duck_bath_toy",
+            "safety_works_safety_glasses",
+            "genuine_joe_plastic_stir_sticks"
+        ],
+        "bin_G": [
+            "paper_mate_12_count_mirado_black_warrior"
+        ],
+        "bin_H": [
+            "sharpie_accent_tank_style_highlighters",
+            "kong_air_dog_squeakair_tennis_ball"
+        ],
+        "bin_I": [
+            "expo_dry_erase_board_eraser",
+            "oreo_mega_stuf"
+        ],
+        "bin_E": [
+            "highland_6539_self_stick_notes",
+            "kong_sitting_frog_dog_toy",
+            "kyjen_squeakin_eggs_plush_puppies"
+        ],	
+        "bin_J": [
+            "mead_index_cards"
+        ],
+        "bin_K": [
+            "champion_copper_plus_spark_plug",
+            "mommys_helper_outlet_plugs",
+            "first_years_take_and_toss_straw_cup"
+        ],
+        "bin_L": [
+            "kong_duck_dog_toy",
+            "dr_browns_bottle_brush"
+        ]
+    },
+    "work_order": [
+        {
+            "bin": "bin_A",
+            "item": "stanley_66_052"
+        },
+        {
+            "bin": "bin_B",
+            "item": "mark_twain_huckleberry_finn"
+        },
+        {
+            "bin": "bin_C",
+            "item": "crayola_64_ct"
+        },
+	{
+            "bin": "bin_L",
+            "item": "kong_duck_dog_toy"
+        },
+        {
+            "bin": "bin_D",
+            "item": "cheezit_big_original"
+        },
+        {
+            "bin": "bin_E",
+            "item": "highland_6539_self_stick_notes"
+        },
+        {
+            "bin": "bin_F",
+            "item": "munchkin_white_hot_duck_bath_toy"
+        },
+        {
+            "bin": "bin_G",
+            "item": "paper_mate_12_count_mirado_black_warrior"
+        },
+        {
+            "bin": "bin_H",
+            "item": "sharpie_accent_tank_style_highlighters"
+        },
+        {
+            "bin": "bin_I",
+            "item": "expo_dry_erase_board_eraser"
+        },
+        {
+            "bin": "bin_J",
+            "item": "mead_index_cards"
+        },
+        {
+            "bin": "bin_K",
+            "item": "champion_copper_plus_spark_plug"
+        }
+    ]
+}
