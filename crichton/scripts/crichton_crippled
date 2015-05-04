@@ -2,6 +2,8 @@
 
 CHANNELS="ref-left state-left"
 CHANNELS="$CHANNELS sdhref-left sdhstate-left"
+CHANNELS="ref-right state-right"
+CHANNELS="$CHANNELS sdhref-right sdhstate-right"
 
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
