@@ -5,9 +5,8 @@
 #*****************
 
 CHANNELS="ref-left state-left"
-CHANNELS="$CHANNELS ref-right state-right"
 CHANNELS="$CHANNELS gripref-left gripstate-left"
-CHANNELS="$CHANNELS gripref-right gripstate-right"
+CHANNELS="$CHANNELS state-right gripstate-right"
 
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
@@ -19,8 +18,6 @@ CONTROL_HOST="baley"
 # SocketCAN interfaces
 BUS_1_L=0 # Left arm first bus (first 4 modules)
 BUS_2_L=1 # Left arm second bus (last 3 modules + gripper)
-BUS_1_R=2 # Right arm first bus (first 4 modules)
-BUS_2_R=3 # Right arm second bus (last 3 modules + gripper)
 
 
 #*******************************
@@ -137,16 +134,17 @@ alita_start() {
      $SNS run  -d -r grip-left -- \
      pcio-sns -c gripref-left -s gripstate-left  -b $BUS_2_L -m 8 -H 
 
-    $SNS run -d -r lwa-right -- \
-    pcio-sns -c ref-right -s state-right -b $BUS_1_R -m 1 -m 2 -m 3 -m 4 -b $BUS_2_R -m 5 -m 6 -m 7  
-
-     $SNS run  -d -r grip-right -- \
-     pcio-sns -c gripref-right -s gripstate-right  -b $BUS_2_R -m 8 -H 
 
 }
 
 # Expunge: Remove temporal folders for log
 alita_expunge() {
+    sudo rm -rf /var/tmp/sns/lwa-left
+    sudo rm -rf /var/run/sns/lwa-left
+
+    sudo rm -rf /var/tmp/sns/grip-left
+    sudo rm -rf /var/run/sns/grip-left
+    
 
     sudo rm -rf /var/tmp/sns/push_state_left
     sudo rm -rf /var/run/sns/push_state_left
@@ -167,18 +165,6 @@ alita_expunge() {
     sudo rm -rf /var/tmp/sns/pull_bimanual_hand_chan
     sudo rm -rf /var/run/sns/pull_bimanual_hand_chan
 
-    sudo rm -rf /var/tmp/sns/lwa-left
-    sudo rm -rf /var/run/sns/lwa-left
-
-    sudo rm -rf /var/tmp/sns/grip-left
-    sudo rm -rf /var/run/sns/grip-left
-    
-    sudo rm -rf /var/tmp/sns/lwa-right
-    sudo rm -rf /var/run/sns/lwa-right
- 
-    sudo rm -rf /var/tmp/sns/grip-right
-    sudo rm -rf /var/run/sns/grip-right
-
 }
 
 
@@ -186,8 +172,6 @@ alita_expunge() {
 alita_stop() {
     $SNS kill lwa-left
     $SNS kill grip-left
-    $SNS kill lwa-right
-    $SNS kill grip-right
 
     $SNS kill push_state_left
     $SNS kill push_state_right
@@ -204,10 +188,6 @@ alita_steal() {
 	/var/tmp/sns/lwa-left \
 	/var/run/sns/grip-left \
 	/var/tmp/sns/grip-left \
-	/var/run/sns/lwa-right \
-	/var/tmp/sns/lwa-right \
-  	/var/run/sns/grip-right \
-  	/var/tmp/sns/grip-right
 }
 
 #***************************
@@ -240,9 +220,6 @@ case "$1" in
   	echo "-- Sending zero velocity to left arm"
 		snsref ref-left -d -- 0 0 0 0 0 0 0 
 		sleep 2
-  	echo "-- Sending zero velocity to right arm"
-  	snsref ref-right -d -- 0 0 0 0 0 0 0 
-  	sleep 2
 	;;	
     *)
 	echo "[ERROR] Invalid command. Options are load/start/stop/rm/mk/steal/zero NEW_OWNER/expunge"

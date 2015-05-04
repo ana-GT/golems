@@ -1,6 +1,6 @@
 /**
- * @file gatekeeper.cpp
- * @brief In charge of reading arm trajectories from client
+ * @file gatekeeper_alita_crippled.cpp
+ * @brief In charge of reading arm trajectories from client and with only left arm on
  */
 #include <sns.h>
 #include <unistd.h>
@@ -99,11 +99,10 @@ int main( int argc, char* argv[] ) {
 	printf("Follow right path with %d points  \n", ra_path.size() );
 	bdc.followTrajectory( 1, ra_path, maxAccel, maxVel );
       } else if( mode == 2 ) {
-	printf("Follow dual path with sizes %d and %d for left and right \n",
-	       la_path.size(),
-	       ra_path.size() );
-	bdc.followDualTrajectory( la_path,
-				  ra_path,
+	printf("Received dual BUT Follow left path with sizes %d  \n",
+	       la_path.size() );
+	bdc.followTrajectory( 0,
+				  la_path,
 				  maxAccel, maxVel );
       } else {
 	printf("Mode not valid \n");
