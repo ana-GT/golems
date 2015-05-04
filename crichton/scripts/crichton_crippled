@@ -119,12 +119,6 @@ crichton_expunge() {
     sudo rm -rf /var/tmp/sns/sdh-left
     sudo rm -rf /var/run/sns/sdh-left
     
-		sudo rm -rf /var/tmp/sns/lwa-right
-    sudo rm -rf /var/run/sns/lwa-right
- 
-		sudo rm -rf /var/tmp/sns/sdh-right
-    sudo rm -rf /var/run/sns/sdh-right
-
 
 		sudo rm -rf /var/tmp/sns/push_state_left
     sudo rm -rf /var/run/sns/push_state_left
@@ -167,10 +161,6 @@ crichton_steal() {
 	/var/tmp/sns/lwa-left \
 	/var/run/sns/sdh-left \
 	/var/tmp/sns/sdh-left \
-	/var/run/sns/lwa-right \
-	/var/tmp/sns/lwa-right \
-  /var/run/sns/sdh-right \
-  /var/tmp/sns/sdh-right \
  
 }
 

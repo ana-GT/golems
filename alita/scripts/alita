@@ -191,11 +191,11 @@ alita_stop() {
 
     $SNS kill push_state_left
     $SNS kill push_state_right
-    $SNS kill push_sdhstate_left
-    $SNS kill push_sdhstate_right
+    $SNS kill push_gripstate_left
+    $SNS kill push_gripstate_right
     $SNS kill pull_bimanual_chan
     $SNS kill pull_bimanual_hand_chan
-    crichton_ach_rm
+    alita_ach_rm
 }
 
 # Change ownerships of SNS temporal files

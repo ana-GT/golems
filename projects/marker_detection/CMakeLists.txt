@@ -11,7 +11,7 @@ include_directories( ${ALVAR_INCLUDE_DIRS} )
 
 
 # PCL
-find_package( PCL )
+find_package( PCL COMPONENTS common search )
 include_directories( ${PCL_INCLUDE_DIRS} )
 link_directories( ${PCL_LIBRARY_DIRS} )
 add_definitions( ${PCL_DEFINITIONS} )
@@ -29,6 +29,6 @@ link_directories( ${GM_LIBRARY_DIRS} )
 
 # Calibration v0
 add_executable( marker_sendPose marker_sendPose.cpp ) 
-target_link_libraries( marker_sendPose utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
+target_link_libraries( marker_sendPose utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
 set_target_properties( marker_sendPose PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
 ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 

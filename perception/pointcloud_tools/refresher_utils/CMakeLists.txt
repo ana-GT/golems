@@ -5,7 +5,7 @@ set( CMAKE_CXX_FLAGS "-fPIC" )
 include_directories( ${PROJECT_SOURCE_DIR} )
 
 # PCL
-find_package( PCL REQUIRED )
+find_package( PCL REQUIRED COMPONENTS common surface filters )
 include_directories( ${PCL_INCLUDE_DIRS} )
 
 # DART
@@ -14,7 +14,7 @@ include_directories( ${DART_INCLUDE_DIRS} )
 
 # Symmetry
 add_library( refresher_utils Refresher_utils.cpp )
-target_link_libraries( refresher_utils  ${DART_LIBRARIES} ${PCL_LIBRARIES} )
+target_link_libraries( refresher_utils  ${DART_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_SURFACE_LIBRARIES} ${PCL_FILTERS_LIBRARIES} )
 set_target_properties( refresher_utils PROPERTIES 
 		       ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )

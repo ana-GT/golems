@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include <pcl/visualization/pcl_visualizer.h>
+//#include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/common/centroid.h>
 #include <pcl/common/pca.h>
 #include <pcl/common/common.h>
@@ -189,6 +189,7 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
 
 
     ///////////////////////////////////////////////////////////
+/*
   if( _debug ) {
     std::cout << "\t [DEBUG] Bounding Box "<< std::endl;
     boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Debug Bounding Box") );
@@ -209,6 +210,7 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
       boost::this_thread::sleep( boost::posix_time::microseconds(100000) );
     }
   } // end if _debug
+*/
     ///////////////////////////////////////////////////////////
 
 
@@ -318,7 +320,7 @@ bool SQ_fitter<PointT>::minimize_levmar( const PointCloudPtr &_cloud,
     
     // Set limits
     double ub[m], lb[m];
-    for( i = 0; i < 3; ++i ) { lb[i] = 0.01; ub[i] = 1.0; }
+    for( i = 0; i < 3; ++i ) { lb[i] = 0.01; ub[i] = 0.15; }
     for( i = 0; i < 2; ++i ) { lb[i+3] = 0.1; ub[i+3] = 1.9; }
     for( i = 0; i < 3; ++i ) { lb[i+5] = -2.0; ub[i+5] = 2.0; }
     for( i = 0; i < 3; ++i ) { lb[i+8] = -M_PI; ub[i+8] = M_PI; }
@@ -394,7 +396,7 @@ void SQ_fitter<PointT>::printResults() {
  */
 template<typename PointT>
 void SQ_fitter<PointT>::visualize() {
-
+/*
   // 1. Create viewer
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("SQ_fitter Viewer") );
   viewer->addCoordinateSystem(1.0, 0);
@@ -431,7 +433,7 @@ void SQ_fitter<PointT>::visualize() {
     viewer->spinOnce(100);
     boost::this_thread::sleep( boost::posix_time::microseconds(100000) );
   }
-
+*/
   
 }
 

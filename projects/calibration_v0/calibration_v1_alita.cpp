@@ -47,7 +47,8 @@ ach_channel_t mBiHand_chan;
 dart::simulation::World* mWorld;
 crichton_markerDetector mMd;
 
-std::vector<calib_pair> mP[2];
+std::vector<calib_pair> mP[2]; // temporal
+std::vector<calib_pair> mPd[2]; // all points for debug
 
 std::vector<Eigen::Vector3d> mPk[2];
 std::vector<Eigen::Vector3d> mPr[2];
@@ -281,6 +282,7 @@ void storeSnapshot( int state, void* userdata ) {
     for( int j = 0; j < mP[i].size(); ++j ) {
       mPk[i].push_back( mP[i][j].pk );
       mPr[i].push_back( mP[i][j].pr );
+      mPd[i].push_back( mP[i][j] );
     }
     printf("Points stored so far for arm %d : %d \n", i, mPk[i].size() );
   }
@@ -293,16 +295,16 @@ void showPoints( int state, void* userdata ) {
 
   for( int i = 0; i < 2; ++i ) {
     printf("Arm [%d] # validmarkers detected: %d \n", i, mPk[i].size() );
-    for( int j = 0; j < mPk[i].size(); ++j ) {
+    for( int j = 0; j < mPd[i].size(); ++j ) {
+      
+      printf("Id: %d - Pk: %f %f %f - Pr: %f %f %f \n", mPd[i][j].id,
+	     mPd[i][j].pk(0), mPd[i][j].pk(1), mPd[i][j].pk(2),
+	     mPd[i][j].pr(0), mPd[i][j].pr(1), mPd[i][j].pr(2) );
       /*
-      printf("Id: %d - Pk: %f %f %f - Pr: %f %f %f \n", mP[i][j].id,
-	     mP[i][j].pk(0), mP[i][j].pk(1), mP[i][j].pk(2),
-	     mP[i][j].pr(0), mP[i][j].pr(1), mP[i][j].pr(2) );
-      */
       printf("Arm [%d]: Marker [%d] - Pk: %f %f %f - Pr: %f %f %f \n",
 	     i,j,
 	     mPk[i][j](0), mPk[i][j](1), mPk[i][j](2),
-	     mPr[i][j](0), mPr[i][j](1), mPr[i][j](2) );
+	     mPr[i][j](0), mPr[i][j](1), mPr[i][j](2) );*/
     }
   }
 }
@@ -378,7 +380,7 @@ void loadDefault() {
 
 
   // mMarkerIndices
-  mId[0][0] = 23; mId[0][1] = 29; mId[0][2] = 100; mId[0][3] = 100;// Left
+  mId[0][0] = 200; mId[0][1] = 23; mId[0][2] = 200; mId[0][3] = 29;// Left
   mId[1][0] = 200; mId[1][1] = 200; mId[1][2] = 200; mId[1][3] = 200;// Right
   
 }
