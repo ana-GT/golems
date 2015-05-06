@@ -20,7 +20,7 @@
 
 #include <marker_detection/crichton_markerDetector.h>
 #include <calibration/calibration_utils.h>
-
+#include <global/crichton_global.h>
 
 int mID = 29; // A prime number :0}
 
@@ -154,7 +154,7 @@ void openComm() {
   sns_start();
 
   // Open channels to send pose
-  sns_chan_open( &mMarkerPose_chan, "markerPose_chan", NULL );
+  sns_chan_open( &mMarkerPose_chan, gMarker_pose_chan_name.c_str(), NULL );
   
   // Ready
   printf("\t * [SET_COMM] We should be ready to go \n");  
