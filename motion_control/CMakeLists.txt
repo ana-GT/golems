@@ -3,6 +3,7 @@ set( CMAKE_CXX_FLAGS "-fPIC" )
 
 # Add Tobias' trajectory generation code
 add_subdirectory( trajectories )
+include_directories( ${CMAKE_SOURCE_DIR} )
 
 # Add bimanual msgs
 add_subdirectory( msgs )

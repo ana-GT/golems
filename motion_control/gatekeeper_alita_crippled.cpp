@@ -7,7 +7,9 @@
 #include <ach.h>
 
 #include "msgs/bimanual_msgs.h"
+#include "msgs/control_msgs.h"
 #include "base_dual_control.h"
+#include "global/crichton_global.h"
 
 ach_channel_t bimanual_chan;
 ach_channel_t bimanual_hand_chan;
@@ -17,7 +19,6 @@ ach_channel_t la_state_chan;
 ach_channel_t la_ref_chan;
 std::list<Eigen::VectorXd> la_path;
 
-ach_channel_t lh_state_chan;
 ach_channel_t lh_ref_chan;
 std::list<Eigen::VectorXd> lh_path;
 
@@ -27,10 +28,11 @@ ach_channel_t ra_state_chan;
 ach_channel_t ra_ref_chan;
 std::list<Eigen::VectorXd> ra_path;
 
-ach_channel_t rh_state_chan;
 ach_channel_t rh_ref_chan;
 std::list<Eigen::VectorXd> rh_path;
 
+/** */
+ach_channel_t gatekeeper_msg_chan;
 
 /** Dual control */
 BaseDualControl bdc;
@@ -52,6 +54,8 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 			 std::list<Eigen::VectorXd> &_left_path,
 			 std::list<Eigen::VectorXd> &_right_path );
 
+void send_gateekeper_msg( int _msg_type, bool _result );
+
 /**
  * @function main
  */
@@ -60,56 +64,79 @@ int main( int argc, char* argv[] ) {
   Eigen::VectorXd maxVel, maxAccel;
   
   // Open channels
-  sns_chan_open( &bimanual_chan, "bimanual_chan", NULL );
-  sns_chan_open( &bimanual_hand_chan, "bimanual_hand_chan", NULL );
+  ach_status r;
+  r = ach_open( &bimanual_chan, "bimanual_chan", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] bimanual_chan not created \n"); return 1; }
   
-  sns_chan_open( &la_state_chan, "state-left", NULL );
-  sns_chan_open( &la_ref_chan, "ref-left", NULL );
-  
-  sns_chan_open( &ra_state_chan, "state-right", NULL );
-  sns_chan_open( &ra_ref_chan, "ref-right", NULL );
+  r = ach_open( &bimanual_hand_chan, "bimanual_hand_chan", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] bimanual_hand_chan not created \n"); return 1; }
 
-  sns_chan_open( &lh_ref_chan, "gripref-left", NULL );
-  sns_chan_open( &rh_ref_chan, "gripref-right", NULL );
+  r = ach_open( &la_state_chan, "state-left", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] state-left not created \n"); return 1; }
+  
+  r = ach_open( &la_ref_chan, "ref-left", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] ref-left not created \n"); return 1; }
+  
+  r = ach_open( &ra_state_chan, "state-right", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] state-right not created \n"); return 1; }
+  r = ach_open( &ra_ref_chan, "ref-right", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] ref-right not created \n"); return 1; }
+  
+  r = ach_open( &lh_ref_chan, "gripref-left", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] gripref-left not created \n"); return 1; }
+  r = ach_open( &rh_ref_chan, "gripref-right", NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] gripref-right not created \n"); return 1; }
+
+  r = ach_open( &gatekeeper_msg_chan, gGatekeeper_chan_name.c_str(), NULL );
+  if( r!= ACH_OK ) { printf("[ERROR] Gatekeeper channel not created \n"); return 1; }
   
   // Set channels
   bdc.set_channels( 0, &la_ref_chan, &la_state_chan );
   bdc.set_channels( 1, &ra_ref_chan, &ra_state_chan );
   
   // Loop waiting for traj
+  bool m;
+  
   while( true ) {
     if( poll_bimanual_chan( &bimanual_chan,
 			    mode,
 			    la_path,
 			    ra_path ) == true ) {
-  printf("Received something! \n");
-
+      printf("Received something! \n");
+      
       int n_dof = -1;
       if( mode == 0 ) { n_dof = (*la_path.begin()).size(); }      
       else if( mode == 1 ) { n_dof = (*ra_path.begin()).size(); }
       else if( mode == 2 ) { n_dof = (*la_path.begin()).size(); } // Same as right
-     bdc.set_numJoints( n_dof );
+      bdc.set_numJoints( n_dof );
       maxVel = mMaxVel*Eigen::VectorXd::Ones( n_dof );
       maxAccel = mMaxAccel*Eigen::VectorXd::Ones( n_dof );
-
+      
       if( mode == 0 ) {
 	printf("Follow left path with %d points \n", la_path.size() );
-	bdc.followTrajectory( 0, la_path, maxAccel, maxVel );
+	m = bdc.followTrajectory( 0, la_path, maxAccel, maxVel );
+	send_gateekeper_msg( ARM_LEFT_END, m );
+	
       } else if( mode == 1 ) {
 	printf("Follow right path with %d points  \n", ra_path.size() );
-	bdc.followTrajectory( 1, ra_path, maxAccel, maxVel );
+	m = bdc.followTrajectory( 1, ra_path, maxAccel, maxVel );
+	send_gateekeper_msg( ARM_RIGHT_END, m );
+	
       } else if( mode == 2 ) {
 	printf("Received dual BUT Follow left path with sizes %d  \n",
 	       la_path.size() );
-	bdc.followTrajectory( 0,
+	m = bdc.followTrajectory( 0,
 				  la_path,
 				  maxAccel, maxVel );
+	send_gateekeper_msg( ARM_LEFT_END, m );
       } else {
 	printf("Mode not valid \n");
+	return 1;
       }
     } // poll_bimanual_chan
 
     /** HAND POLLING */
+    int hand_side;
     if( poll_bimanual_chan( &bimanual_hand_chan,
 			    mode,
 			    lh_path,
@@ -123,22 +150,26 @@ int main( int argc, char* argv[] ) {
 	config = *(lh_path.begin());
 	chan = &lh_ref_chan;
 	n_dof = config.size();
+	hand_side = HAND_LEFT_END;
       }      
       else if( mode == 1 ) {
 	config = *(rh_path.begin());
 	chan = &rh_ref_chan;
 	n_dof = config.size();
+	hand_side = HAND_RIGHT_END;
       }
-      else if( mode == 2 ) { printf("\t ! Not implemented yet \n"); break; } // Same as right
-      else { printf("\t ! Mode not valid \n"); break; }
-
+      else if( mode == 2 ) { printf("\t ! Not implemented yet \n"); return 1; } // Same as right
+      else { printf("\t ! Mode not valid \n"); return 1; }
+      
       BaseControl bc;
-      bc.control_n( n_dof,
-		    config,
-		    2.0,
-		    chan,
-		    SNS_MOTOR_MODE_POS );     
-      usleep(2e6);
+      double dt = 2.0;
+      m = bc.control_n( n_dof,
+			config,
+			dt,
+			chan,
+			SNS_MOTOR_MODE_POS );     
+      usleep(dt*1e6);
+      send_gateekeper_msg( hand_side, m );
     }
     
     usleep(1e6*mDt);
@@ -261,4 +292,17 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
   return false;
 }
 
+/**
+ * @function send_gateekeper_msg
+ */
+void send_gateekeper_msg( int _msg_type, bool _result ) {
 
+  gatekeeper_msg msg;
+  sns_msg_header_fill( &msg.header );
+  msg.type = _msg_type;
+  msg.state = _result;
+  
+  ach_put( &gatekeeper_msg_chan,
+	   (void*)&msg, sizeof(msg) );
+
+}
