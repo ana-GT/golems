@@ -104,7 +104,8 @@ TabletopSegmentor<PointT>::TabletopSegmentor() {
   y_filter_min_ = -0.6;  y_filter_max_ = 0.6;
   x_filter_min_ = -0.3; x_filter_max_ = 0.3;
 */
-  z_filter_min_ = 0.4; z_filter_max_ = 1.6;
+//  z_filter_min_ = 0.4; z_filter_max_ = 1.6; // Crichton
+  z_filter_min_ = 0.3; z_filter_max_ = 1.0; // Alita
   y_filter_min_ = -1.0;  y_filter_max_ = 1.0;
   x_filter_min_ = -1.0; x_filter_max_ = 1.0;
 
@@ -157,16 +158,16 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   seg_.setMaxIterations (10000);
   seg_.setNormalDistanceWeight (0.1);
   seg_.setOptimizeCoefficients (true);
-  seg_.setModelType (pcl::SACMODEL_NORMAL_PLANE);
-  //seg_.setModelType( pcl::SACMODEL_PERPENDICULAR_PLANE );
-  //seg_.setEpsAngle( 40*M_PI/180.0 );
-  //seg_.setAxis( Eigen::Vector3f(0,1,0) );
+  //seg_.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+  seg_.setModelType( pcl::SACMODEL_PERPENDICULAR_PLANE );
+  seg_.setEpsAngle( 40*M_PI/180.0 );
+  seg_.setAxis( Eigen::Vector3f(0,1,0) );
   
   seg_.setMethodType (pcl::SAC_RANSAC);
   seg_.setProbability (0.99);
   
-  proj_.setModelType (pcl::SACMODEL_NORMAL_PLANE);
-  //proj_.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
+  //proj_.setModelType (pcl::SACMODEL_NORMAL_PLANE);
+  proj_.setModelType (pcl::SACMODEL_PERPENDICULAR_PLANE);
   
   
   // Clustering parameters
