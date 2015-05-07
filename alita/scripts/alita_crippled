@@ -188,6 +188,7 @@ alita_stop() {
     $SNS kill push_gripstate_right
     $SNS kill pull_bimanual_chan
     $SNS kill pull_bimanual_hand_chan
+    $SNS kill push_gatekeeper_msg_chan
     alita_ach_rm
 }
 
