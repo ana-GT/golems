@@ -32,3 +32,8 @@ add_executable( marker_sendPose marker_sendPose.cpp )
 target_link_libraries( marker_sendPose utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
 set_target_properties( marker_sendPose PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
 ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+add_executable( marker_send3DPos marker_send3DPos.cpp ) 
+target_link_libraries( marker_send3DPos utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
+set_target_properties( marker_send3DPos PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
+ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
