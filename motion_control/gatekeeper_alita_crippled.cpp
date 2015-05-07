@@ -301,6 +301,7 @@ void send_gateekeper_msg( int _msg_type, bool _result ) {
   sns_msg_header_fill( &msg.header );
   msg.type = _msg_type;
   msg.state = _result;
+  sns_msg_set_time( &msg.header, NULL, 0.2*1e9 );
   ach_status r; 
  r = ach_put( &gatekeeper_msg_chan,
 	   (void*)&msg, sizeof(msg) );
