@@ -31,7 +31,7 @@ std::list<Eigen::VectorXd> ra_path;
 ach_channel_t rh_ref_chan;
 std::list<Eigen::VectorXd> rh_path;
 
-/** */
+/** Gatekeeper feedback message */
 ach_channel_t gatekeeper_msg_chan;
 
 /** Dual control */
