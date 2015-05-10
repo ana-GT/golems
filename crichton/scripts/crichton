@@ -4,6 +4,7 @@ CHANNELS="ref-left state-left"
 CHANNELS="$CHANNELS ref-right state-right"
 CHANNELS="$CHANNELS sdhref-left sdhstate-left"
 CHANNELS="$CHANNELS sdhref-right sdhstate-right"
+CHANNELS="$CHANNELS gatekeeper_msg_chan"
 
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
