@@ -30,6 +30,7 @@ enum ACTION {
   STOP = 1
 };
 
+static const std::string gGatekeeper_chan_name("gatekeeper_msg_chan");
 static const std::string gPoint_chan_name("point_chan");
 static const std::string gObj_param_chan_name("obj_param_chan");
 static const std::string gMarker_pose_chan_name("marker_pose_chan");

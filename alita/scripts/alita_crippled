@@ -6,7 +6,9 @@
 
 CHANNELS="ref-left state-left"
 CHANNELS="$CHANNELS gripref-left gripstate-left"
+CHANNELS="$CHANNELS ref-right gripref-right"
 CHANNELS="$CHANNELS state-right gripstate-right"
+CHANNELS="$CHANNELS gatekeeper_msg_chan"
 
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
@@ -127,6 +129,9 @@ alita_start() {
     $SNS run -d pull_bimanual_hand_chan -- \
     achd pull $PLANNING_HOST bimanual_hand_chan
 
+    $SNS run -d push_gatekeeper_msg_chan -- \
+    achd push $PLANNING_HOST gatekeeper_msg_chan	
+
     # Run daemons
     $SNS run -d -r lwa-left -- \
     pcio-sns -c ref-left -s state-left -b $BUS_1_L -m 1 -m 2 -m 3 -m 4 -b $BUS_2_L -m 5 -m 6 -m 7  
@@ -165,6 +170,10 @@ alita_expunge() {
     sudo rm -rf /var/tmp/sns/pull_bimanual_hand_chan
     sudo rm -rf /var/run/sns/pull_bimanual_hand_chan
 
+
+    sudo rm -rf /var/tmp/sns/push_gatekeeper_msg_chan
+    sudo rm -rf /var/run/sns/push_gatekeeper_msg_chan
+
 }
 
 
@@ -179,6 +188,7 @@ alita_stop() {
     $SNS kill push_gripstate_right
     $SNS kill pull_bimanual_chan
     $SNS kill pull_bimanual_hand_chan
+    $SNS kill push_gatekeeper_msg_chan
     alita_ach_rm
 }
 
@@ -187,7 +197,7 @@ alita_steal() {
     chown -R $1 /var/run/sns/lwa-left \
 	/var/tmp/sns/lwa-left \
 	/var/run/sns/grip-left \
-	/var/tmp/sns/grip-left \
+	/var/tmp/sns/grip-left 
 }
 
 #***************************

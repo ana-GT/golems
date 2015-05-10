@@ -361,7 +361,7 @@ void loadDefault() {
   
   // Values from the hardware
   double dx, dy, dz;
-  dx = 0.0575; dy = 0.04; dz = 0.085;
+  dx = 0.05625; dy = 0.04; dz = 0.074;
     
   // Load default Tjoint_markers
   mTjm.resize(4);
@@ -380,7 +380,7 @@ void loadDefault() {
 
 
   // mMarkerIndices
-  mId[0][0] = 200; mId[0][1] = 23; mId[0][2] = 200; mId[0][3] = 29;// Left
+  mId[0][0] = 23; mId[0][1] = 200; mId[0][2] = 85; mId[0][3] = 29;// Left
   mId[1][0] = 200; mId[1][1] = 200; mId[1][2] = 200; mId[1][3] = 200;// Right
   
 }
