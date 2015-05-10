@@ -327,7 +327,6 @@ void send( int state, void* userData ) {
   msg.mesh_generated = true;
   strcpy( msg.mesh_filename, outputName );
   
-  
   ach_status_t r = ach_put( &mObj_param_chan, &msg, sizeof(msg) );
   if( r != ACH_OK ) {
     printf("\t [BAD] Error sending message \n");

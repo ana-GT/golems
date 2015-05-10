@@ -3,7 +3,6 @@
  */
 #pragma once
 
-
 /**
  * @struct SQ_parameters
  */
