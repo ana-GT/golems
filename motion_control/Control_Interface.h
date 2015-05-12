@@ -25,7 +25,7 @@ class Control_Interface {
 		     ach_channel_t* _chan_output );
 
   bool update();
-  void get_state( Eigen::VectorXd &_q,
+  bool get_state( Eigen::VectorXd &_q,
 		  Eigen::VectorXd &_dq );
 
   /** GENERAL FUNCTIONS */

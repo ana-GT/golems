@@ -101,15 +101,15 @@ bool Limb_Interface::update() {
   return update_arm() && update_hand();
 }
 
-void Limb_Interface::get_arm_state( Eigen::VectorXd &_q,
+bool Limb_Interface::get_arm_state( Eigen::VectorXd &_q,
 				    Eigen::VectorXd &_dq ) {
 
-  mAi.get_state( _q, _dq );
+  return mAi.get_state( _q, _dq );
 }
 
-void Limb_Interface::get_hand_state( Eigen::VectorXd &_q,
+bool Limb_Interface::get_hand_state( Eigen::VectorXd &_q,
 				     Eigen::VectorXd &_dq ) {
-  mHi.get_state( _q, _dq );
+  return mHi.get_state( _q, _dq );
 }
 
 /**

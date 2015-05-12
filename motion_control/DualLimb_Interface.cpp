@@ -100,20 +100,20 @@ bool DualLimb_Interface::update_hand( int _i ) {
  * @function get_arm_state
  * @brief
  */
-void DualLimb_Interface::get_arm_state( int _i,
+bool DualLimb_Interface::get_arm_state( int _i,
 					Eigen::VectorXd &_q,
 					Eigen::VectorXd &_dq ) {
-  mLi[_i].get_arm_state( _q, _dq );
+  return mLi[_i].get_arm_state( _q, _dq );
 }
 
 /**
  * @function get_hand_state
  * @brief
  */
-void DualLimb_Interface::get_hand_state( int _i,
+bool DualLimb_Interface::get_hand_state( int _i,
 					 Eigen::VectorXd &_q,
 					 Eigen::VectorXd &_dq ) {
-  mLi[_i].get_hand_state( _q, _dq );
+  return mLi[_i].get_hand_state( _q, _dq );
 }
 
 

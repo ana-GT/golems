@@ -28,10 +28,10 @@ class DualLimb_Interface  {
   bool update_arm( int _i );
   bool update_hand( int _i );
   
-  void get_arm_state( int _i,
+  bool get_arm_state( int _i,
 		      Eigen::VectorXd &_q,
 		      Eigen::VectorXd &_dq );
-  void get_hand_state( int _i,
+  bool get_hand_state( int _i,
 		       Eigen::VectorXd &_q,
 		       Eigen::VectorXd &_dq );
 

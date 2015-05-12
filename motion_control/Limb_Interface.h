@@ -59,9 +59,9 @@ class Limb_Interface  {
   bool update_arm();
   bool update_hand();
   
-  void get_arm_state( Eigen::VectorXd &_q,
+  bool get_arm_state( Eigen::VectorXd &_q,
 		      Eigen::VectorXd &_dq );
-  void get_hand_state( Eigen::VectorXd &_q,
+  bool get_hand_state( Eigen::VectorXd &_q,
 		       Eigen::VectorXd &_dq );
 
   bool follow_arm_trajectory( const std::list<Eigen::VectorXd> &_path );

@@ -57,12 +57,15 @@ bool Control_Interface::update() {
 /**
  * @function get_state
  */
-void Control_Interface::get_state( Eigen::VectorXd &_q,
+bool Control_Interface::get_state( Eigen::VectorXd &_q,
 				   Eigen::VectorXd &_dq ) {
 
-  while( !this->update() ) {}
-  _q = mq;
-  _dq = mdq;
+  if( !this->update() ) { return false; }
+  else {
+    _q = mq;
+    _dq = mdq;
+    return true;
+  }
 }
 
 
@@ -83,7 +86,7 @@ bool Control_Interface::update_n( size_t n,
   ach_status_t r = sns_msg_local_get( chan, &buf,
 				      &frame_size,
 				      ts,
-				      ACH_O_LAST | (ts ? ACH_O_WAIT : 0) );
+				      ACH_O_LAST | (ts ? ACH_O_WAIT|ACH_O_ABSTIME : 0) );
   
   switch(r) {
   case ACH_OK:
