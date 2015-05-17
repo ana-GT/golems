@@ -125,7 +125,7 @@ template<typename PointT>
 bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) {
 
   std::cout <<"\t [INFO] PROCESSING CLOUD STARTS..." << std::endl;
-
+  
   // PCL objects
   KdTreePtr normals_tree_, clusters_tree_;
   pcl::VoxelGrid<PointT> grid_, grid_objects_;
@@ -298,37 +298,55 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
    std::cout<<"\t [ERROR] No object points on table" << std::endl;
    return false;
  }
-
+ 
  if( pcl::io::savePCDFileASCII( "objects_cloud.pcd", *cloud_objects_ptr ) == 0 ) {
    std::cout << "\t [DEBUG] Saved DEBUG object_cloud.pcd"<< std::endl;
  }
 
-std::cout <<"\t [OK] Step 6 (Getting object point candidates)"<<std::endl;
-std::cout<<"\t [INFO] Number of object points: " <<(int)cloud_objects_ptr->points.size() << std::endl;
-// Downsample the points
-PointCloudPtr cloud_objects_downsampled_ptr (new PointCloud);
-grid_objects_.setInputCloud (cloud_objects_ptr);
-grid_objects_.filter (*cloud_objects_downsampled_ptr);
-// Step 6: Split the objects into Euclidean clusters
-std::vector<pcl::PointIndices> clusters2;
-pcl_cluster_.setInputCloud (cloud_objects_downsampled_ptr);
-pcl_cluster_.extract (clusters2);
-mClusterInds = clusters2;
-std::cout<<"\t [OK] Number of clusters found: "<<(int)clusters2.size () << std::endl;
-// Convert clusters into the PointCloud message
-getClustersFromPointCloud2<PointT> (*cloud_objects_downsampled_ptr, clusters2, mClusters );
-std::cout<<"\t [OK] Clusters converted"<<std::endl;
-// DEBUG ------------
-for( int i = 0; i < mClusters.size(); ++i ) {
-char name[50];
-sprintf(name, "cluster_%d.pcd", i );
-if( pcl::io::savePCDFile( name, mClusters[i], true ) != 0 ) {
-std::cout << "\t [DEBUG ERROR] Error saving cluster cloud"<< std::endl;
-}
-}
-std::cout << "\t[DEBUG] Saved clusters all right"<< std::endl;
-// DEBUG ------------
-std::cout << "\t [INFO] Finished processing cloud" << std::endl;
+ std::cout <<"\t [OK] Step 6 (Getting object point candidates)"<<std::endl;
+ std::cout<<"\t [INFO] Number of object points: " <<(int)cloud_objects_ptr->points.size() << std::endl;
+ // Downsample the points
+ PointCloudPtr cloud_objects_downsampled_ptr (new PointCloud);
+ grid_objects_.setInputCloud (cloud_objects_ptr);
+ grid_objects_.filter (*cloud_objects_downsampled_ptr);
+ // Step 6: Split the objects into Euclidean clusters
+ std::vector<pcl::PointIndices> clusters2;
+ pcl_cluster_.setInputCloud (cloud_objects_downsampled_ptr);
+ pcl_cluster_.extract (clusters2);
+ mClusterInds.resize( clusters2.size() );
+ for( int i = 0; i < clusters2.size(); ++i ) {
+   mClusterInds[i] = clusters2[i];
+ }
+ std::cout<<"\t [OK] Number of clusters found: "<<(int)clusters2.size () << std::endl;
+ mClusters.resize( clusters2.size() );
+ int i = 0;
+ for( std::vector<pcl::PointIndices>::const_iterator it = 
+	clusters2.begin (); it != clusters2.end (); ++it ) {
+   PointCloud cloud_cluster;
+   for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit) {
+     cloud_cluster.points.push_back (cloud_objects_downsampled_ptr->points[*pit]); 
+   }
+   cloud_cluster.width = cloud_cluster.points.size ();
+   cloud_cluster.height = 1;
+   cloud_cluster.is_dense = true;
+
+   mClusters[i] = cloud_cluster;
+   i++;
+ }
+
+ std::cout<<"\t [OK] Clusters converted"<<std::endl;
+ // DEBUG ------------
+ for( int i = 0; i < mClusters.size(); ++i ) {
+   char name[50];
+   sprintf(name, "cluster_%d.pcd", i );
+   if( pcl::io::savePCDFile( name, mClusters[i], true ) != 0 ) {
+     std::cout << "\t [DEBUG ERROR] Error saving cluster cloud"<< std::endl;
+   }
+ }
+ std::cout << "\t[DEBUG] Saved clusters all right"<< std::endl;
+ // DEBUG ------------
+ std::cout << "\t [INFO] Finished processing cloud" << std::endl;
+ 
 return true;
 }
 

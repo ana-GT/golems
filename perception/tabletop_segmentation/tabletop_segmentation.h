@@ -88,8 +88,8 @@ public:
     double table_padding_;
     
     /** Info that will be messages */
-    std::vector<PointCloud> mClusters;
-    std::vector<pcl::PointIndices> mClusterInds;
+    std::vector<PointCloud, Eigen::aligned_allocator<PointCloud> > mClusters;
+    std::vector<pcl::PointIndices, Eigen::aligned_allocator<pcl::PointIndices> > mClusterInds;
     PointCloud mTable_Points;
     PointCloud mTableHull_Points;
     std::vector<double> mTableCoeffs; 
@@ -98,6 +98,9 @@ public:
     PointCloud dDownsampledFilteredCloud;
     PointCloud dTableInliers;
     PointCloud dTableProjected;
+
+ public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
    
 };
 
