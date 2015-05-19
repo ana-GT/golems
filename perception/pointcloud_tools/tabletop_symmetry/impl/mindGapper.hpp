@@ -18,10 +18,14 @@ int getNumNeighbors( const cv::Mat &_mat,
 /**
  * @function sortIndices
  */
-struct temp_t { double metric; unsigned int ind; };
-bool sorting( temp_t a, temp_t b ) { return  (a.metric < b.metric); }
+struct temp_t { double metric; double dist; unsigned int ind; };
+bool sorting( temp_t a, temp_t b ) { 
+  if( a.metric != b.metric ) { return  (a.metric < b.metric); }
+  else { return (a.dist < b.dist); }
+}
 
-std::vector<unsigned int> sortIndices( std::vector<double> _metrics ) {
+std::vector<unsigned int> sortIndices( std::vector<double> _metrics,
+				       std::vector<double> _dists ) {
 
   std::vector<unsigned int> sortedIndices;
 
@@ -30,6 +34,7 @@ std::vector<unsigned int> sortIndices( std::vector<double> _metrics ) {
     temp_t tt;
     tt.ind = i;
     tt.metric = _metrics[i];
+    tt.dist = _dists[i];
     sorted.push_back(tt);
   }
 
@@ -107,6 +112,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
 
   Eigen::Matrix3d symmRt;
   std::vector<Eigen::Matrix3d> candidateSymmRts;
+  std::vector<double>  candidateDists;
 
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
@@ -131,7 +137,8 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
       mValidity.push_back( true );
-      candidateSymmRts.push_back( symmRt ); 
+      candidateSymmRts.push_back( symmRt );
+      candidateDists.push_back( mDj*j );
 
     } // end for N    
   } // end for M
@@ -158,7 +165,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
       if( mMarkMask.at<uchar>(py,px) == 0 ) {
 	outOfMask++;  delta_1 += mDTMask.at<float>(py,px);
       }
-
+      
       // MEASURE 2: IN-MASK PIXELS IN FRONT OF VISIBLE PIXELS
       else {
 	double dp = (double)(mDepthMask.at<float>(py,px));
@@ -176,15 +183,17 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
     // Expected values
     if( mValidity[i] == false ) { mDelta1[i] = 1000000; mDelta2[i] = 1000000; }
 
-    mDelta1[i] =  delta_1 / (double) outOfMask;
+    if( outOfMask == 0 ) { mDelta1[i] = 0; }
+    else{ mDelta1[i] =  delta_1 / (double) outOfMask; }
+
     if( frontOfMask == 0 ) { mDelta2[i] = 0; }
     else { mDelta2[i] =  (delta_2 / (double)frontOfMask); } 
-
+    printf("[%d] Delta1: %f, delta2: %f \n", i, mDelta1[i], mDelta2[i] );
   } // for each candidate
 
   // Select the upper section according to delta_1
   std::vector<unsigned int> delta1_priority;
-  delta1_priority = sortIndices( mDelta1 );
+  delta1_priority = sortIndices( mDelta1, candidateDists );
 
   // Get the first 10% according to delta_1
   std::vector<double> delta2_selected;
@@ -194,7 +203,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
 
   // Prioritize according to delta_2
   std::vector<unsigned int> delta2_priority;
-  delta2_priority = sortIndices( delta2_selected );
+  delta2_priority = sortIndices( delta2_selected, candidateDists );
   
   int minIndex = delta1_priority[delta2_priority[0]];
     
