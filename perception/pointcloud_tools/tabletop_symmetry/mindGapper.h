@@ -48,7 +48,13 @@ class mindGapper {
   /**< Generates mirroring cloud */
   int complete( PointCloudPtr &_cloud );
 
+  /**< Get the symmetry Tf: Z is the table plane and the rest comes from the symmetry plane */
+  void getSymmetryApprox( Eigen::Isometry3d &_Tf,
+			  Eigen::Vector3d &_dim );
 
+  void calculateSymmTf( const Eigen::Matrix3d &_Rt,
+			const PointCloudPtr &_cloud );
+  
   bool generate2DMask( PointCloudPtr _segmented_cloud,
 		       cv::Mat &_markMask,
 		       cv::Mat &_depthMask );
@@ -77,10 +83,12 @@ class mindGapper {
 
   PointCloudPtr mProjected;
   std::vector<PointCloudPtr> mCandidates;
-  std::vector<double> mDelta;
   std::vector<double> mDelta1;
   std::vector<double> mDelta2;
+  std::vector<bool> mValidity;
   PointCloudPtr mCloud;
+  Eigen::Isometry3d mSymmTf;
+  Eigen::Vector3d mBBDim;
 
   /**< Variables */
   Eigen::VectorXd mPlaneCoeffs;

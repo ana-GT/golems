@@ -28,6 +28,8 @@ class SQ_fitter {
   typedef typename pcl::PointCloud<PointT>::Ptr PointCloudPtr;
 
   void setInputCloud( const PointCloudPtr &_cloud );
+  void setInitialApprox( const Eigen::Isometry3d &_Tsymm,
+			 const Eigen::Vector3d &_Bb );
   void getBoundingBox(const PointCloudPtr &_cloud,
 		      double _dim[3],
 		      double _trans[3],
@@ -59,7 +61,6 @@ class SQ_fitter {
 		       const PointCloudPtr &_cloud );
 
   void printResults();
-  void visualize();
   PointCloudPtr getSampledOutput();
   
   void getFinalParams( SQ_parameters &_par ) { 
@@ -76,7 +77,12 @@ class SQ_fitter {
   double smin_; /**< Minimum voxel size */
   int N_; /**< Number of scales */
   double thresh_; /**< Error threshold */
-
+  bool mGotInitApprox;
+  double mInitDim[3]; double mInitRot[3]; double mInitTrans[3];
+  double mLowerLim_dim[3]; double mUpperLim_dim[3]; 
+  double mLowerLim_rot[3]; double mUpperLim_rot[3]; 
+  double mLowerLim_trans[3]; double mUpperLim_trans[3]; 
+  double mLowerLim_e; double mUpperLim_e; 
 };
 
 

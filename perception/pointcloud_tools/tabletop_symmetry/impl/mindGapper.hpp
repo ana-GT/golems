@@ -6,6 +6,7 @@
 //#include <pcl/visualization/cloud_viewer.h>
 #include <pcl/common/pca.h>
 #include <pcl/common/centroid.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 #include "../dt/dt.h"
 
@@ -69,7 +70,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   generateBorder();
 
   // Refill mask holes
-  for( int c = 0; c <= 1; ++c ) {
+  for( int c = 0; c < 2; ++c ) {
     growMask( mMarkMask, 4, 125, 0, 125 );
   }
 
@@ -89,7 +90,6 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   mEa << (double) evec(0,0), (double) evec(1,0), (double) evec(2,0);
   mEb << (double) evec(0,1), (double) evec(1,1), (double) evec(2,1);
 
-
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;
   v = mC; // viewing vector from Kinect origin (0,0,0) to centroid of projected cloud (mC)
@@ -105,6 +105,9 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   Eigen::VectorXd sp(4);
   Eigen::Vector3d np, cp, dir;
 
+  Eigen::Matrix3d symmRt;
+  std::vector<Eigen::Matrix3d> candidateSymmRts;
+
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
     
@@ -114,8 +117,11 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
     s_sample = Eigen::AngleAxisd( ang, Np )*s;
     np = s_sample.cross( Np ); np.normalize();
     
+    // Store symmetry reference Transformation
+    symmRt.col(2) = Np; symmRt.col(1) = s_sample; symmRt.col(0) = np;
+ 
     for( int j = 0; j < mN; ++j ) {
-
+      
       if( np.dot(v) > -np.dot(v) ) { dir = np; } else { dir = -np; }
       cp = mC + dir*mDj*j;
 
@@ -124,20 +130,17 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
+      mValidity.push_back( true );
+      candidateSymmRts.push_back( symmRt ); 
 
     } // end for N    
   } // end for M
 
   // 6. Evaluate (optimization)
-  mDelta.resize( mCandidates.size() );
   mDelta1.resize( mCandidates.size() );
   mDelta2.resize( mCandidates.size() );
 
-  cv::Mat mark_i = printDebugMask();
-  char name[50]; sprintf(name, "mask.png" ); cv::imwrite( name, mark_i );  
-
   for( int i = 0; i < mCandidates.size(); ++i ) {
-    cv::Mat candMat = mark_i.clone();
     // Check inliers and outliers
     int px, py; PointT P;
     int outOfMask = 0; int frontOfMask = 0;
@@ -148,14 +151,12 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
       px = (int)( mF*(P.x / P.z) + mCx );
       py = (int)( mF*(P.y / P.z) + mCy );
       
-      if( px < 0 || px >= mWidth ) { return -1; }
-      if( py < 0 || py >= mHeight ) { return -1; }
+      if( px < 0 || px >= mWidth ) { mValidity[i] = false; break; }
+      if( py < 0 || py >= mHeight ) { mValidity[i] = false; break; }
            
       // MEASURE 1: OUT-OF-MASK PIXELS DISTANCE TO CLOSEST MASK PIXEL
       if( mMarkMask.at<uchar>(py,px) == 0 ) {
-	outOfMask++;
-	delta_1 += mDTMask.at<float>(py,px);
-	cv::Vec3b col(0,255,0); candMat.at<cv::Vec3b>(py,px) = col;
+	outOfMask++;  delta_1 += mDTMask.at<float>(py,px);
       }
 
       // MEASURE 2: IN-MASK PIXELS IN FRONT OF VISIBLE PIXELS
@@ -164,9 +165,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
 	if( dp == 0 ) { continue; }
 	double d = P.z - dp;
 	if( d < 0 ) {
-	  frontOfMask++;
-	  delta_2 += -d;
-	  cv::Vec3b col(255,0,0); candMat.at<cv::Vec3b>(py,px) = col;
+	  frontOfMask++;  delta_2 += -d;
 	}
 
       }
@@ -175,9 +174,11 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
     } // end for it
     
     // Expected values
+    if( mValidity[i] == false ) { mDelta1[i] = 1000000; mDelta2[i] = 1000000; }
+
     mDelta1[i] =  delta_1 / (double) outOfMask;
     if( frontOfMask == 0 ) { mDelta2[i] = 0; }
-    else { mDelta2[i] =  (delta_2 / (double)frontOfMask); } // * 1000.0 / 0.00780; }// mmx pix/mm
+    else { mDelta2[i] =  (delta_2 / (double)frontOfMask); } 
 
   } // for each candidate
 
@@ -190,6 +191,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   for( int i = 0; i < (int)((0.1)*mCandidates.size()); ++i ) {
     delta2_selected.push_back( mDelta2[ delta1_priority[i] ] );
   }
+
   // Prioritize according to delta_2
   std::vector<unsigned int> delta2_priority;
   delta2_priority = sortIndices( delta2_selected );
@@ -197,14 +199,62 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   int minIndex = delta1_priority[delta2_priority[0]];
     
   _cloud = mCandidates[ minIndex ];
-  printf("Min index: %d \n", minIndex );
-  for( it = mCloud->begin(); it != mCloud->end(); ++it ) {
-    _cloud->points.push_back( *it );
-  }
+  _cloud->insert( _cloud->end(), mCloud->begin(), mCloud->end() );
   _cloud->width = 1; _cloud->height = _cloud->points.size();
-  
+  printf("Min index: %d \n", minIndex );
+
+  // Set symmetry transformation
+  symmRt = candidateSymmRts[minIndex];
+
+  // Put in symmetry axis
+  calculateSymmTf( symmRt, _cloud );
+
   return minIndex;
 }
+
+/**
+ * @function calculateSymmTf
+ * @brief Calculate the symmetry plane and bounding box approximation
+ */
+template<typename PointT>
+void mindGapper<PointT>::calculateSymmTf( const Eigen::Matrix3d &_Rt,
+					  const PointCloudPtr &_cloud ) {
+
+  PointCloudPtr Ps( new PointCloud() );
+  Eigen::Affine3f Tf; Tf.setIdentity();
+  Eigen::Matrix3f Rf; Rf = _Rt.cast<float>();
+  Tf.matrix().block(0,0,3,3) = Rf.transpose(); 
+  pcl::transformPointCloud( *_cloud, *Ps, Tf );
+
+  pcl::MomentOfInertiaEstimation <PointT> feature_extractor;  
+  feature_extractor.setInputCloud (Ps);
+  feature_extractor.compute();
+  PointT mp, Mp;
+  feature_extractor.getAABB (mp, Mp);
+
+  // Tf
+  mSymmTf.setIdentity();
+  mSymmTf.linear() = _Rt;
+  mSymmTf.translation() << (double)0.5*(mp.x + Mp.x), 
+    (double)0.5*(mp.y + Mp.y), (double)0.5*(mp.z + Mp.z);
+  
+  mSymmTf.translation() = _Rt*mSymmTf.translation();
+
+  // Dimm
+  mBBDim << (double)0.5*(Mp.x - mp.x), 
+    (double)0.5*(Mp.y - mp.y), (double)0.5*(Mp.z - mp.z);
+}
+
+/**
+ * @function getSymmetryApprox
+ */
+template<typename PointT>
+void mindGapper<PointT>::getSymmetryApprox( Eigen::Isometry3d &_Tf,
+					    Eigen::Vector3d &_dim ) {  
+  _Tf = mSymmTf;
+  _dim = mBBDim;
+}
+
 
 /**
  * @function generate2DMask
@@ -234,17 +284,6 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
     _depthMask.at<float>(py,px) = (float)P.z;
   }
   
-  // Mark mask with points with 8 neighbors
-  /*
-  int addedPoints = 0;
-  int i = 4;
-  for( int j = 0; j < 2; ++j ) {
-    addedPoints += growMask( _markMask, i, 125, 0, 125 );
-    i++;
-  }
-  */
-  //  printf("Added %d points: %f \n", addedPoints, (double)addedPoints/(_segmented_cloud->points.size()));
-
   return true;
 }
 
@@ -321,9 +360,9 @@ void mindGapper<PointT>::setDeviceParams( int _width, int _height,
 template<typename PointT>
 void mindGapper<PointT>::reset() {
   mCandidates.resize(0);
-  mDelta.resize(0);
   mDelta1.resize(0);
   mDelta2.resize(0);
+  mValidity.resize(0);
 }
 
 template<typename PointT>
@@ -356,8 +395,7 @@ void mindGapper<PointT>::generateBorder() {
       // Right
       if( current == 0 && prev == 255 ) {
 	mBorders[1][j] = i-1;
-      } 
-      
+      }       
       prev = current;
       ptr++;  
     
@@ -451,35 +489,6 @@ typename mindGapper<PointT>::PointCloudPtr mindGapper<PointT>::mirrorFromPlane( 
   return mirrored;
 }
 
-/**
- * @function viewMirror
- */
-template<typename PointT>
-bool mindGapper<PointT>::viewMirror( int _ind ) {
-/*
-  if( _ind >= mCandidates.size() || _ind < 0 ) {
-    return false; 
-  }
-
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Mind Gap") );
-  viewer->setBackgroundColor(0,0,0);
-  viewer->addCoordinateSystem(1.0, 0 );
-  viewer->initCameraParameters();
-
-  // Original - GREEN, mirror - BLUE
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_color( mCloud, 0, 255, 0 );
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> mirror_color( mCandidates[_ind], 0, 0, 255 );
-  viewer->addPointCloud( mCandidates[_ind], "mirror_cloud" );
-  viewer->addPointCloud( mCloud, cloud_color, "cloud" );
-  
-  while( !viewer->wasStopped() ) {
-    viewer->spinOnce(100);
-    boost::this_thread::sleep( boost::posix_time::microseconds(100000));
-  }
-  
-  return true;
-*/
-}
 
 /**
  * @function printMirror
@@ -529,57 +538,6 @@ void mindGapper<PointT>::printMirror( int _ind ) {
   imwrite( name, mark_i );
 
 }
-
-
-/**
- * @function viewInitialParameters
- * @brief View projected cloud, centroid and 2 eigenvalues Ea and Eb
- */
-template<typename PointT>
-bool mindGapper<PointT>::viewInitialParameters() {
-/*
-  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer( new pcl::visualization::PCLVisualizer("Initial") );
-  viewer->setBackgroundColor(0,0,0);
-  viewer->addCoordinateSystem(1.0, 0 );
-  viewer->initCameraParameters();
-
-  // Original green, mirror blue
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> cloud_color( mCloud, 0, 255, 0 );
-  pcl::visualization::PointCloudColorHandlerCustom<PointT> projected_color( mProjected, 0, 0, 255 );
-  viewer->addPointCloud( mProjected, projected_color, "projected" );
-  viewer->addPointCloud( mCloud, cloud_color, "cloud" );
-  
-  // Center red ball
-  PointT c;
-  c.x = mC(0); c.y = mC(1); c.z = mC(2);
-  double r, g, b;
-  r = 1; g = 0; b = 0;
-  viewer->addSphere( c, 0.015, r, g, b, "centroid" );
-
-  // Draw Eigen vectors: ea magenta, eb yellow
-  PointT pea, peb;
-  double l = 0.20;
-  pea.x = c.x + mEa(0)*l;   pea.y = c.y + mEa(1)*l;   pea.z = c.z + mEa(2)*l;
-  peb.x = c.x + mEb(0)*l;   peb.y = c.y + mEb(1)*l;   peb.z = c.z + mEb(2)*l;
-
-  r = 1.0; g = 0.0; b = 1.0;
-  viewer->addLine( c, pea, r, g, b, "ea", 0 );
-  r = 1.0; g = 1.0; b = 0.0;
-  viewer->addLine( c, peb,  r, g, b, "eb", 0 );
-
-  while( !viewer->wasStopped() ) {
-    viewer->spinOnce(100);
-    boost::this_thread::sleep( boost::posix_time::microseconds(100000));
-  }
-
-  
-  return true;
-*/
-}
-
-
-
-
 
 int getNumNeighbors( const cv::Mat &_mat, 
 		     int pi, int pj, 
