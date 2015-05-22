@@ -187,8 +187,6 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
   Eigen::Matrix3f eigVec = pca.getEigenVectors();
   // Make sure 3 vectors are normal w.r.t. each other
   
-  std::cout << "Bounding box axes: \n"<< eigVec << std::endl;
-
   eigVec.col(2) = eigVec.col(0); // Z
   Eigen::Vector3f v3 = (eigVec.col(1)).cross( eigVec.col(2) );
   eigVec.col(0) = v3; 

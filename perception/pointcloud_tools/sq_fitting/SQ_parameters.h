@@ -28,5 +28,4 @@ struct SQ_parameters_msg {
   SQ_parameters param;
   char mesh_filename[255];
   bool mesh_generated;
-
 };

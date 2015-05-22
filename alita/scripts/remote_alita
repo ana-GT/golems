@@ -13,6 +13,13 @@ CHANNELS="$CHANNELS gatekeeper_msg_chan"
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
 
+# Server channels
+SERVER_CHANNELS="server2plan_chan plan2server_chan"
+SERVER_CHANNELS="$SERVER_CHANNELS server2see_chan see2server_chan"
+
+# Object channel
+OBJECT_CHANNEL="obj_param_chan"
+
 # Workstations 
 PLANNING_HOST="powell"
 CONTROL_HOST="baley" 
@@ -47,6 +54,14 @@ alita_ach_mk() {
     for c in $TRAJ_CHANNELS; do
         ach mk -m 7 -n 3000 -1 -o 666 $c
     done  
+
+    # For server
+    for c in $SERVER_CHANNELS; do
+        ach mk -1 -o 666 $c
+    done  
+
+    # Object channel
+    ach mk -1 -o 666 $OBJECT_CHANNEL
 }
 
 # Remove channels
@@ -58,6 +73,13 @@ alita_ach_rm() {
     for c in $TRAJ_CHANNELS; do
 	ach rm $c
     done
+
+    for c in $SERVER_CHANNELS; do
+	ach rm $c
+    done
+
+    # Object channel
+    ach rm $OBJECT_CHANNEL
 }
 
 #***************************

@@ -42,6 +42,10 @@ public:
     /** Destructor */
     ~TabletopSegmentor() {}
     
+    /** Set filter parameters */
+    void set_filter_minMax( const double &_xmin, const double &_xmax,
+			    const double &_ymin, const double &_ymax,
+			    const double &_zmin, const double &_zmax );
     
     //------------------- Complete processing -----
     
@@ -57,9 +61,9 @@ public:
     }
 
     PointCloud getTable() { return mTable_Points; }
+    Eigen::Isometry3d getTableTf() { return mTableTf; }
     std::vector<double> getTableCoeffs() { return mTableCoeffs; }
     
-    PointCloud getDownFilteredCloud() { return dDownsampledFilteredCloud; }
     pcl::ConvexHull<pcl::PointXYZ> ph;
  private:
     
@@ -74,7 +78,7 @@ public:
     double y_filter_min_, y_filter_max_;
     double x_filter_min_, x_filter_max_;
     //! Filtering of point cloud in table frame after table detection
-    double table_z_filter_min_, table_z_filter_max_;
+    double table_obj_height_filter_min_, table_obj_height_filter_max_;
     //! Min distance between two clusters
     double cluster_distance_;
     //! Min number of points for a cluster
@@ -91,14 +95,10 @@ public:
     std::vector<PointCloud, Eigen::aligned_allocator<PointCloud> > mClusters;
     std::vector<pcl::PointIndices, Eigen::aligned_allocator<pcl::PointIndices> > mClusterInds;
     PointCloud mTable_Points;
+    Eigen::Isometry3d mTableTf;
     PointCloud mTableHull_Points;
     std::vector<double> mTableCoeffs; 
     
-    /** Debugging variables */
-    PointCloud dDownsampledFilteredCloud;
-    PointCloud dTableInliers;
-    PointCloud dTableProjected;
-
  public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
    

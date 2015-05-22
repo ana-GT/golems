@@ -33,6 +33,7 @@ enum ACTION {
 static const std::string gGatekeeper_chan_name("gatekeeper_msg_chan");
 static const std::string gPoint_chan_name("point_chan");
 static const std::string gObj_param_chan_name("obj_param_chan");
+static const std::string gMarker_robot_chan_name("marker_robot_chan");
 static const std::string gMarker_pose_chan_name("marker_pose_chan");
 static const std::string gServer2See_chan_name("server2see_chan");
 static const std::string gSee2Server_chan_name("see2server_chan");

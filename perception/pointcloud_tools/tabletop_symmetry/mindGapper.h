@@ -41,6 +41,7 @@ class mindGapper {
   void setDeviceParams( int _width = 640, int _height = 480, 
 			double _focal_length_in_pixels = 525,
 			double _cx = 320, double _cy = 240 );
+  void setFocalDist(double _f) { mF = _f; }
 
   /** Reset storage variables for new mirror operation */
   void reset();

@@ -148,6 +148,8 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   mDelta2.resize( mCandidates.size() );
 
   for( int i = 0; i < mCandidates.size(); ++i ) {
+
+    
     // Check inliers and outliers
     int px, py; PointT P;
     int outOfMask = 0; int frontOfMask = 0;
@@ -155,8 +157,8 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
     for( it = mCandidates[i]->begin(); 
 	 it != mCandidates[i]->end(); ++it ) {
       P = (*it);
-      px = (int)( mF*(P.x / P.z) + mCx );
-      py = (int)( mF*(P.y / P.z) + mCy );
+      px = (int)( mF*(-P.x / P.z) + mCx );
+      py = (int)( mF*(-P.y / P.z) + mCy );
       
       if( px < 0 || px >= mWidth ) { mValidity[i] = false; break; }
       if( py < 0 || py >= mHeight ) { mValidity[i] = false; break; }
@@ -164,6 +166,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
       // MEASURE 1: OUT-OF-MASK PIXELS DISTANCE TO CLOSEST MASK PIXEL
       if( mMarkMask.at<uchar>(py,px) == 0 ) {
 	outOfMask++;  delta_1 += mDTMask.at<float>(py,px);
+	//cv::Vec3b col(0,0,255);  mi.at<cv::Vec3b>(py,px) = col;
       }
       
       // MEASURE 2: IN-MASK PIXELS IN FRONT OF VISIBLE PIXELS
@@ -173,11 +176,11 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
 	double d = P.z - dp;
 	if( d < 0 ) {
 	  frontOfMask++;  delta_2 += -d;
+	  //cv::Vec3b col(255,0,255);  mi.at<cv::Vec3b>(py,px) = col;
 	}
 
       }
  
-      
     } // end for it
     
     // Expected values
@@ -188,7 +191,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
 
     if( frontOfMask == 0 ) { mDelta2[i] = 0; }
     else { mDelta2[i] =  (delta_2 / (double)frontOfMask); } 
-    printf("[%d] Delta1: %f, delta2: %f \n", i, mDelta1[i], mDelta2[i] );
+
   } // for each candidate
 
   // Select the upper section according to delta_1
@@ -280,11 +283,12 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
   // Segmented pixels: 255, No-segmented: 0
   PointCloudIter it;
   PointT P; int px; int py;
+ 
   for( it = _segmented_cloud->begin(); 
        it != _segmented_cloud->end(); ++it ) {
     P = (*it);
-    px = (int)( mF*(P.x / P.z) + mCx );
-    py = (int)( mF*(P.y / P.z) + mCy );
+    px = (int)( mCx - mF*(P.x / P.z) );
+    py = (int)( mCy - mF*(P.y / P.z) );
 
     if( px < 0 || px >= mWidth ) { return false; }
     if( py < 0 || py >= mHeight ) { return false; }
@@ -292,7 +296,7 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
     _markMask.at<uchar>(py,px) = 255;
     _depthMask.at<float>(py,px) = (float)P.z;
   }
-  
+
   return true;
 }
 
@@ -516,8 +520,8 @@ void mindGapper<PointT>::printMirror( int _ind ) {
   for( it = mCandidates[_ind]->begin(); 
        it != mCandidates[_ind]->end(); ++it ) {
     P = (*it);
-    px = (int)( mF*(P.x / P.z) + mCx );
-    py = (int)( mF*(P.y / P.z) + mCy );
+    px = (int)( mCx - mF*(P.x / P.z) );
+    py = (int)( mCy - mF*(P.y / P.z) );
     
     // If outside: YELLOW
     if( mMarkMask.at<uchar>(py,px) != 255 ) {

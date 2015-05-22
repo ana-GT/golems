@@ -1,16 +1,82 @@
 /**
  * @file perception_msgs.h
- * @brief Last modified: Tuesday, October 14th, 2014
+ * @brief Last modified: Wednesday, May 20th, 2015
  * @author A. Huaman Quispe <ahuaman3 at gatech dot edu>
  */
 #pragma once
-
 
 #include <sns.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+  /**
+   * @struct sns_msg_marker_robot
+   * @brief Carries the marker position of known joints with marker in the robot frame
+   */
+  struct sns_msg_marker_robot {
+    struct sns_msg_header header;
+    struct {
+      double x[2]; // 0: left, 1: right
+      double y[2];
+      double z[2];
+      double id[2]; // marker id
+    } u[1];
+  };
+
+  SNS_DEF_MSG_VAR( sns_msg_marker_robot, u );
+  
+  // Declarations
+  struct sns_msg_marker_robot* sns_msg_marker_robot_alloc( uint32_t _n );
+  
+  void sns_msg_marker_robot_dump( FILE* _out,
+				  const struct sns_msg_marker_robot *_msg );
+
+
+  
+  /**
+   * @struct sns_sq_info
+   */
+  struct sns_sq_info {
+    
+    /** Dimensions: a,b,c */
+    double dim[3];
+    
+    /** Coefficients: e1 & e2 */
+    double e[2];
+    
+    /** Translation & Rotation */
+    double trans[3];
+    double rot[3];
+
+    /** Mesh info */
+    char mesh_filename[255];
+    bool mesh_generated;
+  };
+  
+  struct sns_msg_tabletop_sq {
+    
+    struct sns_msg_header header;
+    uint32_t n; /** Number of clusters */
+    uint32_t i; /** Selected object to pick */
+    /** Table info */
+    double table_coeffs[4];
+    char table_meshfile[255];
+    /** Objects info */
+    sns_sq_info u[1];
+  };
+
+  // Create sns_msg_tabletop_sq
+  SNS_DEF_MSG_VAR( sns_msg_tabletop_sq, u );
+
+  // Declarations
+  struct sns_msg_tabletop_sq* sns_msg_tabletop_sq_alloc( uint32_t _n );
+  
+  void sns_msg_tabletop_sq_dump( FILE* _out,
+				 const struct sns_msg_tabletop_sq *_msg );
+
+
   
   /**
    * @struct sns_msg_segmented_cloud

@@ -61,15 +61,12 @@ Eigen::Matrix4d getPlaneTransform ( pcl::ModelCoefficients coeffs,
   Eigen::Vector3d z(a, b, c);
   //if we are flattening the plane, make z just be (0,0,up_direction)
   if(flatten_plane) {
-    std::cout <<"[INFO] Flattening plane"<<std::endl;
     z << 0, 0, up_direction;
   }
   else {
     //make sure z points "up"
-    std::cout <<"\t [INFO] In getPlaneTransform, z: "<< z.transpose() <<std::endl;
     if ( z.dot( Eigen::Vector3d(0, 0, up_direction) ) < 0) {
       z = -1.0 * z;
-      std::cout <<" \t [INFO] Flipped z" << std::endl;
     }
   }
   //try to align the x axis with the x axis of the original frame
@@ -99,18 +96,13 @@ TabletopSegmentor<PointT>::TabletopSegmentor() {
   inlier_threshold_ = 300;
   plane_detection_voxel_size_ = 0.01;
   clustering_voxel_size_ = 0.003;
-/*
-  z_filter_min_ = 0.8; z_filter_max_ = 2.5;
-  y_filter_min_ = -0.6;  y_filter_max_ = 0.6;
-  x_filter_min_ = -0.3; x_filter_max_ = 0.3;
-*/
-//  z_filter_min_ = 0.4; z_filter_max_ = 1.6; // Crichton
-  z_filter_min_ = 0.3; z_filter_max_ = 1.0; // Alita
-  y_filter_min_ = -1.0;  y_filter_max_ = 1.0;
-  x_filter_min_ = -1.0; x_filter_max_ = 1.0;
 
-  table_z_filter_min_= 0.01;
-  table_z_filter_max_= 0.50;
+  z_filter_min_ = 0.3; z_filter_max_ = 1.0; 
+  y_filter_min_ = -0.6;  y_filter_max_ = 0.6;
+  x_filter_min_ = -0.6; x_filter_max_ = 0.6;
+
+  table_obj_height_filter_min_= 0.02;
+  table_obj_height_filter_max_= 0.30;
   cluster_distance_ = 0.03;
   min_cluster_size_ = 300;
   processing_frame_ = "";
@@ -119,13 +111,24 @@ TabletopSegmentor<PointT>::TabletopSegmentor() {
 }
 
 /**
+ * @function set_filter_minMax
+ */
+template<typename PointT>
+void TabletopSegmentor<PointT>::set_filter_minMax( const double &_xmin, const double &_xmax,
+						   const double &_ymin, const double &_ymax,
+						   const double &_zmin, const double &_zmax ) {
+
+  x_filter_min_ = _xmin; x_filter_max_ = _xmax;
+  y_filter_min_ = _ymin;  y_filter_max_ = _ymax;
+  z_filter_min_ = _zmin; z_filter_max_ = _zmax;  
+}
+
+/**
  * @function processCloud
  */
 template<typename PointT>
 bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) {
 
-  std::cout <<"\t [INFO] PROCESSING CLOUD STARTS..." << std::endl;
-  
   // PCL objects
   KdTreePtr normals_tree_, clusters_tree_;
   pcl::VoxelGrid<PointT> grid_, grid_objects_;
@@ -194,34 +197,26 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   pass_.filter (*cloud_filtered_ptr);
   // Check that the points filtered at least are of a minimum size
   if (cloud_filtered_ptr->points.size() < (unsigned int)min_cluster_size_) {
-    std::cout <<"\t [ERROR] Filtered cloud only has "<< (int)cloud_filtered_ptr->points.size() << " points."<<std::endl;
+    printf("\t [ERROR] Filtered cloud only has %d points. \n",
+	   (int)cloud_filtered_ptr->points.size() );
     return false;
   }
-  pcl::io::savePCDFile( "cloud_filtered.pcd", *cloud_filtered_ptr, true );
+  
   // Downsample the filtered cloud: output = cloud_downsampled_ptr
   PointCloudPtr cloud_downsampled_ptr (new PointCloud);
   grid_.setInputCloud (cloud_filtered_ptr);
   grid_.filter (*cloud_downsampled_ptr);
   *cloud_downsampled_ptr = *cloud_filtered_ptr;
   if (cloud_downsampled_ptr->points.size() < (unsigned int)min_cluster_size_) {
-    std::cout <<"\t [ERROR] Downsampled cloud only has "<< (int)cloud_downsampled_ptr->points.size()<<" points."<<std::endl;
+    printf( "\t [ERROR] Downsampled cloud only has %d points. \n",
+	    (int)cloud_downsampled_ptr->points.size() );
     return false;
   }
-  std::cout<<"\t [OK] Step 1 (Filtering). Downsampled filtered cloud has : "
-	   <<( int)cloud_downsampled_ptr->points.size()
-	   <<" points."<<std::endl;
-  // DEBUG ------------
-  dDownsampledFilteredCloud = *cloud_downsampled_ptr;
-  if( pcl::io::savePCDFile( "downsampledFilteredCloud.pcd", *cloud_downsampled_ptr, true ) == 0 ) {
-    std::cout << "\t [DEBUG-INFO] Saved DEBUG filtered downsampled cloud"<< std::endl;
-  }
-  // DEBUG ------------
 
   /***************** Step 2 : Estimate normals ******************/
   pcl::PointCloud<pcl::Normal>::Ptr cloud_normals_ptr (new pcl::PointCloud<pcl::Normal>);
   n3d_.setInputCloud (cloud_downsampled_ptr);
   n3d_.compute (*cloud_normals_ptr);
-  std::cout <<"\t [OK] Step 2 (Estimating normals)"<<std::endl;
 
   /************* Step 3 : Perform planar segmentation, **********/
   /** if table is not given, otherwise use given table */
@@ -229,124 +224,96 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   Eigen::Matrix4d table_plane_trans_flat;
   pcl::PointIndices::Ptr table_inliers_ptr (new pcl::PointIndices);
   pcl::ModelCoefficients::Ptr table_coefficients_ptr (new pcl::ModelCoefficients);
- seg_.setInputCloud (cloud_downsampled_ptr);
- seg_.setInputNormals (cloud_normals_ptr);
- seg_.segment( *table_inliers_ptr,
-	       *table_coefficients_ptr );
- // Check the coefficients and inliers are above threshold values
- if (table_coefficients_ptr->values.size () <=3 ) {
-   std::cout <<"\t [ERROR] Failed to detect table in scan" << std::endl;
-   return false;
- }
- if ( table_inliers_ptr->indices.size() < (unsigned int)inlier_threshold_) {
-   std::cout <<"\t [ERROR] Plane detection has "<< (int)table_inliers_ptr->indices.size() <<
-     " inliers, below min threshold of " << inlier_threshold_ << std::endl;
-   return false;
- }
- std::cout <<"\t [OK] Table segmented with "
-	   << (int)table_inliers_ptr->indices.size ()
-	   << " inliers and coefficients: ("
-	   << table_coefficients_ptr->values[0] <<" "
-	   << table_coefficients_ptr->values[1] <<" "
-	   << table_coefficients_ptr->values[2] <<" "
-	   << table_coefficients_ptr->values[3] <<")"<< std::endl;
- 
- // Store table's plane coefficients
- mTableCoeffs.resize(4);
- for( int i = 0; i < 4; ++i ) {
-   mTableCoeffs[i] = table_coefficients_ptr->values[i];
- }
- // DEBUG ------------
- pcl::copyPointCloud( *cloud_downsampled_ptr, *table_inliers_ptr, dTableInliers );
- mTable_Points = dTableInliers;
- if( pcl::io::savePCDFileASCII( "table_inliers.pcd", dTableInliers ) == 0 ) {
-   std::cout << "\t [DEBUG] Saved DEBUG table inliers cloud"<< std::endl;
- }
- // DEBUG ------------
- std::cout<<"\t [OK] Step 3 (Table segmentation)" << std::endl;
- /********** Step 4 : Project the table inliers on the table *********/
- PointCloudPtr table_projected_ptr (new PointCloud);
- proj_.setInputCloud (cloud_downsampled_ptr);
- proj_.setIndices (table_inliers_ptr);
- proj_.setModelCoefficients (table_coefficients_ptr);
- proj_.filter (*table_projected_ptr);
- std::cout <<"\t [OK] Step 4 (table projection)"<<std::endl;
- // DEBUG ------------
- dTableProjected = *table_projected_ptr;
- if( pcl::io::savePCDFile( "table_projected.pcd", dTableProjected, true ) == 0 ) {
-   std::cout << "\t [DEBUG] Saved DEBUG table projected cloud"<< std::endl;
- }
- // DEBUG ------------
- // Get the table transformation w.r.t. camera
- table_plane_trans = getPlaneTransform (*table_coefficients_ptr, up_direction_, false);
- // ---[ Estimate the convex hull (not in table frame)
- hull_.setInputCloud (table_projected_ptr);
- hull_.reconstruct (*table_hull_ptr);
- /******* Step 5 : Get the objects on top of the table ******/
- pcl::PointIndices cloud_object_indices;
- prism_.setInputCloud (cloud_filtered_ptr);
- prism_.setInputPlanarHull (table_hull_ptr);
- std::cout <<" \t [INFO] Using table prism: "<< table_z_filter_min_ << " to "<< table_z_filter_max_<<std::endl;
- prism_.setHeightLimits (table_z_filter_min_, table_z_filter_max_);
- prism_.segment (cloud_object_indices);
- PointCloudPtr cloud_objects_ptr (new PointCloud);
- pcl::ExtractIndices<PointT> extract_object_indices;
- extract_object_indices.setInputCloud (cloud_filtered_ptr);
- extract_object_indices.setIndices (boost::make_shared<const pcl::PointIndices> (cloud_object_indices));
- extract_object_indices.filter (*cloud_objects_ptr);
- if (cloud_objects_ptr->points.empty ()) {
-   std::cout<<"\t [ERROR] No object points on table" << std::endl;
-   return false;
- }
- 
- if( pcl::io::savePCDFileASCII( "objects_cloud.pcd", *cloud_objects_ptr ) == 0 ) {
-   std::cout << "\t [DEBUG] Saved DEBUG object_cloud.pcd"<< std::endl;
- }
+  seg_.setInputCloud (cloud_downsampled_ptr);
+  seg_.setInputNormals (cloud_normals_ptr);
+  seg_.segment( *table_inliers_ptr,
+		*table_coefficients_ptr );
+  // Check the coefficients and inliers are above threshold values
+  if (table_coefficients_ptr->values.size () <=3 ) {
+    printf( "\t [ERROR] Failed to detect table in scan \n" );
+    return false;
+  }
+  if ( table_inliers_ptr->indices.size() < (unsigned int)inlier_threshold_) {
+    printf( "\t [ERROR] Plane detection has %d below min thresh of %d points \n",
+	    (int)table_inliers_ptr->indices.size(),
+	    inlier_threshold_ );
+    return false;
+  }
+  
+  // Store table's plane coefficients
+  mTableCoeffs.resize(4);
+  for( int i = 0; i < 4; ++i ) { mTableCoeffs[i] = table_coefficients_ptr->values[i]; }
 
- std::cout <<"\t [OK] Step 6 (Getting object point candidates)"<<std::endl;
- std::cout<<"\t [INFO] Number of object points: " <<(int)cloud_objects_ptr->points.size() << std::endl;
- // Downsample the points
- PointCloudPtr cloud_objects_downsampled_ptr (new PointCloud);
- grid_objects_.setInputCloud (cloud_objects_ptr);
- grid_objects_.filter (*cloud_objects_downsampled_ptr);
- // Step 6: Split the objects into Euclidean clusters
- std::vector<pcl::PointIndices> clusters2;
- pcl_cluster_.setInputCloud (cloud_objects_downsampled_ptr);
- pcl_cluster_.extract (clusters2);
- mClusterInds.resize( clusters2.size() );
- for( int i = 0; i < clusters2.size(); ++i ) {
-   mClusterInds[i] = clusters2[i];
- }
- std::cout<<"\t [OK] Number of clusters found: "<<(int)clusters2.size () << std::endl;
- mClusters.resize( clusters2.size() );
- int i = 0;
- for( std::vector<pcl::PointIndices>::const_iterator it = 
-	clusters2.begin (); it != clusters2.end (); ++it ) {
-   PointCloud cloud_cluster;
-   for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit) {
-     cloud_cluster.points.push_back (cloud_objects_downsampled_ptr->points[*pit]); 
-   }
-   cloud_cluster.width = cloud_cluster.points.size ();
-   cloud_cluster.height = 1;
-   cloud_cluster.is_dense = true;
+  /********** Step 4 : Project the table inliers on the table *********/
+  PointCloudPtr table_projected_ptr (new PointCloud);
+  proj_.setInputCloud (cloud_downsampled_ptr);
+  proj_.setIndices (table_inliers_ptr);
+  proj_.setModelCoefficients (table_coefficients_ptr);
+  proj_.filter (*table_projected_ptr);
+  Eigen::Vector4d centroid;
+  pcl::compute3DCentroid<PointT,double>( *table_projected_ptr, centroid );
+  std::cout << "Centroid: "<< centroid.transpose() << std::endl;
+  // Get the table transformation w.r.t. camera
+  table_plane_trans = getPlaneTransform (*table_coefficients_ptr, up_direction_, false);
+  mTableTf.matrix() = table_plane_trans;
+  mTableTf.translation() << centroid(0), centroid(1), centroid(2);
+  // ---[ Estimate the convex hull (not in table frame)
+  hull_.setInputCloud (table_projected_ptr);
+  hull_.reconstruct (*table_hull_ptr);
 
-   mClusters[i] = cloud_cluster;
-   i++;
- }
+  // Save points in the hull with some points down
+  mTable_Points.points.resize(0);
+  for( int i = 0; i < table_hull_ptr->points.size(); ++i ) {
+    mTable_Points.points.push_back(table_hull_ptr->points[i]);
+  }
+  mTable_Points.width = 1; mTable_Points.height = mTable_Points.points.size();
+  
+  /******* Step 5 : Get the objects on top of the table ******/
+  pcl::PointIndices cloud_object_indices;
+  prism_.setInputCloud (cloud_filtered_ptr);
+  prism_.setInputPlanarHull (table_hull_ptr);
+  prism_.setHeightLimits (table_obj_height_filter_min_, table_obj_height_filter_max_);
+  prism_.segment (cloud_object_indices);
+  PointCloudPtr cloud_objects_ptr (new PointCloud);
+  pcl::ExtractIndices<PointT> extract_object_indices;
+  extract_object_indices.setInputCloud (cloud_filtered_ptr);
+  extract_object_indices.setIndices (boost::make_shared<const pcl::PointIndices> (cloud_object_indices));
+  extract_object_indices.filter (*cloud_objects_ptr);
+  if (cloud_objects_ptr->points.empty ()) {
+    std::cout<<"\t [ERROR] No object points on table" << std::endl;
+    return false;
+  }
+    
+  // Downsample the points
+  PointCloudPtr cloud_objects_downsampled_ptr (new PointCloud);
+  grid_objects_.setInputCloud (cloud_objects_ptr);
+  grid_objects_.filter (*cloud_objects_downsampled_ptr);
 
- std::cout<<"\t [OK] Clusters converted"<<std::endl;
- // DEBUG ------------
- for( int i = 0; i < mClusters.size(); ++i ) {
-   char name[50];
-   sprintf(name, "cluster_%d.pcd", i );
-   if( pcl::io::savePCDFile( name, mClusters[i], true ) != 0 ) {
-     std::cout << "\t [DEBUG ERROR] Error saving cluster cloud"<< std::endl;
-   }
- }
- std::cout << "\t[DEBUG] Saved clusters all right"<< std::endl;
- // DEBUG ------------
- std::cout << "\t [INFO] Finished processing cloud" << std::endl;
- 
-return true;
+  // Step 6: Split the objects into Euclidean clusters
+  std::vector<pcl::PointIndices> clusters2;
+  pcl_cluster_.setInputCloud (cloud_objects_downsampled_ptr);
+  pcl_cluster_.extract (clusters2);
+  mClusterInds.resize( clusters2.size() );
+  for( int i = 0; i < clusters2.size(); ++i ) {
+    mClusterInds[i] = clusters2[i];
+  }
+
+  mClusters.resize( clusters2.size() );
+  int i = 0;
+  for( std::vector<pcl::PointIndices>::const_iterator it = 
+	 clusters2.begin (); it != clusters2.end (); ++it ) {
+    PointCloud cloud_cluster;
+    for (std::vector<int>::const_iterator pit = it->indices.begin (); pit != it->indices.end (); ++pit) {
+      cloud_cluster.points.push_back (cloud_objects_downsampled_ptr->points[*pit]); 
+    }
+    cloud_cluster.width = cloud_cluster.points.size ();
+    cloud_cluster.height = 1;
+    cloud_cluster.is_dense = true;
+    
+    mClusters[i] = cloud_cluster;
+    i++;
+  }
+  
+  return true;
 }
 
