@@ -18,7 +18,7 @@ Test2_FSA::~Test2_FSA() {
  * @function loadRules
  */
 void Test2_FSA::loadRules() {
-  
+  // 0: From whom I receive changer msg 1: What type of message this is 2: My new status 3: Should I do something when I get here?
   mRules[SLEEPING][0] = CLIENT; mRules[SLEEPING][1] = CONNECTED_MSG; mRules[SLEEPING][2] = LISTENING; mRules[SLEEPING][3] = NO_ACTION;
   mRules[LISTENING][0] = CLIENT; mRules[LISTENING][1] = START_MSG; mRules[LISTENING][2] = START_TASK; mRules[LISTENING][3] = NO_ACTION;
   mRules[START_TASK][0] = SEE_MODULE; mRules[START_TASK][1] = RCV_IMAGE_MSG; mRules[START_TASK][2] = WAIT_INPUT_CLIENT; mRules[START_TASK][3] = SEND_IMAGE_REQUEST;

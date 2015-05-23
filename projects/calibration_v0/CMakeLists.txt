@@ -37,10 +37,10 @@ find_package(GRIP REQUIRED)
 include_directories(${GRIP_INCLUDE_DIRS})
 
 # Calibration v0
-#add_executable( calibration_v0 calibration_v0.cpp ) 
-#target_link_libraries( calibration_v0 utils aoi_utils motionControl bimanual_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
-#set_target_properties( calibration_v0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
-#ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+add_executable( calibration_v1_crichton calibration_v1_crichton.cpp ) 
+target_link_libraries( calibration_v1_crichton perception_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${DART_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} ) 
+set_target_properties( calibration_v1_crichton PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
+ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
 # Calibration v1
 add_executable( calibration_v2_alita calibration_v2_alita.cpp ) 

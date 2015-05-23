@@ -316,7 +316,7 @@ void Test2_Server::do_action( int _action ) {
   } // End send image request
 
   else if( _action == SEND_OBJ_COMMAND ) {    
-
+    printf("Sending object command!!!!!! \n");
     ach_status_t r;
     sns_msg_server_1 msg;
 
@@ -475,7 +475,7 @@ void Test2_Server::rcvMsg_slot( const QString &_sender, const QString &_message 
   } else if( msg_type.compare( "RCV_INPUT_MSG" ) == 0 ) { 
 
     iss >> mPx; iss >> mPy;
-    
+    printf("Received input from client \n");
     mMsg_received_flag = true;
     mMsg_source = CLIENT;
     mMsg_type = RCV_INPUT_MSG;

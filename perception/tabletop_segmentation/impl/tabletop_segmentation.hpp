@@ -101,8 +101,8 @@ TabletopSegmentor<PointT>::TabletopSegmentor() {
   y_filter_min_ = -0.6;  y_filter_max_ = 0.6;
   x_filter_min_ = -0.6; x_filter_max_ = 0.6;
 
-  table_obj_height_filter_min_= 0.02;
-  table_obj_height_filter_max_= 0.30;
+  table_obj_height_filter_min_= 0.03;
+  table_obj_height_filter_max_= 0.50;
   cluster_distance_ = 0.03;
   min_cluster_size_ = 300;
   processing_frame_ = "";
@@ -157,14 +157,15 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   n3d_.setSearchMethod (normals_tree_);
 
   // Table model fitting parameters
-  seg_.setDistanceThreshold (0.05);
+  seg_.setDistanceThreshold (0.03);
   seg_.setMaxIterations (10000);
   seg_.setNormalDistanceWeight (0.1);
   seg_.setOptimizeCoefficients (true);
+  seg_.setModelType (pcl::SACMODEL_PLANE);
   //seg_.setModelType (pcl::SACMODEL_NORMAL_PLANE);
-  seg_.setModelType( pcl::SACMODEL_PERPENDICULAR_PLANE );
-  seg_.setEpsAngle( 40*M_PI/180.0 );
-  seg_.setAxis( Eigen::Vector3f(0,1,0) );
+  //seg_.setModelType( pcl::SACMODEL_PERPENDICULAR_PLANE );
+  //seg_.setEpsAngle( 45*M_PI/180.0 );
+  //seg_.setAxis( Eigen::Vector3f(0,1,0) );
   
   seg_.setMethodType (pcl::SAC_RANSAC);
   seg_.setProbability (0.99);
@@ -201,6 +202,8 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
 	   (int)cloud_filtered_ptr->points.size() );
     return false;
   }
+
+  pcl::io::savePCDFile( "filtered_cloud.pcd", *cloud_filtered_ptr, true );
   
   // Downsample the filtered cloud: output = cloud_downsampled_ptr
   PointCloudPtr cloud_downsampled_ptr (new PointCloud);
@@ -250,16 +253,14 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   proj_.setIndices (table_inliers_ptr);
   proj_.setModelCoefficients (table_coefficients_ptr);
   proj_.filter (*table_projected_ptr);
-  Eigen::Vector4d centroid;
-  pcl::compute3DCentroid<PointT,double>( *table_projected_ptr, centroid );
-  std::cout << "Centroid: "<< centroid.transpose() << std::endl;
   // Get the table transformation w.r.t. camera
   table_plane_trans = getPlaneTransform (*table_coefficients_ptr, up_direction_, false);
   mTableTf.matrix() = table_plane_trans;
-  mTableTf.translation() << centroid(0), centroid(1), centroid(2);
   // ---[ Estimate the convex hull (not in table frame)
   hull_.setInputCloud (table_projected_ptr);
   hull_.reconstruct (*table_hull_ptr);
+
+  pcl::io::savePCDFile( "tableProjected.pcd", *table_projected_ptr, true );
 
   // Save points in the hull with some points down
   mTable_Points.points.resize(0);
@@ -283,7 +284,9 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
     std::cout<<"\t [ERROR] No object points on table" << std::endl;
     return false;
   }
-    
+
+  pcl::io::savePCDFile( "cloudObjects.pcd", *cloud_objects_ptr, true );    
+
   // Downsample the points
   PointCloudPtr cloud_objects_downsampled_ptr (new PointCloud);
   grid_objects_.setInputCloud (cloud_objects_ptr);
