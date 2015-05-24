@@ -6,12 +6,18 @@ Eigen::VectorXd gKnownConfs[NUM_SIDES_MSG][TOTAL_CONF];
 
 void loadGlobals_golems() {   
 
+ gTrk[0].linear() <<    0.998801,  -0.0481417, -0.00887832,  
+  0.0231378,    0.624079,   -0.781019,    
+  0.0431403,    0.779877,    0.624445;    
+
+gTrk[0].translation() << -0.0725424, 0.135835, 0.139225;
+/*
   gTrk[0].linear() <<   0.0348735,   0.895301,   0.444095,   
   0.999206,  -0.039791, 0.00175427,  
  0.0192416,   0.443682,  -0.895978;
 
 gTrk[0].translation() << 0.152917, 0.0402138, 0.105963;
-
+*/
  
  //   ARC_UP = 0
  gKnownConfs[LEFT_MSG][ARC_UP].resize(7);
