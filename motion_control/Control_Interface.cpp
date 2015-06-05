@@ -60,12 +60,10 @@ bool Control_Interface::update() {
 bool Control_Interface::get_state( Eigen::VectorXd &_q,
 				   Eigen::VectorXd &_dq ) {
 
-  if( !this->update() ) { return false; }
-  else {
-    _q = mq;
-    _dq = mdq;
-    return true;
-  }
+  while( !this->update() ) {}
+  _q = mq;
+  _dq = mdq;
+  return true;
 }
 
 

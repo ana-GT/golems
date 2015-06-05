@@ -65,6 +65,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   // 0. Store cloud, visibility mask, depth and 
   // the distance transform (DT) in 2D matrices
   mCloud = _cloud;
+printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
   if( !this->generate2DMask( mCloud,
 			    mMarkMask,
 			    mDepthMask ) ) {
@@ -74,7 +75,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   mDTMask = matDT( mMarkMask );
   generateBorder();
 
-  // Refill mask holes
+  // Refill mask holes 
   for( int c = 0; c < 2; ++c ) {
     growMask( mMarkMask, 4, 125, 0, 125 );
   }
@@ -147,9 +148,14 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   mDelta1.resize( mCandidates.size() );
   mDelta2.resize( mCandidates.size() );
 
+
+  cv::Mat mi = printDebugMask();
+
+
+  cv::imwrite( "savedDebug.png", mi );
   for( int i = 0; i < mCandidates.size(); ++i ) {
 
-    
+    ///cv::Mat mi = printDebugMask();
     // Check inliers and outliers
     int px, py; PointT P;
     int outOfMask = 0; int frontOfMask = 0;
@@ -166,7 +172,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
       // MEASURE 1: OUT-OF-MASK PIXELS DISTANCE TO CLOSEST MASK PIXEL
       if( mMarkMask.at<uchar>(py,px) == 0 ) {
 	outOfMask++;  delta_1 += mDTMask.at<float>(py,px);
-	//cv::Vec3b col(0,0,255);  mi.at<cv::Vec3b>(py,px) = col;
+	///cv::Vec3b col(0,0,255);  mi.at<cv::Vec3b>(py,px) = col;
       }
       
       // MEASURE 2: IN-MASK PIXELS IN FRONT OF VISIBLE PIXELS
@@ -176,7 +182,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
 	double d = P.z - dp;
 	if( d < 0 ) {
 	  frontOfMask++;  delta_2 += -d;
-	  //cv::Vec3b col(255,0,255);  mi.at<cv::Vec3b>(py,px) = col;
+	  ///cv::Vec3b col(0,255,0);  mi.at<cv::Vec3b>(py,px) = col;
 	}
 
       }
@@ -190,8 +196,15 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
     else{ mDelta1[i] =  delta_1 / (double) outOfMask; }
 
     if( frontOfMask == 0 ) { mDelta2[i] = 0; }
-    else { mDelta2[i] =  (delta_2 / (double)frontOfMask); } 
-
+    else { mDelta2[i] =  (delta_2 / (double)frontOfMask); }
+    /*
+    cv::imshow("debug", mi );
+    printf("[%d] Delta1: %f px delta 2: %f cm - d1: %f, # d1: %d  d2: %f, #d2: %d \n", i, mDelta1[i], mDelta2[i], delta_1, outOfMask, delta_2, frontOfMask );
+    while( true ) {
+      char b = cv::waitKey(200);
+      if( b == 'n' ) { break; }
+    }
+    */
   } // for each candidate
 
   // Select the upper section according to delta_1
@@ -283,20 +296,22 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
   // Segmented pixels: 255, No-segmented: 0
   PointCloudIter it;
   PointT P; int px; int py;
- 
+  int count = 0; int repeated = 0;
   for( it = _segmented_cloud->begin(); 
        it != _segmented_cloud->end(); ++it ) {
     P = (*it);
     px = (int)( mCx - mF*(P.x / P.z) );
     py = (int)( mCy - mF*(P.y / P.z) );
 
-    if( px < 0 || px >= mWidth ) { return false; }
-    if( py < 0 || py >= mHeight ) { return false; }
-    
+    if( px < 0 || px >= mWidth ) { printf("Oh crap returning false px \n"); return false; }
+    if( py < 0 || py >= mHeight ) { printf("Oh crap returning false py \n"); return false; }
+    count++;
+    if( _markMask.at<uchar>(py,px) == 255 ) { repeated++; }
     _markMask.at<uchar>(py,px) = 255;
+
     _depthMask.at<float>(py,px) = (float)P.z;
   }
-
+  printf("Count in generate Mask : %d - repeated: %d \n", count, repeated );
   return true;
 }
 
@@ -617,12 +632,12 @@ template<typename PointT>
 cv::Mat mindGapper<PointT>::printDebugMask() {
   
   cv::Mat mask = cv::Mat::zeros( mHeight, mWidth, CV_8UC3 );
-
+  int count = 0;
   uchar* ptr;
   for( int j = 0; j < mMarkMask.rows; j++ ) {
     ptr = mMarkMask.ptr(j); 
     for( int i = 0; i < mMarkMask.cols; i++ ) {
-      if( ptr[i] == 255 ) { cv::Vec3b col(240,240,240); mask.at<cv::Vec3b>(j,i) = col; }
+      if( ptr[i] == 255 ) { cv::Vec3b col(240,240,240); mask.at<cv::Vec3b>(j,i) = col; count++; }
       else if( ptr[i] == 125 ) {  cv::Vec3b col(0,0,255); mask.at<cv::Vec3b>(j,i) = col; }
       else { cv::Vec3b col(0,0,0); mask.at<cv::Vec3b>(j,i) = col; }      
     }
@@ -630,6 +645,7 @@ cv::Mat mindGapper<PointT>::printDebugMask() {
     if( mBorders[0][j] > 0 ) { cv::Vec3b col(0,255,0); mask.at<cv::Vec3b>(j,mBorders[0][j]) = col; }
     if( mBorders[1][j] > 0 ) { cv::Vec3b col(0,255,0); mask.at<cv::Vec3b>(j,mBorders[1][j]) = col; }
   }
-
+  printf("Original mask points: %d \n", count);
   return mask;
 }
+
