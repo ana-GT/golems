@@ -11,7 +11,7 @@ TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
 
 # Workstations 
 PLANNING_HOST="powell"
-CONTROL_HOST="calvin" 
+CONTROL_HOST=192.168.1.10 #"calvin" 
 
 #*****************
 # DEFINITIONS
@@ -106,6 +106,10 @@ crichton_start() {
     $SNS run -d pull_bimanual_hand_chan -- \
      achd -d pull $PLANNING_HOST bimanual_hand_chan
 
+
+   $SNS run -d push_gatekeeper_msg_chan -- \
+    achd  push $PLANNING_HOST gatekeeper_msg_chan
+
     # Run daemons
     $SNS run -d -r lwa-left -- \
 		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
@@ -170,20 +174,31 @@ crichton_stop() {
     $SNS kill push_sdhstate_right
     $SNS kill pull_bimanual_chan
     $SNS kill pull_bimanual_hand_chan
-    crichton_ach_rm
+    $SNS kill push_gatekeeper_msg_chan
+   crichton_ach_rm
 }
 
 # Change ownerships of SNS temporal files
 crichton_steal() {
-    chown -R $1 /var/run/sns/lwa-left \
-	/var/tmp/sns/lwa-left \
-	/var/run/sns/sdh-left \
-	/var/tmp/sns/sdh-left \
-	/var/run/sns/lwa-right \
-	/var/tmp/sns/lwa-right \
-  /var/run/sns/sdh-right \
-  /var/tmp/sns/sdh-right \
- 
+
+  NAMES="lwa-left lwa-right"
+  NAMES="$NAMES sdh-left sdh-right"
+	NAMES="$NAMES pull_bimanual_chan pull_bimanual_hand_chan"
+	NAMES="$NAMES push_state_left push_state_right"
+	NAMES="$NAMES push_sdhstate_left push_sdhstate_right"
+	NAMES="$NAMES push_gatekeeper_msg_chan"
+ 	
+	SNS_FOLDERS_STEAL=""
+
+	# Create folder names
+	for i in $NAMES; do
+		folder_tmp="/var/tmp/sns/$i"
+		folder_run="/var/run/sns/$i"
+		SNS_FOLDERS_STEAL="$SNS_FOLDERS_STEAL $folder_tmp $folder_run"
+	done
+                                                           
+  chown -R $1 $SNS_FOLDERS_STEAL
+  chgrp -R $1 $SNS_FOLDERS_STEAL
 }
 
 #***************************

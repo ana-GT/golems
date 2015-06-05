@@ -67,9 +67,12 @@ int main( int argc, char* argv[] ) {
   ach_status r;
   r = ach_open( &bimanual_chan, "bimanual_chan", NULL );
   if( r!= ACH_OK ) { printf("[ERROR] bimanual_chan not created \n"); return 1; }
-  
+  ach_flush( &bimanual_chan ); 
+
+ 
   r = ach_open( &bimanual_hand_chan, "bimanual_hand_chan", NULL );
   if( r!= ACH_OK ) { printf("[ERROR] bimanual_hand_chan not created \n"); return 1; }
+  ach_flush( &bimanual_hand_chan );
 
   r = ach_open( &la_state_chan, "state-left", NULL );
   if( r!= ACH_OK ) { printf("[ERROR] state-left not created \n"); return 1; }
