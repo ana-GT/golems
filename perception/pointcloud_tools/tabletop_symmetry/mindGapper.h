@@ -34,7 +34,7 @@ class mindGapper {
 
 
   /**< Set parameters for symmetry plane search */
-  void setFittingParams( int _n = 10, int _m = 10, 
+  void setFittingParams( int _n = 6, int _m = 10, 
 			 double _dj = 0.01, double _alpha = 20.0*M_PI / 180.0 );
 
   /**< Set Kinect params to calculate mirror errors */

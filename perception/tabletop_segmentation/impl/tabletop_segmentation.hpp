@@ -148,7 +148,7 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   grid_.setFilterFieldName ("z");
   grid_.setFilterLimits (z_filter_min_, z_filter_max_);
   grid_.setDownsampleAllData (false);
-  grid_objects_.setDownsampleAllData (false);
+  grid_objects_.setDownsampleAllData (true);
   normals_tree_ = boost::make_shared<pcl::search::KdTree<PointT> > ();
   clusters_tree_ = boost::make_shared<pcl::search::KdTree<PointT> > ();
   
