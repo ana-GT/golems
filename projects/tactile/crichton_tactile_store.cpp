@@ -23,9 +23,17 @@ int main( int argc, char* argv[] ) {
 
   // Start gnuplot
   pgnuplot = popen("gnuplot -persist", "w");
-  fprintf( pgnuplot, "set xlabel 'Time(s)' \n" );
-  fprintf( pgnuplot, "set ylabel 'Q' \n" );
-  fprintf( pgnuplot, "set yrange [%f:%f]\n", 0,10 ); 
+  fprintf( pgnuplot, "set xrange [%f:%f]\n", -0.5,5.5 ); 
+  fprintf( pgnuplot, "set yrange [%f:%f]\n", -0.5,13.5 );
+
+  fprintf( pgnuplot, "set terminal x11 noraise \n" );
+
+
+  fprintf( pgnuplot, "set palette rgbformula -7,2,7\n");
+  fprintf( pgnuplot, "set cbrange [0:3000]\n" );
+  fprintf( pgnuplot, "set cblabel 'Pad'\n" );
+  fprintf( pgnuplot, "set view map \n" );
+ 
 
   // Constantly read channel
   size_t frame_size;
@@ -36,27 +44,29 @@ int main( int argc, char* argv[] ) {
     r = sns_msg_local_get( &tactile_chan, (void**)&msg, &frame_size, NULL, ACH_O_LAST );
     
     // If read, show
+    uint16_t* it = 0;
+    int max = 0;
+
     if( r == ACH_OK || r == ACH_MISSED_FRAME ) {
 
-      if( !printHeader ) {
-         printHeader = true;
-         fprintf(pgnuplot, "splot '-' matrix with image \n");
-      } else {
-         fprintf( pgnuplot, "replot\n");
-      }     
+      fprintf(pgnuplot, "splot '-' matrix with image\n");
+      it = msg->x;
+      for( int y = 0; y < 13; ++y ) {
+        for( int x = 0; x < 6; ++x ) {
+          if( *it > max ) { max = *it; }
 
-
-      for( int y=0; y < dsa_offset[opt_pad].y; y ++ ) {
-        for( int x=0; x < dsa_offset[opt_pad].x; x ++ ) {
-            fprintf( pgnuplot, "%04.0d ",
-                    AA_MATREF( msg->x + dsa_offset[opt_pad].off,
-                               y, x, dsa_offset[opt_pad].x ));
-        }
-        printf("\n");
+          int p; 
+          if( *it != 0 ) { p = 3000; } else { p = 0; }
+          fprintf( pgnuplot, "%d ", p );
+          it++;
+        } fprintf( pgnuplot, "\n" );
       }
-  
-
-    }
+      fprintf( pgnuplot, "e\n");
+      fprintf( pgnuplot, "e\n");
+      fflush( pgnuplot ); 
+    
+      printf("Max: %d \n", max );
+   }
 
    usleep(0.5*1e6);
   } // end while
