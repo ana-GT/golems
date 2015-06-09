@@ -20,6 +20,7 @@ int main( int argc, char* argv[] ) {
   // Open channel
   r = ach_open( &tactile_chan, "tactile-left", NULL ); 
   if( r != ACH_OK ) { printf("Channel tactile-left could NOT be opened \n"); }
+  ach_flush( &tactile_chan );
 
   // Start gnuplot
   pgnuplot = popen("gnuplot -persist", "w");
@@ -27,19 +28,17 @@ int main( int argc, char* argv[] ) {
   fprintf( pgnuplot, "set yrange [%f:%f]\n", -0.5,26.5 );
 
   fprintf( pgnuplot, "unset key\n" );
-  fprintf( pgnuplot, "set tic scale 0\n" );
-  fprintf( pgnuplot, "set palette rgbformula -7,2,7\n");
+  fprintf( pgnuplot, "set xtics -0.5,6\n" );  
+  fprintf( pgnuplot, "set ytics -0.5,14\n" );
+  fprintf( pgnuplot, "set grid lt 1 lc rgb '#000000'\n");
+
+  fprintf( pgnuplot, "set palette rgbformulae -7,2,-7\n");
   fprintf( pgnuplot, "set cbrange [0:3000]\n" );
-  fprintf( pgnuplot, "set cblabel 'Pad'\n" );
-  fprintf( pgnuplot, "unset cbtics\n" );
 
   fprintf( pgnuplot, "set terminal x11 noraise \n" );
 
   fprintf( pgnuplot, "set view map \n" );
  
-  fprintf( pgnuplot, "set size 1,1\n" );
-  fprintf( pgnuplot, "set origin 0,0\n" );
-
 
   // Constantly read channel
   size_t frame_size;
@@ -56,9 +55,22 @@ int main( int argc, char* argv[] ) {
 
     if( r == ACH_OK || r == ACH_MISSED_FRAME ) {
 
-        fprintf( pgnuplot, "set title 'Pad' \n" );
+        fprintf( pgnuplot, "set title 'Pad' \n" );        
         fprintf(pgnuplot, "splot '-' matrix with image \n");
-     
+
+        for( int y = 13 -1; y >= 0; y-- ) {
+          for( int finger = 0; finger <= 4; finger = finger + 2 ) {
+            counter = offset[finger] + y*6;
+            for( int x = 0; x < 6; ++x ) {
+              if( msg->x[counter] != 0 ) { p = 3000; } else { p = 0; }
+              fprintf( pgnuplot, "%d ", p );
+              counter++;              
+            }
+          }
+          fprintf( pgnuplot, "\n" );
+        }
+
+ 
         for( int y = 14 -1; y >= 0; y-- ) {
           for( int finger = 1; finger <= 5; finger = finger + 2 ) {
             counter = offset[finger] + y*6;
@@ -72,23 +84,9 @@ int main( int argc, char* argv[] ) {
         }
  
 
-        for( int y = 13 -1; y >= 0; y-- ) {
-          for( int finger = 0; finger <= 4; finger = finger + 2 ) {
-            counter = offset[finger] + y*6;
-            for( int x = 0; x < 6; ++x ) {
-              if( msg->x[counter] != 0 ) { p = 3000; } else { p = 0; }
-              fprintf( pgnuplot, "%d ", p );
-              counter++;              
-            }
-          }
-          fprintf( pgnuplot, "\n" );
-        }
         fprintf( pgnuplot, "e\n");
         fprintf( pgnuplot, "e\n");       
         fflush( pgnuplot ); 
-      
-    } else {
-     printf("Did not get the message for any reason \n");
    }
 
    usleep( (1.0/opt_frequency)*1e6);
