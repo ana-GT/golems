@@ -116,10 +116,10 @@ crichton_start() {
 
    # Push tactile information
    $SNS run -d push_tactile_left -- \
-   achd -d push $PLANNING_HOST tactile-left
+   achd push $PLANNING_HOST tactile-left
 
    $SNS run -d push_tactile_right -- \
-   achd -d push $PLANNING_HOST tactile-right
+   achd push $PLANNING_HOST tactile-right
 
     # Run daemons
     $SNS run -d -r lwa-left -- \
