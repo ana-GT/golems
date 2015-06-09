@@ -1,5 +1,5 @@
 /**
- * @file crichton_tactile_store.cpp
+ * @file visualize_tactile.cpp
  */
 #include <iostream>
 #include <unistd.h>
@@ -10,12 +10,18 @@ ach_channel_t tactile_chan;
 FILE* pgnuplot;
 bool printHeader = false;
 int opt_frequency = 30;
+int opt_side = 0; // Left
+char opt_chan_name[50];
 
 /****/
 int main( int argc, char* argv[] ) {
-
+/*
+  if( argc == 2 ) { opt_side = atoi(argv[1] ); }
+  if( opt_side != 0 && opt_side != 1 ) { opt_side = 0; }	
+	
+  opt_side == 0? sprintf(opt_chan_name,"tactile-left"): sprintf(opt_chan_name, "tactile-right");
+*/
   ach_status r;
-
 
   // Open channel
   r = ach_open( &tactile_chan, "tactile-left", NULL ); 
