@@ -60,7 +60,6 @@ int main( int argc, char* argv[] ) {
     r = sns_msg_local_get( &tactile_chan, (void**)&msg, &frame_size, NULL, ACH_O_LAST );
 
     if( r == ACH_OK || r == ACH_MISSED_FRAME ) {
-
         fprintf( pgnuplot, "set title 'Pad' \n" );        
         fprintf(pgnuplot, "splot '-' matrix with image \n");
 
