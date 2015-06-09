@@ -5,13 +5,14 @@ CHANNELS="$CHANNELS ref-right state-right"
 CHANNELS="$CHANNELS sdhref-left sdhstate-left"
 CHANNELS="$CHANNELS sdhref-right sdhstate-right"
 CHANNELS="$CHANNELS gatekeeper_msg_chan"
+CHANNELS="$CHANNELS tactile-left tactile-right"
 
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
 
 # Workstations 
 PLANNING_HOST="powell"
-CONTROL_HOST=192.168.1.10 #"calvin" 
+CONTROL_HOST="calvin" 
 
 #*****************
 # DEFINITIONS
@@ -26,6 +27,9 @@ CAN_T=can2 # Torso
 CAN_SDH_L=0 # Left hand
 CAN_SDH_R=1 # Right hand
 
+# RS-232 Serial ports for tactile info
+SERIAL_L=2 # Left Hand
+SERIAL_R=0 # Right Hand
 
 
 # Check where SNS is located
@@ -89,7 +93,7 @@ crichton_start() {
 
     # Pull arm/hand states
     $SNS run -d push_state_left -- \
-			achd -d push $PLANNING_HOST state-left 	
+    achd -d push $PLANNING_HOST state-left 	
 
     $SNS run -d push_state_right -- \
     achd -d push $PLANNING_HOST state-right	
@@ -110,12 +114,22 @@ crichton_start() {
    $SNS run -d push_gatekeeper_msg_chan -- \
     achd  push $PLANNING_HOST gatekeeper_msg_chan
 
+   # Push tactile information
+   $SNS run -d push_tactile_left -- \
+   achd -d push $PLANNING_HOST tactile-left
+
+   $SNS run -d push_tactile_right -- \
+   achd -d push $PLANNING_HOST tactile-right
+
     # Run daemons
     $SNS run -d -r lwa-left -- \
-		can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
+    can402 -f $CAN_L -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-left -s state-left 
 
      $SNS run  -d -r sdh-left -- \
      sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
+
+     $SNS run -d -r contact-left -- \
+     dsad_full -c tactile-left -s $SERIAL_L
 
      $SNS run -d -r lwa-right -- \
      can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right    
@@ -123,41 +137,31 @@ crichton_start() {
      $SNS run  -d -r sdh-right -- \
      sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
 
+     $SNS run -d -r contact-right -- \
+     dsad_full -c tactile-right -s $SERIAL_R
 }
 
 # Expunge: Remove temporal folders for log
 crichton_expunge() {
-    sudo rm -rf /var/tmp/sns/lwa-left
-    sudo rm -rf /var/run/sns/lwa-left
 
-    sudo rm -rf /var/tmp/sns/sdh-left
-    sudo rm -rf /var/run/sns/sdh-left
-    
-		sudo rm -rf /var/tmp/sns/lwa-right
-    sudo rm -rf /var/run/sns/lwa-right
- 
-		sudo rm -rf /var/tmp/sns/sdh-right
-    sudo rm -rf /var/run/sns/sdh-right
+  NAMES="lwa-left sdh-left contact-left"
+  NAMES="$NAMES lwa-right sdh-right contact-right"
+  NAMES="$NAMES pull_bimanual_chan pull_bimanual_hand_chan"
+  NAMES="$NAMES push_state_left push_state_right"
+  NAMES="$NAMES push_sdhstate_left push_sdhstate_right"
+  NAMES="$NAMES push_tactile_left push_tactile_right"
+  NAMES="$NAMES push_gatekeeper_msg_chan"
+ 	
+  SNS_FOLDERS_RM=""
 
-
-		sudo rm -rf /var/tmp/sns/push_state_left
-    sudo rm -rf /var/run/sns/push_state_left
-		
-		sudo rm -rf /var/tmp/sns/push_state_right
-    sudo rm -rf /var/run/sns/push_state_right
-
-		sudo rm -rf /var/tmp/sns/push_sdhstate_left
-    sudo rm -rf /var/run/sns/push_sdhstate_left
-		
-		sudo rm -rf /var/tmp/sns/push_sdhstate_right
-    sudo rm -rf /var/run/sns/push_sdhstate_right
-
-
-		sudo rm -rf /var/tmp/sns/pull_bimanual_chan
-    sudo rm -rf /var/run/sns/pull_bimanual_chan
-		
-		sudo rm -rf /var/tmp/sns/pull_bimanual_hand_chan
-    sudo rm -rf /var/run/sns/pull_bimanual_hand_chan
+  # Create folder names
+  for i in $NAMES; do
+    folder_tmp="/var/tmp/sns/$i"
+    folder_run="/var/run/sns/$i"
+    SNS_FOLDERS_RM="$SNS_FOLDERS_RM $folder_tmp $folder_run"
+  done
+                                                           
+   sudo rm -rf -R $1 $SNS_FOLDERS_RM
 }
 
 
@@ -165,37 +169,48 @@ crichton_expunge() {
 crichton_stop() {
     $SNS kill lwa-left
     $SNS kill sdh-left
+    $SNS kill contact-left
+
     $SNS kill lwa-right
     $SNS kill sdh-right
+    $SNS kill contact-right
+
 
     $SNS kill push_state_left
-		$SNS kill push_state_right
-		$SNS kill push_sdhstate_left
+    $SNS kill push_state_right
+
+    $SNS kill push_sdhstate_left
     $SNS kill push_sdhstate_right
+
+    $SNS kill push_tactile_left
+    $SNS kill push_tactile_right
+
     $SNS kill pull_bimanual_chan
     $SNS kill pull_bimanual_hand_chan
     $SNS kill push_gatekeeper_msg_chan
-   crichton_ach_rm
+
+    crichton_ach_rm
 }
 
 # Change ownerships of SNS temporal files
 crichton_steal() {
 
-  NAMES="lwa-left lwa-right"
-  NAMES="$NAMES sdh-left sdh-right"
-	NAMES="$NAMES pull_bimanual_chan pull_bimanual_hand_chan"
-	NAMES="$NAMES push_state_left push_state_right"
-	NAMES="$NAMES push_sdhstate_left push_sdhstate_right"
-	NAMES="$NAMES push_gatekeeper_msg_chan"
+  NAMES="lwa-left sdh-left contact-left"
+  NAMES="$NAMES lwa-right sdh-right contact-right"
+  NAMES="$NAMES pull_bimanual_chan pull_bimanual_hand_chan"
+  NAMES="$NAMES push_state_left push_state_right"
+  NAMES="$NAMES push_sdhstate_left push_sdhstate_right"
+  NAMES="$NAMES push_tactile_left push_tactile_right"
+  NAMES="$NAMES push_gatekeeper_msg_chan"
  	
-	SNS_FOLDERS_STEAL=""
+  SNS_FOLDERS_STEAL=""
 
-	# Create folder names
-	for i in $NAMES; do
-		folder_tmp="/var/tmp/sns/$i"
-		folder_run="/var/run/sns/$i"
-		SNS_FOLDERS_STEAL="$SNS_FOLDERS_STEAL $folder_tmp $folder_run"
-	done
+  # Create folder names
+  for i in $NAMES; do
+    folder_tmp="/var/tmp/sns/$i"
+    folder_run="/var/run/sns/$i"
+    SNS_FOLDERS_STEAL="$SNS_FOLDERS_STEAL $folder_tmp $folder_run"
+  done
                                                            
   chown -R $1 $SNS_FOLDERS_STEAL
   chgrp -R $1 $SNS_FOLDERS_STEAL
