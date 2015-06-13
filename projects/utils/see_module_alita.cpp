@@ -410,7 +410,7 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int i,
   
   fitter.setInputCloud( completed );
   fitter.setInitialApprox( Tsymm, Bb );
-  if( fitter.fit( LEVMAR_MINIMIZER, 0.03, 0.005, 5, 0.1 ) ) {
+  if( fitter.fit( 0.03, 0.005, 5, 0.1 ) ) {
     
     SQ_parameters p;
     fitter.getFinalParams( p );

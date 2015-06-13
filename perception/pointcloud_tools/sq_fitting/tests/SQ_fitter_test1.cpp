@@ -21,8 +21,7 @@ int main( int argc, char* argv[] ) {
   // 1. Read pointcloud from input
   int v;
   std::string filename;
-  int minType = LEVMAR_MINIMIZER;
-  while( (v=getopt( argc, argv, "p:t:h")) != -1 ) {
+  while( (v=getopt( argc, argv, "p:h")) != -1 ) {
 	
     switch(v) {
     case 'p': {
@@ -34,9 +33,6 @@ int main( int argc, char* argv[] ) {
       } 
     } break;
 		// Set type of minimizer (ceres or levmar)
-	case 't': {
-		minType = atoi(optarg);
-	} break;
 	case 'h': {
 	  std::cout <<"Syntax: "<<argv[0]<<" filename.pcd"<< std::endl;
 	} break;
@@ -67,18 +63,16 @@ int main( int argc, char* argv[] ) {
   double thresh = 0.1;
   int N = 5;
   std::cout << "\t * Call fitting function with voxel limits (: "<<smin<<","<<smax<<"), N: "<< N<<" and  thresh: "<< thresh << std::endl;
-  if( fitter.fit( minType, 
-				  smax, smin,
+  if( fitter.fit( smax, smin,
 				  N, thresh) ) {
 
 	std::cout << "\t [GOOD] Fit superquadric!"<< std::endl;
 
 	// 3. Visualize
-	fitter.visualize();
 	pcl::PointCloud<pcl::PointXYZ>::Ptr fitted;
 	fitted = fitter.getSampledOutput();
 	char name[50];
-	sprintf( name, "fit.pcd", filename.c_str() );
+	sprintf( name, filename.c_str() );
 	pcl::io::savePCDFile( name, *fitted, true );
 
   } else {
