@@ -1,5 +1,5 @@
 /**
- * @file see_module
+ * @file perception_pick
  * @brief Captures a snapshot, segments and select the type of primitive you want to use to represent the objects
  * @brief It can be controlled by msgs from server
  * @author A. Huaman Q.
@@ -20,7 +20,8 @@
 #include "tabletop_segmentation/tabletop_segmentation.h"
 
 #include "msgs/perception_msgs.h"
-#include <communication/msgs/server_msgs.h>
+#include <communication/server_pick/include/fsm_msg.h>
+#include <communication/server_pick/include/fsm_header.h>
 
 #include <global/crichton_global.h>
 #include <global/fsa_data.h>
@@ -64,8 +65,8 @@ bool gChanReady = false;
 
 // CHANNELS
 ach_channel_t gObj_param_chan; // Channel to send object param to planner
-ach_channel_t gServer2See_chan; // Channel to receive commands from server
-ach_channel_t gSee2Server_chan; // Channel to send responses to server
+ach_channel_t gServer2Module_chan; // Channel to receive commands from server
+ach_channel_t gModule2Server_chan; // Channel to send responses to server
 
 
 /***********************/
@@ -172,15 +173,18 @@ void pollChan() {
   // Server2See
   ach_status_t r;
   size_t frame_size;
-  sns_msg_server_1 server_msg;
-  sns_msg_process_1 see_msg;
+  alpha_msg server_msg;
+  alpha_msg module_msg;
   
-  r = ach_get( &gServer2See_chan, &server_msg,
+  r = ach_get( &gServer2Module_chan, &server_msg,
 	       sizeof(server_msg), &frame_size, NULL, ACH_O_LAST );
 
   if( r == ACH_OK && !sns_msg_is_expired( &server_msg.header, NULL ) ) {
-    if( server_msg.task_type == TASK_PICK_UP &&
-	server_msg.msg_type == MSG_SEE_GRAB_IMG ) {
+
+    switch( server_msg.type ) {
+
+    case PICKUP_MSG_CMD_PERCEPTION_GRAB_IMG : {
+
       process(0, NULL );
       if( gIsSegmentedFlag ) {
 	drawSegmented();
@@ -196,36 +200,45 @@ void pollChan() {
       usleep( 0.1*1e6 );
       
       // Send message replying
-      see_msg.msg_type = RCV_IMAGE_MSG;
-      sns_msg_set_time( &see_msg.header, NULL, 0.2*1e9 );
-      strcpy( see_msg.data_str, imgName );
-      r = ach_put( &gSee2Server_chan, &see_msg, sizeof(see_msg) );
+      module_msg.type = PICKUP_MSG_STATUS_PERCEPTION_IMG_YES;
+      sns_msg_set_time( &module_msg.header, NULL, 0.2*1e9 );
+      sprintf( module_msg.line, "%d %s", module_msg.type, imgName );
+      
+      r = ach_put( &gModule2Server_chan, &module_msg, sizeof(module_msg) );
       if( r == ACH_OK ) {
 	printf("Msg back to server sent all right \n");
       } else {
 	printf("[ERROR] Msg back to server NOT sent well");
       }
-    }
+    } break;
 
-    else if( server_msg.msg_type == MSG_SEND_OBJ_COMMAND ) {
-
+      
+    case PICKUP_MSG_CMD_PERCEPTION_SEND :  {
+      
       // Get x and y to select an object
+      int t, px, py;
+      std::stringstream ss(server_msg.line);
+      ss >> t >> px >> py;
+      printf("X: %d Y: %d \n", px, py);
       onMouse( cv::EVENT_LBUTTONDOWN,
-	       server_msg.data_int1,
-	       server_msg.data_int2,
-	       0, NULL );
+	       px, py, 0, NULL );
       // Send it
       send( 0, NULL );
       usleep(0.5*1e6);
+      
       // Send message replying
-      see_msg.msg_type = SENT_OBJ_MSG;
-      sns_msg_set_time( &see_msg.header, NULL, 0.2*1e9 );
-      r = ach_put( &gSee2Server_chan, &see_msg, sizeof(see_msg) );
-         
-    }
+      module_msg.type = PICKUP_MSG_STATUS_PERCEPTION_SENT_YES;
+      sns_msg_set_time( &module_msg.header, NULL, 0.2*1e9 );
+      r = ach_put( &gModule2Server_chan, &module_msg, sizeof(module_msg) );
+      
+    } break;
 
+      
+    } // end switch
+      
+
+  } // end if
     
-  }
 }
 
 /**
@@ -238,9 +251,9 @@ void startComm( int state, void* userdata ) {
   
   r = ach_open( &gObj_param_chan, gObj_param_chan_name.c_str(), NULL );
   if( r != ACH_OK ) { printf("[ERROR] COULD NOT OPEN OBJ PARAM CHAN"); return; }
-  r = ach_open( &gServer2See_chan, gServer2See_chan_name.c_str(), NULL );
+  r = ach_open( &gServer2Module_chan, gServer2Module_chan_name.c_str(), NULL );
   if( r != ACH_OK ) { printf("[ERROR] COULD NOT OPEN SERVER-2-SEE CHAN"); return; }
-  r = ach_open( &gSee2Server_chan, gSee2Server_chan_name.c_str(), NULL );
+  r = ach_open( &gModule2Server_chan, gModule2Server_chan_name.c_str(), NULL );
   if( r != ACH_OK ) { printf("[ERROR] COULD NOT SEE-2-SERVER CHAN"); return; }
     
   printf("\t [OK] Communication stablished and ready to go \n");
@@ -473,13 +486,6 @@ void process( int state,
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();
   int n = tts.getNumClusters();
-
-  // 
-  /*for( int i = 0; i < n; ++i ) {
-   char name[50];
-   sprintf( name, "cloudy_%d.pcd", i );
-   pcl::io::savePCDFile( name,  gClusters[i], true );
-  }*/
 
   // Set segmented variables
   gIsSegmentedFlag = true;

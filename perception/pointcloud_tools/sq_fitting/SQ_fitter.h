@@ -7,13 +7,6 @@
 #include "SQ_parameters.h"
 #include <pcl/io/pcd_io.h>
 
-enum MINIMIZER_TYPE {
-    CERES_MINIMIZER = 0,
-    LEVMAR_MINIMIZER = 1
-};
-
-
-
 /**
  * @class SQ_fitter
  */
@@ -35,11 +28,14 @@ class SQ_fitter {
 		      double _trans[3],
 		      double _rot[3],
 		      bool _debug = false );
-  bool fit( const int &_type = LEVMAR_MINIMIZER, 
-	    const double &_smax = 0.05,
+  bool fit( const double &_smax = 0.05,
 	    const double &_smin = 0.01,
 	    const int &_N = 5,
 	    const double &_thresh = 0.1 );
+  bool fit_tampering( const double &_smax = 0.05,
+		      const double &_smin = 0.01,
+		      const int &_N = 5,
+		      const double &_thresh = 0.1 );
   
   void downsample( const PointCloudPtr &_cloud,
 		   const double &_voxelSize,
@@ -48,17 +44,23 @@ class SQ_fitter {
   bool minimize( const PointCloudPtr &_cloud, 
 		 const SQ_parameters &_in,
 		 SQ_parameters &_out,
-		 double &_error,
-		 int _type = LEVMAR_MINIMIZER );
+		 double &_error );
+  bool minimize_tampering( const PointCloudPtr &_cloud, 
+			   const SQ_parameters &_in,
+			   SQ_parameters &_out,
+			   double &_error );
+
 
   bool minimize_levmar( const PointCloudPtr &_cloud, 
 			const SQ_parameters &_in,
 			SQ_parameters &_out,
 			double &_error );
 
-
   double error_metric( SQ_parameters _par,
 		       const PointCloudPtr &_cloud );
+  double error_metric_tampering( SQ_parameters _par,
+				 const PointCloudPtr &_cloud );
+
 
   void printResults();
   PointCloudPtr getSampledOutput();
@@ -83,6 +85,7 @@ class SQ_fitter {
   double mLowerLim_rot[3]; double mUpperLim_rot[3]; 
   double mLowerLim_trans[3]; double mUpperLim_trans[3]; 
   double mLowerLim_e; double mUpperLim_e; 
+  double mLowerLim_tamp; double mUpperLim_tamp;
 };
 
 

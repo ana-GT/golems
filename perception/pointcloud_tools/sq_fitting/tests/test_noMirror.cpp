@@ -30,7 +30,6 @@ int main( int argc, char* argv[] ) {
   // 0. Read pointcloud from input
   int v;
   std::string filename;
-  int minType = LEVMAR_MINIMIZER;
   while( (v=getopt( argc, argv, "p:h")) != -1 ) {
 	
     switch(v) {
@@ -95,8 +94,7 @@ int main( int argc, char* argv[] ) {
   // 2. Fit. If successful, visualize and spit out summary
 
   std::cout << "\t * [FIT] Voxel lim: ( "<<smin<<","<<smax<<"), N: "<< N<<"   thresh: "<< thresh << std::endl;
-  if( fitter.fit( minType, 
-				  smax, smin,
+  if( fitter.fit( smax, smin,
 				  N, thresh) ) {
 
 	std::cout << "\t [GOOD] Fit superquadric"<< std::endl;

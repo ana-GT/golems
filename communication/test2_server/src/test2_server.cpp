@@ -511,7 +511,7 @@ void Test2_Server::clientConnected_slot( const QString &_name ) {
     QObject::connect( mDiscoveryAgent, SIGNAL(finished()),
                       this, SLOT(OB_discoverEnd_slot()) );
     QObject::connect( mDiscoveryAgent, SIGNAL(canceled()),
-                      this, SLOT(OB_discoverEnd__slot()) );
+                      this, SLOT(OB_discoverEnd_slot()) );
     
     mDiscoveryAgent->setUuidFilter( QBluetoothUuid(QBluetoothUuid::ObexObjectPush) );
     mDiscoveryAgent->setRemoteAddress(QBluetoothAddress("A4:9A:58:AA:9D:9D"));
