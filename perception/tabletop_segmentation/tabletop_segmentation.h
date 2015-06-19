@@ -46,7 +46,7 @@ public:
     void set_filter_minMax( const double &_xmin, const double &_xmax,
 			    const double &_ymin, const double &_ymax,
 			    const double &_zmin, const double &_zmax );
-    
+    void set_min_cluster_size( int _size ) { min_cluster_size_ = _size; }
     //------------------- Complete processing -----
     
     //! Complete processing for new style point cloud

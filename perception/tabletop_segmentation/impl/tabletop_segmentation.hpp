@@ -95,7 +95,7 @@ TabletopSegmentor<PointT>::TabletopSegmentor() {
 //initialize operational flags
   inlier_threshold_ = 300;
   plane_detection_voxel_size_ = 0.01;
-  clustering_voxel_size_ = 0.003;
+  clustering_voxel_size_ = 0.0015; // 1.5mm
 
   z_filter_min_ = 0.3; z_filter_max_ = 1.0; 
   y_filter_min_ = -0.6;  y_filter_max_ = 0.6;
@@ -209,12 +209,15 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   PointCloudPtr cloud_downsampled_ptr (new PointCloud);
   grid_.setInputCloud (cloud_filtered_ptr);
   grid_.filter (*cloud_downsampled_ptr);
-  *cloud_downsampled_ptr = *cloud_filtered_ptr;
   if (cloud_downsampled_ptr->points.size() < (unsigned int)min_cluster_size_) {
-    printf( "\t [ERROR] Downsampled cloud only has %d points. \n",
+    printf( "\t [ERROR] Downsampled cloud only has %d points \n",
 	    (int)cloud_downsampled_ptr->points.size() );
     return false;
   }
+
+  printf( "\t Downsampled cloud only has %d points / %d. \n",
+	  (int)cloud_downsampled_ptr->points.size(), (int)cloud_filtered_ptr->points.size() );
+
 
   /***************** Step 2 : Estimate normals ******************/
   pcl::PointCloud<pcl::Normal>::Ptr cloud_normals_ptr (new pcl::PointCloud<pcl::Normal>);
@@ -291,7 +294,8 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   PointCloudPtr cloud_objects_downsampled_ptr (new PointCloud);
   grid_objects_.setInputCloud (cloud_objects_ptr);
   grid_objects_.filter (*cloud_objects_downsampled_ptr);
-
+  printf("Object clouds from %d to %d \n", cloud_objects_ptr->points.size(),
+	 cloud_objects_downsampled_ptr->points.size() );
   // Step 6: Split the objects into Euclidean clusters
   std::vector<pcl::PointIndices> clusters2;
   pcl_cluster_.setInputCloud (cloud_objects_downsampled_ptr);
@@ -299,6 +303,7 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   mClusterInds.resize( clusters2.size() );
   for( int i = 0; i < clusters2.size(); ++i ) {
     mClusterInds[i] = clusters2[i];
+    printf("Cluster %d size: %d \n", i, clusters2[i].indices.size()   );
   }
 
   mClusters.resize( clusters2.size() );

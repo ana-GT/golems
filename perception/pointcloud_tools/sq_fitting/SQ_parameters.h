@@ -18,6 +18,8 @@ struct SQ_parameters {
   double trans[3];
   double rot[3];
 
+  /** Tampering */
+  double tamp;
 };
 
 /**

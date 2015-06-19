@@ -28,7 +28,7 @@ add_definitions(${PCL_DEFINITIONS})
 
 # Libraries
 add_subdirectory( msgs )
-add_subdirectory( calibration )
+#add_subdirectory( calibration )
 add_subdirectory( skeleton_tracker )
 #add_subdirectory( marker_detection )
 add_subdirectory( tabletop_segmentation )

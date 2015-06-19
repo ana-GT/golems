@@ -28,7 +28,7 @@ az = cos(pa)*cos(ra);
 
 F = ( ( ( (nx*x + ny*y + nz*z - px*nx - py*ny - pz*nz)/a  )^(2))^(1.0/e2) + ( ( (ox*x + oy*y + oz*z - px*ox - py*oy - pz*oz)/b  )^(2))^(1.0/e2) )^(e2 / e1) + ( ( (ax*x + ay*y + az*z - px*ax - py*ay - pz*az)/c  )^(2))^(1.0/e1);    
 
-Fm = sqrt(a*b*c)*(F^e1-1);
+Fm = sqrt(a*b*c)*(F^e1-1)
 
 Er = ( F^e1 - 1 )^2;
 
@@ -37,6 +37,6 @@ J = [ diff(Fm,a), diff(Fm,b), diff(Fm,c), diff(Fm,e1), diff(Fm,e2), diff(Fm,px),
 
 
 % C Code Generation
-ccode(Fm,'file','func_Eq.txt');
-ccode(J,'file','jac_Eq.txt');
+ccode(Fm,'file','func_Eq_2.txt');
+ccode(J,'file','jac_Eq_2.txt');
 

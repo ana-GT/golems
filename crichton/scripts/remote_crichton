@@ -17,6 +17,8 @@ CHANNELS="$CHANNELS ref-right state-right"
 CHANNELS="$CHANNELS sdhref-left sdhstate-left"
 CHANNELS="$CHANNELS sdhref-right sdhstate-right"
 CHANNELS="$CHANNELS gatekeeper_msg_chan"
+CHANNELS="$CHANNELS tactile-left"
+CHANNELS="$CHANNELS tactile-right"
 
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"

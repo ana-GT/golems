@@ -25,7 +25,7 @@ void crichton_markerDetector::setMarkerSize( int _markerSize ) {
 bool crichton_markerDetector::detect( cv::Mat &_img ) {
 
   IplImage ipl = _img;
-  mMarkerDetector.Detect( &ipl, &mCam, false, false ); // track and visualize
+  mMarkerDetector.Detect( &ipl, &mCam, false, true ); // track and visualize
   mCalibMarkers.resize(0);
 
   
