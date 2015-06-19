@@ -256,6 +256,12 @@ void Server_Pick::show_state_name_fsm() {
   case PICKUP_STATE_NOTIFYING:
     name = std::string("Notifying");
     break;
+  case PICKUP_STATE_DONE:
+    name = std::string("Done");
+    break;
+  case PICKUP_STATE_GOING_BACK:
+    name = std::string("Going back");
+    break;
   case PICKUP_STATE_NONE:
     name = std::string("None");
     break;
@@ -318,6 +324,7 @@ void Server_Pick::evaluate_fsm( const alpha_msg &_msg ) {
   // Reset put everything in halt, regardless of the current state
   if( _msg.type == PICKUP_MSG_CMD_SERVER_RESET ) {
       mState_fsm = PICKUP_STATE_LISTENING;
+      this->reset_server();
       action_fsm( PICKUP_ACTION_PLAN_RESET );    
   }
   
@@ -390,9 +397,8 @@ void Server_Pick::evaluate_fsm( const alpha_msg &_msg ) {
     
   case PICKUP_STATE_EXECUTING:
     if( _msg.type == PICKUP_MSG_STATUS_PLAN_EXECUTED_YES ) {
-      mState_fsm = PICKUP_STATE_NOTIFYING;
-      mNotify_msg = std::string("(!)_Executing_SUCCESS!");
-      action_fsm( PICKUP_ACTION_CLIENT_NOTIFY );
+      mState_fsm = PICKUP_STATE_DONE;
+      action_fsm( PICKUP_ACTION_NONE );
     }
     else if( _msg.type == PICKUP_MSG_STATUS_PLAN_EXECUTED_NO ) {
       mState_fsm = PICKUP_STATE_NOTIFYING;
@@ -400,7 +406,22 @@ void Server_Pick::evaluate_fsm( const alpha_msg &_msg ) {
       action_fsm( PICKUP_ACTION_CLIENT_NOTIFY );
     }              
      break;
-     
+
+  case PICKUP_STATE_DONE:
+    if( _msg.type == PICKUP_MSG_CMD_SERVER_GO_BACK ) {
+      mState_fsm = PICKUP_STATE_GOING_BACK;
+      action_fsm( PICKUP_ACTION_PLAN_GO_BACK );
+    }
+    break;
+
+  case PICKUP_STATE_GOING_BACK:
+    if( _msg.type == PICKUP_MSG_STATUS_PLAN_GO_BACK_YES ) {
+      mState_fsm = PICKUP_STATE_DONE;
+      action_fsm( PICKUP_ACTION_NONE );
+    }
+    break;
+
+    
   case PICKUP_STATE_NOTIFYING:
     if( _msg.type == PICKUP_MSG_STATUS_CLIENT_NOTIFIED ) {
       mState_fsm = PICKUP_STATE_LISTENING;
@@ -482,6 +503,13 @@ void Server_Pick::action_fsm( int _action_type ) {
     ach_put( &mServer2Module_chan, &msg, sizeof(msg) );     
   } break;
 
+  case PICKUP_ACTION_PLAN_GO_BACK: {
+    alpha_msg msg;
+    msg.type = PICKUP_MSG_CMD_PLAN_GO_BACK;
+    sns_msg_set_time( &msg.header, NULL, 0.1*1e9);
+    ach_put( &mServer2Module_chan, &msg, sizeof(msg) );     
+  } break;
+    
   case PICKUP_ACTION_CLIENT_NOTIFY: {
     alpha_msg msg;
     // Put message type and info together
@@ -490,6 +518,7 @@ void Server_Pick::action_fsm( int _action_type ) {
     sns_msg_set_time( &msg.header, NULL, 0.1*1e9);
     //ach_put( &mServer2Client_chan, &msg, sizeof(msg) );     
   } break;
+
     
   } // end switch 
   

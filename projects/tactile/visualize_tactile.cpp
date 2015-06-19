@@ -20,7 +20,7 @@ int main( int argc, char* argv[] ) {
   if( opt_side != 0 && opt_side != 1 ) { opt_side = 0; }	
 	
   opt_side == 0? sprintf(opt_chan_name,"tactile-left"): sprintf(opt_chan_name, "tactile-right");
-  sprintf( opt_chan_name, "state-right" );
+  
   ach_status r;
 
   // Open channel

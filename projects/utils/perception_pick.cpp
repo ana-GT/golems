@@ -180,7 +180,7 @@ void pollChan() {
 	       sizeof(server_msg), &frame_size, NULL, ACH_O_LAST );
 
   if( r == ACH_OK && !sns_msg_is_expired( &server_msg.header, NULL ) ) {
-
+    printf("Got message of type %d \n", server_msg.type );
     switch( server_msg.type ) {
 
     case PICKUP_MSG_CMD_PERCEPTION_GRAB_IMG : {
