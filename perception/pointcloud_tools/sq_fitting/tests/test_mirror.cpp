@@ -48,7 +48,6 @@ int main( int argc, char* argv[] ) {
   // 0. Read pointcloud from input
   int v;
   std::string filename;
-  int minType = LEVMAR_MINIMIZER;
   while( (v=getopt( argc, argv, "p:h")) != -1 ) {
 	
     switch(v) {
@@ -139,8 +138,7 @@ int main( int argc, char* argv[] ) {
 	  time_t ts, tf; double dt;
 
 	  ts = clock();
-	  status = fitter.fit( minType, 
-					  smax, smin,
+	  status = fitter.fit( smax, smin,
 						   N, thresh);
 	  tf = clock();
 	  cloud_times[i] = (tf - ts) / (double) CLOCKS_PER_SEC;
@@ -166,8 +164,7 @@ int main( int argc, char* argv[] ) {
 	  fitter.setInputCloud( mirrored );
 
 	  ts = clock();
-	  status = fitter.fit( minType, 
-						   smax, smin,
+	  status = fitter.fit( smax, smin,
 						   N, thresh);
 	  tf = clock();
 	  mirror_times[i] = (tf - ts) / (double) CLOCKS_PER_SEC;

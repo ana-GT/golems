@@ -164,7 +164,7 @@ void fit_SQ( std::vector<pcl::PointCloud<pcl::PointXYZRGBA>::Ptr > _clusters ) {
 	p->width = 1; p->height = p->points.size();
 	
 	fitter.setInputCloud( p );
-	if( fitter.fit( LEVMAR_MINIMIZER, 0.03, 0.005, 5, 0.1 ) ) {
+	if( fitter.fit( 0.03, 0.005, 5, 0.1 ) ) {
 	    
 	    SQ_parameters p;
 	    fitter.getFinalParams( p );	    

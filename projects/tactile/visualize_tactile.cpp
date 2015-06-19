@@ -15,16 +15,16 @@ char opt_chan_name[50];
 
 /****/
 int main( int argc, char* argv[] ) {
-/*
+
   if( argc == 2 ) { opt_side = atoi(argv[1] ); }
   if( opt_side != 0 && opt_side != 1 ) { opt_side = 0; }	
 	
   opt_side == 0? sprintf(opt_chan_name,"tactile-left"): sprintf(opt_chan_name, "tactile-right");
-*/
+  sprintf( opt_chan_name, "state-right" );
   ach_status r;
 
   // Open channel
-  r = ach_open( &tactile_chan, "tactile-left", NULL ); 
+  r = ach_open( &tactile_chan, opt_chan_name, NULL ); 
   if( r != ACH_OK ) { printf("Channel tactile-left could NOT be opened \n"); }
   ach_flush( &tactile_chan );
 

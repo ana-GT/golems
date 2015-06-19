@@ -39,6 +39,10 @@ static const std::string gServer2See_chan_name("server2see_chan");
 static const std::string gSee2Server_chan_name("see2server_chan");
 static const std::string gServer2Plan_chan_name("server2plan_chan");
 static const std::string gPlan2Server_chan_name("plan2server_chan");
+
+static const std::string gModule2Server_chan_name("module2server_chan");
+static const std::string gServer2Module_chan_name("server2module_chan");
+
 static const std::string gPicturesPath("/home/ana/Pictures");
 
 extern Eigen::Isometry3d gTrk[2];

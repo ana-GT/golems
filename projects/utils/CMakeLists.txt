@@ -33,6 +33,14 @@ include_directories( ${CMAKE_SOURCE_DIR} )
 
 
 # Apps
+
+# Perception Pick
+add_executable( perception_pick perception_pick.cpp )
+target_link_libraries( perception_pick  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( perception_pick PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
 add_executable( grab_data grab_data.cpp )
 target_link_libraries( grab_data ${OpenCV_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
 set_target_properties( grab_data PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
