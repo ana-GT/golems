@@ -128,8 +128,8 @@ crichton_start() {
      $SNS run  -d -r sdh-left -- \
      sdhiod -b $CAN_SDH_L -c sdhref-left -s sdhstate-left
 
-     $SNS run -d -r contact-left -- \
-     dsad_full -c tactile-left -s $SERIAL_L
+#     $SNS run -d -r contact-left -- \
+#     dsad_full -c tactile-left -s $SERIAL_L
 
      $SNS run -d -r lwa-right -- \
      can402 -f $CAN_R -R 1 -C 0 -n 3 -n 4 -n 5 -n 6 -n 7 -n 8 -n 9 -c ref-right -s state-right    
@@ -137,8 +137,8 @@ crichton_start() {
      $SNS run  -d -r sdh-right -- \
      sdhiod -b $CAN_SDH_R -c sdhref-right -s sdhstate-right
 
-     $SNS run -d -r contact-right -- \
-     dsad_full -c tactile-right -s $SERIAL_R
+#     $SNS run -d -r contact-right -- \
+#     dsad_full -c tactile-right -s $SERIAL_R
 }
 
 # Expunge: Remove temporal folders for log

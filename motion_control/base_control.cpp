@@ -91,14 +91,16 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   
 
   // Create trajectory
+  printf("Generate trajectory \n");
   Trajectory trajectory( Path(path, mMaxDev), _maxVel, _maxAccel );
+  printf("Generate output phase plane trajectory \n");
   trajectory.outputPhasePlaneTrajectory();
-
+  printf("Check trajectory is valid \n");
   if( !trajectory.isValid() ) {
     printf("\t [followTrajectory] ERROR: Trajectory is not valid \n");
     return false;
   }
-
+  printf("Getting duration \n");
   double duration = trajectory.getDuration();
   double start_time;
   double current_time;
