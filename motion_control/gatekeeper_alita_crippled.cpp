@@ -214,7 +214,6 @@ bool poll_bimanual_chan( ach_channel_t* _chan,
 
 
     struct sns_msg_bimanual* msg = (struct sns_msg_bimanual*) buf;
-	  if( sns_msg_is_expired( &(msg->header), NULL ) == true ) { return false; }
 
     if( frame_size == sns_msg_bimanual_size(msg) ) {
      // Store trajectory
@@ -302,10 +301,12 @@ void send_gateekeper_msg( int _msg_type, bool _result ) {
 
   gatekeeper_msg msg;
   sns_msg_header_fill( &msg.header );
-  sns_msg_set_time( &msg.header, NULL, 0.2*1e9);
   msg.type = _msg_type;
   msg.state = _result;
   ach_status r; 
  r = ach_put( &gatekeeper_msg_chan,
 	   (void*)&msg, sizeof(msg) );
+
+	if( r == ACH_OK ) { printf("Message from gatekeeper sent all right \n"); }
+  else { printf("Message from gatekeeper was NOT sent fine. WTF?"); }
 }

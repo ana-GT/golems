@@ -133,10 +133,10 @@ alita_start() {
     achd push $PLANNING_HOST gatekeeper_msg_chan	
 
     # Run daemons
-    $SNS run -d -r lwa-left -- \
+    $SNS run -d  -r lwa-left -- \
     pcio-sns -c ref-left -s state-left -b $BUS_1_L -m 1 -m 2 -m 3 -m 4 -b $BUS_2_L -m 5 -m 6 -m 7  
 
-     $SNS run  -d -r grip-left -- \
+     $SNS run  -d  -r grip-left -- \
      pcio-sns -c gripref-left -s gripstate-left  -b $BUS_2_L -m 8 -H 
 
 
@@ -181,7 +181,6 @@ alita_expunge() {
 alita_stop() {
     $SNS kill lwa-left
     $SNS kill grip-left
-
     $SNS kill push_state_left
     $SNS kill push_state_right
     $SNS kill push_gripstate_left
