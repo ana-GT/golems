@@ -6,6 +6,8 @@
 #include "trajectories/Trajectory.h"
 #include "trajectories/Path.h"
 
+#include <fstream>
+
 /**
  * @function BaseControl
  */
@@ -118,6 +120,13 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   tn = current_time - start_time;
 
   // Send velocity commands
+  char name[50];
+  std::time_t t = std::time(NULL);
+  std::strftime( name, 50, "output_%A_%H_%M_%S.txt", std::localtime(&t) );
+  std::ofstream output( name, std::ofstream::out );
+  Eigen::VectorXd vp = Eigen::VectorXd::Zero(7);
+  Eigen::VectorXd acc;
+
   while( tn < duration ) {
 
     // Get current time and state
@@ -127,12 +136,18 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
 
     // Build velocity command
     vel_cmd = trajectory.getVelocity( tn );
+
+    acc = (vel_cmd - vp)/0.01;
     
     std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
     std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
     std::cout << "Current position: " << mq.transpose() << std::endl;
     std::cout << "Current velocity: " << mdq.transpose() << std::endl;
-    
+   
+    output << tn << " " << trajectory.getPosition(tn).transpose() << " " << mq.transpose() << " " <<
+	vel_cmd.transpose() << " " << mdq.transpose() << " " << acc.transpose()  << std::endl; 
+
+ 
     // Send command to robot    
     if( !control_n( mN, vel_cmd, 2*mDt, mChan_ref, SNS_MOTOR_MODE_VEL ) ) {
       printf("\t[followTrajectory] Sending vel msg error \n");
@@ -144,6 +159,8 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
     aa_mem_region_local_release();
     
   } // end while
+  printf("Closing file with data of trajectory pos and vel \n");
+  output.close();
 
   printf("\t * [trajectoryFollowing] DEBUG: Finish and sending zero vel for good measure \n");
   Eigen::VectorXd zeros(mN); for( int i = 0; i < mN; ++i ) { zeros(i) = 0; }
