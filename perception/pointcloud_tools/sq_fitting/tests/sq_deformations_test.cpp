@@ -12,13 +12,15 @@ int main( int argc, char* argv[] ) {
   double a1 = 0.15;
   double a2 = 0.15;
   double a3 = 0.15;
-  double e1 = 1.0;
+  double e1 = 0.1;
   double e2 = 1.0;
   int N = 50;
   double t = 0.5; // <0,1>
   int v;
+  double Rfactor, R;
+  Rfactor = 1.04;
 
-  while( (v=getopt(argc, argv, "n:a:b:c:e:f:t:")) != -1 ) {
+  while( (v=getopt(argc, argv, "n:a:b:c:e:f:t:r:")) != -1 ) {
     switch(v) {
 
     case 'a' : {
@@ -42,6 +44,9 @@ int main( int argc, char* argv[] ) {
     case 't' : {
       t = atof(optarg);
     } break;
+    case 'r' : {
+      Rfactor = atof(optarg);
+    }
     } // switch end
   }
 
@@ -53,6 +58,26 @@ int main( int argc, char* argv[] ) {
   
   std::cout << "Cloud size: "<< cloud->points.size() << std::endl;
   pcl::io::savePCDFileASCII ( "original.pcd", *cloud );
+
+  // My deformation...
+  typename pcl::PointCloud<pcl::PointXYZ>::iterator pm;
+  int im;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr myDef( new pcl::PointCloud<pcl::PointXYZ>() );
+  myDef->points.resize( cloud->points.size() );
+  myDef->width = 1;
+  myDef->height = cloud->points.size();
+  double xi, yi, zi;
+  R = a3*Rfactor; 
+  for( pm = cloud->begin(), im = 0; pm != cloud->end(); ++pm, ++im ) {
+    xi = (*pm).x; yi = (*pm).y; zi = (*pm).z;    
+    myDef->points[im].x = xi;
+    myDef->points[im].y = yi - R*(1.0-cos(zi/R) );
+    myDef->points[im].z = R*sin(zi/R);
+  }
+  pcl::io::savePCDFileASCII ( "myDef.pcd", *myDef );
+  
+  
+
   // Tampered
   pcl::PointCloud<pcl::PointXYZ>::Ptr tampered;
   SQ_deformations sqd;

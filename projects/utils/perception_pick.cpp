@@ -45,7 +45,7 @@ typedef pcl::PointXYZRGBA PointTa;
 /**************************/
 /** GLOBAL VARIABLES      */
 /**************************/
-std::string gWindowName = std::string("See Module");
+std::string gWindowName = std::string("Perception Pick");
 cv::Mat gRgbImg;
 cv::Mat gPclMap;
 
