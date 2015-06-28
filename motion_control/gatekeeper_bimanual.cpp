@@ -158,7 +158,7 @@ int main( int argc, char* argv[] ) {
 	config = *(rh_path.begin());
 	chan = &rh_ref_chan;
 	n_dof = config.size();
-	hand_side = HAND_LEFT_END;
+	hand_side = HAND_RIGHT_END;
       }
       else if( mode == 2 ) { printf("\t ! Not implemented yet \n"); break; } // Same as right
       else { printf("\t ! Mode not valid \n"); break; }

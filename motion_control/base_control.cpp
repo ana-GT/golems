@@ -93,16 +93,12 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   
 
   // Create trajectory
-  printf("Generate trajectory \n");
   Trajectory trajectory( Path(path, mMaxDev), _maxVel, _maxAccel );
-  printf("Generate output phase plane trajectory \n");
   trajectory.outputPhasePlaneTrajectory();
-  printf("Check trajectory is valid \n");
   if( !trajectory.isValid() ) {
     printf("\t [followTrajectory] ERROR: Trajectory is not valid \n");
     return false;
   }
-  printf("Getting duration \n");
   double duration = trajectory.getDuration();
   double start_time;
   double current_time;
@@ -139,10 +135,10 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
 
     acc = (vel_cmd - vp)/0.01;
     
-    std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
-    std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
-    std::cout << "Current position: " << mq.transpose() << std::endl;
-    std::cout << "Current velocity: " << mdq.transpose() << std::endl;
+   // std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
+   // std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
+   // std::cout << "Current position: " << mq.transpose() << std::endl;
+   // std::cout << "Current velocity: " << mdq.transpose() << std::endl;
    
     output << tn << " " << trajectory.getPosition(tn).transpose() << " " << mq.transpose() << " " <<
 	vel_cmd.transpose() << " " << mdq.transpose() << " " << acc.transpose()  << std::endl; 
