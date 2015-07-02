@@ -31,6 +31,18 @@ target_link_libraries( sq_deformations  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARI
 set_target_properties( sq_deformations PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
+# Trials
+add_library( evaluated_eqs evaluated_eqs.cpp )
+target_link_libraries( evaluated_eqs levmar ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}  pthread )
+set_target_properties( evaluated_eqs PROPERTIES LIBRARY_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
+
+add_executable( test_evaluated test_evaluated.cpp )
+target_link_libraries( test_evaluated evaluated_eqs sq_fitting levmar ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}  pthread )
+set_target_properties( test_evaluated PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
 
 # INSTALL
 install( DIRECTORY ./ DESTINATION include/golems/sq_fitting FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )

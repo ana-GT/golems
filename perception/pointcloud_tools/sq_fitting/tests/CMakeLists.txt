@@ -20,21 +20,6 @@ target_link_libraries( SQ_fitter_test1 sq_fitting ${PCL_COMMON_LIBRARIES} ${PCL_
 set_target_properties( SQ_fitter_test1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-#add_executable( cloud_basicOperations cloud_basicOperations.cpp )
-#target_link_libraries( cloud_basicOperations SQ_fitter ${PCL_LIBRARIES} )
-#set_target_properties( cloud_basicOperations PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-#add_executable( SQ_utils_SE_test SQ_utils_SE_test.cpp )
-#target_link_libraries( SQ_utils_SE_test SQ_utils ${PCL_LIBRARIES} )
-#set_target_properties( SQ_utils_SE_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-
-#add_executable( sampleSQ sampleSQ.cpp )
-#target_link_libraries( sampleSQ sq_fitting refresher_utils ${PCL_LIBRARIES} )
-#set_target_properties( sampleSQ PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable( sq_deformations_test sq_deformations_test.cpp )
 target_link_libraries( sq_deformations_test sq_fitting sq_deformations ${PCL_LIBRARIES} )
@@ -46,25 +31,21 @@ target_link_libraries( sq_deformations_test_noise sq_fitting sq_deformations ${P
 set_target_properties( sq_deformations_test_noise PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( test_cases_generation test_cases_generation.cpp )
+target_link_libraries( test_cases_generation evaluated_eqs sq_fitting ${PCL_LIBRARIES} )
+set_target_properties( test_cases_generation PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( test_cases_generation_short test_cases_generation_short.cpp )
+target_link_libraries( test_cases_generation_short evaluated_eqs sq_fitting ${PCL_LIBRARIES} )
+set_target_properties( test_cases_generation_short PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
 
 #add_executable( sampleSQ_naive sampleSQ_naive.cpp )
 #target_link_libraries( sampleSQ_naive SQ_utils ${PCL_LIBRARIES} )
 #set_target_properties( sampleSQ_naive PROPERTIES RUNTIME_OUTPUT_DIRECTORY
 #  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-
-#add_executable( alterCloud alterCloud.cpp )
-#target_link_libraries( alterCloud ${PCL_LIBRARIES} )
-#set_target_properties( alterCloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-#add_executable( levmar_test levmar_test.cpp )
-#target_link_libraries( levmar_test levmar lapack blas )
-#set_target_properties( levmar_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-#add_executable( levmar_test5 levmar_test5.cpp )
-#target_link_libraries( levmar_test5 SQ_utils levmar lapack blas )
-#set_target_properties( levmar_test5 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
