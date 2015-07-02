@@ -41,6 +41,10 @@ target_link_libraries( test_cases_generation_short evaluated_eqs sq_fitting ${PC
 set_target_properties( test_cases_generation_short PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( read_data_SQ_function read_data_SQ_function.cpp )
+set_target_properties( read_data_SQ_function PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 
 
 #add_executable( sampleSQ_naive sampleSQ_naive.cpp )

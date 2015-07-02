@@ -37,11 +37,6 @@ target_link_libraries( evaluated_eqs levmar ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIB
 set_target_properties( evaluated_eqs PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
-add_executable( test_evaluated test_evaluated.cpp )
-target_link_libraries( test_evaluated evaluated_eqs sq_fitting levmar ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}  pthread )
-set_target_properties( test_evaluated PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
 
 
 # INSTALL
