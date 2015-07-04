@@ -28,7 +28,7 @@
  */
 
 /* specifies whether to use LAPACK or not. Using LAPACK is strongly recommended */
-#define HAVE_LAPACK
+/* #undef HAVE_LAPACK */
 
 /* specifies whether the PLASMA parallel library for multicore CPUs is available */
 /* #undef HAVE_PLASMA */
@@ -39,7 +39,7 @@
  * Bellow, an attempt is made to issue a warning if this option is turned on and OpenMP
  * is being used (note that this will work only if omp.h is included before levmar.h)
  */
-#define LINSOLVERS_RETAIN_MEMORY
+/* #undef LINSOLVERS_RETAIN_MEMORY */
 #if (defined(_OPENMP))
 # ifdef LINSOLVERS_RETAIN_MEMORY
 #  ifdef _MSC_VER

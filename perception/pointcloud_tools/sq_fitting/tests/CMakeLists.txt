@@ -4,6 +4,7 @@
 include_directories( ${CMAKE_SOURCE_DIR} )
 
 link_directories( ${PCL_LIBRARY_DIRS} )
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
 
 # OpenCV
 #find_package( OpenCV REQUIRED )
@@ -31,15 +32,22 @@ target_link_libraries( sq_deformations_test_noise sq_fitting sq_deformations ${P
 set_target_properties( sq_deformations_test_noise PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+
 add_executable( test_cases_generation test_cases_generation.cpp )
 target_link_libraries( test_cases_generation evaluated_eqs sq_fitting ${PCL_LIBRARIES} )
 set_target_properties( test_cases_generation PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-add_executable( test_cases_generation_short test_cases_generation_short.cpp )
-target_link_libraries( test_cases_generation_short evaluated_eqs sq_fitting ${PCL_LIBRARIES} )
-set_target_properties( test_cases_generation_short PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+add_executable( es_tests_0 es_tests_0.cpp )
+target_link_libraries( es_tests_0 evaluated_eqs sq_fitting ${PCL_LIBRARIES} )
+set_target_properties( es_tests_0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( es_tests_1 es_tests_1.cpp )
+target_link_libraries( es_tests_1 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )
+set_target_properties( es_tests_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 
 add_executable( read_data_SQ_function read_data_SQ_function.cpp )
 set_target_properties( read_data_SQ_function PROPERTIES RUNTIME_OUTPUT_DIRECTORY

@@ -32,6 +32,10 @@ class evaluated_sqs {
   
 };
 
+void error_metric( const SQ_parameters &_par,
+		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+		   double& _e1, double &_e2, double &_e4);
+
 void error_metric( double* p,
 		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
 		   double& _e1, double &_e2, double &_e4);

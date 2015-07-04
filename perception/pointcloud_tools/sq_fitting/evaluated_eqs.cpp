@@ -6,8 +6,22 @@
 #include <pcl/filters/voxel_grid.h>
 
 #include "evaluated_eqs.h"
+extern "C" {
 #include "levmar/levmar.h"
+}
 #include <math.h>
+
+
+extern "C" {
+
+  int dlevmar_bc_der(
+		     void (*func)(double *p, double *hx, int m, int n, void *adata),
+		     void (*jacf)(double *p, double *j, int m, int n, void *adata),  
+		     double *p, double *x, int m, int n, double *lb, double *ub, double *dscl,
+		     int itmax, double *opts, double *info, double *work, double *covar, void *adata);
+
+
+};
 
 
 // COPIED FROM ANALITIC_EQUATIONS.H
@@ -22,7 +36,21 @@ struct levmar_data {
     int num;
 };
 
-/****/
+/**
+ * @function error_metric
+ */
+void error_metric( const SQ_parameters &_par,
+		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+		   double& _e1, double &_e2, double &_e4) {
+  double* p = new double[11];
+  p[0] = _par.dim[0];   p[1] = _par.dim[1];   p[2] = _par.dim[2];
+  p[3] = _par.e[0];   p[4] = _par.e[1];
+  p[5] = _par.trans[0]; p[6] = _par.trans[1];   p[7] = _par.trans[2];
+  p[8] = _par.rot[0]; p[9] = _par.rot[1];   p[10] = _par.rot[2];
+
+  return error_metric( p, _cloud, _e1, _e2, _e4 );
+}
+
 void error_metric( double* p,
 		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
 		   double& _e1, double &_e2, double &_e4) {
@@ -253,10 +281,11 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
   for( i = 0; i < 2; ++i ) { lb[i+3] = 0.1; ub[i+3] = 1.9; }
   for( i = 0; i < 3; ++i ) { lb[i+5] = -1.5; ub[i+5] = 1.5; }
   for( i = 0; i < 3; ++i ) { lb[i+8] = -M_PI; ub[i+8] = M_PI; }
-
+  
   switch( _type ) {
 
   case SQ_FX_RADIAL:
+    
     ret = dlevmar_bc_der( fr_add,
 			  Jr_add,
 			  p, y, m, n,
@@ -321,7 +350,7 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
     break;
 
     
-  }
+    }
   
   // If stopped by invalid (TODO: Add other reasons)
   if( info[6] == 7 ) {

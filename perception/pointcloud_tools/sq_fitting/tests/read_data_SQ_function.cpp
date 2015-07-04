@@ -57,14 +57,51 @@ int main( int argc, char* argv[] ) {
   for( int i = 0; i < 4; ++i ) {
     char name[50];
     sprintf(name, "er1_%d.txt", i );
-    std::ofstream output( name, std::ofstream::out );
+    std::ofstream output_er1( name, std::ofstream::out );
+
+    sprintf(name, "er2_%d.txt", i );
+    std::ofstream output_er2( name, std::ofstream::out );
+   
+    sprintf(name, "er4_%d.txt", i );
+    std::ofstream output_er4( name, std::ofstream::out );
+ 
+    sprintf(name,"t_%d.txt", i);
+    std::ofstream output_t( name, std::ofstream::out );
+
+    sprintf(name,"e1_%d.txt", i);
+    std::ofstream output_e1( name, std::ofstream::out );
+
+    sprintf(name,"e2_%d.txt", i);
+    std::ofstream output_e2( name, std::ofstream::out );
+    
+    
     for( int j = 0; j < T; ++j ) {
+      
+      output_e1 << baseline[j].e[0] << " ";
+      output_e2 << baseline[j].e[1] << " ";
+      
       for( int k = 0; k < 6; ++k ) {	
-	output << info[k][j][i].er1 << " ";
+	output_er1 << info[k][j][i].er1 << " ";
+	output_er2 << info[k][j][i].er2 << " ";
+	output_er4 << info[k][j][i].er4 << " ";
+        output_t << info[k][j][i].t << " ";
+	output_e1 << info[k][j][i].e[0] << " ";
+	output_e2 << info[k][j][i].e[1] << " ";
+	
       }
-      output << std::endl;
+      output_er1 << std::endl;
+      output_er2 << std::endl;
+      output_er4 << std::endl;
+      output_t << std::endl;
+      output_e1 << std::endl;
+      output_e2 << std::endl;      
     }
-    output.close();
+    output_er1.close();
+    output_er2.close();
+    output_er4.close();
+    output_t.close();
+    output_e1.close();
+    output_e2.close();    
   }
   
 }

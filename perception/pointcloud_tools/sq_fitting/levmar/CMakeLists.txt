@@ -5,23 +5,26 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT(LEVMAR)
 
-set( CMAKE_C_FLAGS "-std=gnu99 -fPIC" )
-set( CMAKE_CXX_FLAGS " ${CMAKE_CXX_FLAGS} -fPIC" )
-SET(HAVE_LAPACK 1 CACHE BOOL "Do we have LAPACK/BLAS?")
+set( CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC" )
+set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC" )
+#SET(HAVE_LAPACK 0 CACHE BOOL "Do we have LAPACK/BLAS?")
 # the directory where the lapack/blas/f2c libraries reside
-SET(LAPACKBLAS_DIR "/usr/lib" CACHE PATH "Path to lapack/blas libraries")
+#SET(LAPACKBLAS_DIR "/usr/lib" CACHE PATH "Path to lapack/blas libraries")
 SET(NEED_F2C 1 CACHE BOOL "Do we need either f2c or F77/I77?")
 SET(HAVE_PLASMA 0 CACHE BOOL "Do we have PLASMA parallel linear algebra library?")
 IF(HAVE_PLASMA)
  SET(PLASMA_DIR "/usr/local/PLASMA" CACHE PATH "Path to PLASMA root")
 ENDIF(HAVE_PLASMA)
-SET(LINSOLVERS_RETAIN_MEMORY 1 CACHE BOOL "Should linear solvers retain working memory between calls? (non-reentrant!)")
+# Changed from 1 t0 0 (LINSOLVERS_RETAIN_MEMORY) to use OpenMP
+#SET(LINSOLVERS_RETAIN_MEMORY 0 CACHE BOOL "Should linear solvers retain working memory between calls? (non-reentrant!)")
 SET(LM_DBL_PREC 1 CACHE BOOL "Build double precision routines?")
 SET(LM_SNGL_PREC 1 CACHE BOOL "Build single precision routines?")
 OPTION(BUILD_DEMO "Build demo program?" TRUE)
 
 # actual names for the lapack/blas/f2c libraries
-SET(LAPACKBLAS_LIB_NAMES "lapack;blas" CACHE STRING "The name of the lapack & blas libraries")
+# Ana erasing this line
+#SET(LAPACKBLAS_LIB_NAMES "lapack;blas" CACHE STRING "The name of the lapack & blas libraries")
+
 #SET(LAPACKBLAS_LIB_NAMES "mkl_solver_sequential;mkl_intel_c;mkl_sequential;mkl_core" CACHE STRING "The name of the lapack library") # MKL
 IF(NEED_F2C)
   SET(F2C_LIB_NAME f2c CACHE STRING "The name of the f2c or F77/I77 library")
@@ -71,7 +74,7 @@ add_library(levmar STATIC lm.c Axb.c misc.c
   lmlec.c lmbc.c lmblec.c 
   lmbleic.c
   levmar.h misc.h compiler.h )
-target_link_libraries( levmar m lapack blas gfortran )
+target_link_libraries( levmar m  gfortran lapack blas )
 set_target_properties( levmar PROPERTIES ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
   LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
@@ -89,6 +92,7 @@ IF(BUILD_DEMO)
   ENDIF(HAVE_PLASMA)
   
   IF(HAVE_LAPACK)
+    message( "HAVE LAPACK! NOOOOO" )
     IF(NEED_F2C)
       SET(LIBS ${LIBS} ${LAPACKBLAS_LIB_NAMES} ${F2C_LIB_NAME})
     ELSE(NEED_F2C)
