@@ -48,6 +48,16 @@ target_link_libraries( es_tests_1 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levm
 set_target_properties( es_tests_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( es_tests_2 es_tests_2.cpp )
+target_link_libraries( es_tests_2 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )
+set_target_properties( es_tests_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+add_executable( deformations_tests_0 deformations_tests_0.cpp )
+target_link_libraries( deformations_tests_0 sq_deformations sq_utils ${PCL_LIBRARIES} )
+set_target_properties( deformations_tests_0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 
 add_executable( read_data_SQ_function read_data_SQ_function.cpp )
 set_target_properties( read_data_SQ_function PROPERTIES RUNTIME_OUTPUT_DIRECTORY

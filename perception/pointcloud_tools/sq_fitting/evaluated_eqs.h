@@ -29,7 +29,7 @@ class evaluated_sqs {
   bool minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 		 SQ_parameters &_par, double &_e1, double &_e2, double &_e4,
 		 int _type = SQ_FX_RADIAL );  
-  
+
 };
 
 void error_metric( const SQ_parameters &_par,
@@ -98,7 +98,6 @@ void Js( const double &a, const double &b, const double &c,
 	 const double &_x, const double &_y, const double &_z,
 	 double _J[11] );
 
-
 double fc( const double &a, const double &b, const double &c,
 	   const double &e1, const double &e2,
 	   const double &px, const double &py, const double &pz,
@@ -111,7 +110,6 @@ void Jc( const double &a, const double &b, const double &c,
 	 const double &ra, const double &pa, const double &ya,
 	 const double &_x, const double &_y, const double &_z,
 	 double _J[11] );
-
 
 double f5( const double &a, const double &b, const double &c,
 	   const double &e1, const double &e2,
@@ -157,7 +155,6 @@ void fs_add( double* p, double* x,
 void Js_add( double* p, double* jac,
 	     int m, int n, void* data );
 
-
 void fc_add( double* p, double* x,
 	     int m, int n, void* data );
 void Jc_add( double* p, double* jac,
@@ -167,6 +164,7 @@ void f5_add( double* p, double* x,
 	     int m, int n, void* data );
 void J5_add( double* p, double* jac,
 	     int m, int n, void* data );
+
 
 void f6_add( double* p, double* x,
 	     int m, int n, void* data );

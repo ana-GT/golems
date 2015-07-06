@@ -20,6 +20,8 @@ struct SQ_parameters {
 
   /** Tampering */
   double tamp;
+  /** Bending */
+  double R;
 };
 
 /**

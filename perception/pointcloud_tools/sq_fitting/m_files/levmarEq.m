@@ -32,33 +32,30 @@ yi = (ox*x + oy*y + oz*z - px*ox - py*oy - pz*oz);
 zi = (ax*x + ay*y + az*z - px*ax - py*ay - pz*az);
 
 F_simple = ( ( (xi/a)^(2))^(1.0/e2) + ( (yi/b)^(2))^(1.0/e2) )^(e2 / e1) + ( (zi/c)^(2))^(1.0/e1);    
-
 F = F_simple^(e1/2);
 
 % Radial: Distance from points to approximation
-Fr = (xi^2 + yi^2 + zi^2)*(1 - 1.0/F)*(1 - 1.0/F);
+Fr = sqrt(xi^2 + yi^2 + zi^2)*abs( 1 - 1.0/F );
 
 % Duncan's paper (I think this is mainly Solina)
-Fs = (a*b*c)*((F^2 - 1)^2);
+Fs = sqrt(a*b*c)*(F_simple^e1 - 1);
 
 % Ichim
-Fi = (a*b*c)*(xi^2 + yi^2 + zi^2)*(F^2-1)*(F^2-1);
+Fi = sqrt(a*b*c)*sqrt(xi^2 + yi^2 + zi^2)*(F_simple^e1-1);
 
 % Chevalier
-Fc = (xi^2 + yi^2 + zi^2)*(F-1)^2;
+Fc = sqrt(xi^2 + yi^2 + zi^2)*(F-1);
 
 % Option 5
-F5 = (xi^2 + yi^2 + zi^2)*(F^2-1)^2;;
+F5 = sqrt(xi^2 + yi^2 + zi^2)*(F_simple^e1-1);
 
 % Option 6
-F6 = (1-1/F)*(1-1/F)*(xi^2 + yi^2 + zi^2)*(F^2-1)*(F^2-1);
+F6 = (1-1/F)*sqrt(xi^2 + yi^2 + zi^2)*(F_simple^e1-1);
 
 % Different error measures
 Er1 = (1 - F_simple)^2;
 Er2 = (1 - F_simple^e1)^2;
-
-% I changed in the cpp file this to be absolute value
-Er4 = sqrt(xi^2 + yi^2 + zi^2)*(1 - 1.0/F);
+Er4 = sqrt(xi^2 + yi^2 + zi^2)*abs(1 - 1.0/F);
 
 % Jacobian
 Jr = [ diff(Fr,a), diff(Fr,b), diff(Fr,c), diff(Fr,e1), diff(Fr,e2), diff(Fr,px), diff(Fr,py), diff(Fr,pz), diff(Fr,ra), diff(Fr,pa), diff(Fr,ya) ];

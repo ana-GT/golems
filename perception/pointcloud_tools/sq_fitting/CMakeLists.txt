@@ -32,7 +32,7 @@ set_target_properties( sq_deformations PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
 # Trials
-add_library( evaluated_eqs evaluated_eqs.cpp )
+add_library( evaluated_eqs evaluated_eqs.cpp evaluated_eqs_t.cpp )
 target_link_libraries( evaluated_eqs levmar ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}  pthread )
 set_target_properties( evaluated_eqs PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )

@@ -213,7 +213,7 @@ bool SQ_fitter<PointT>::fit_tampering( const double &_smax,
   fitted = false;
 
 
-  for( int i = 0; i < N_; ++i ) {
+  for( int i = 0; i < 1; ++i ) { // i < _N
 
     s_i = smax_ - (i)*ds;
     par_i_1 = par_i;
@@ -240,6 +240,8 @@ bool SQ_fitter<PointT>::fit_tampering( const double &_smax,
   }
  
   par_out_ = par_i;
+  printf( "Dim: %f %f %f E: %f %f Tamp: %f \n", par_out_.dim[0], par_out_.dim[1], par_out_.dim[2],
+	  par_out_.e[0], par_out_.e[1], par_out_.tamp );
 
   return fitted;
 }
@@ -478,6 +480,10 @@ bool SQ_fitter<PointT>::minimize_tampering( const PointCloudPtr &_cloud,
     for( i = 0; i < 3; ++i ) { p[i+8] = _in.rot[i]; }
     p[11] = _in.tamp;
 
+    printf("Initial p: %f %f %f %f %f %f %f %f %f %f %f %f \n",
+	   p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10]);
+
+    
     // Set limits
     double ub[m], lb[m];
     for( i = 0; i < 3; ++i ) { lb[i] = mLowerLim_dim[i]; ub[i] = mUpperLim_dim[i]; }
@@ -485,6 +491,8 @@ bool SQ_fitter<PointT>::minimize_tampering( const PointCloudPtr &_cloud,
     for( i = 0; i < 3; ++i ) { lb[i+5] = mLowerLim_trans[i]; ub[i+5] = mUpperLim_trans[i]; }
     for( i = 0; i < 3; ++i ) { lb[i+8] = mLowerLim_rot[i]; ub[i+8] = mUpperLim_rot[i]; }
     lb[11] = mLowerLim_tamp; ub[11] = mUpperLim_tamp;
+    printf("Lu tamp: %f Ul tamp: %f \n", lb[11], ub[11]);
+
 
     ret = dlevmar_bc_der( levmar_tampering_fx,
 			  levmar_tampering_jac,
@@ -494,6 +502,7 @@ bool SQ_fitter<PointT>::minimize_tampering( const PointCloudPtr &_cloud,
 			  1000,
 			  opts, info,
 			  NULL, NULL, (void*)&data );
+    printf("Ret tamp: %d \n", ret);
 
     // Fill _out
     for( i = 0; i < 3; ++i ) { _out.dim[i] = p[i]; }
@@ -502,6 +511,7 @@ bool SQ_fitter<PointT>::minimize_tampering( const PointCloudPtr &_cloud,
     for( i = 0; i < 3; ++i ) { _out.rot[i] = p[i+8]; }
     _out.tamp = p[11];
 
+    
     // Return status and error
     _error = error_metric_tampering( _out, cloud_ );
     

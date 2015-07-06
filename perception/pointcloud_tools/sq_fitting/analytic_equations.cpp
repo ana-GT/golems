@@ -277,7 +277,62 @@ void levmar_fx( double *p, double* x,
     double t11, t12, t13, t14, t15;
     double t16, t17, t18, t19, t20;
     double t21, t22;
-        
+
+    double t23, t24, t25, t26, t27, t28, t29, t30, t31, t32, t33;
+
+
+    double a,b,c,e1,e2,px,py,pz,ra,pa,ya,t;
+    a = p[0]; b = p[1]; c = p[2];
+    e1 = p[3]; e2 = p[4];
+    px = p[5]; py = p[6]; pz = p[7];
+    ra = p[8]; pa = p[9]; ya = p[10];
+    t = p[11];
+
+    
+    for( int i = 0; i < n; ++i ) {
+
+
+	xi = dptr->x[i];
+	yi = dptr->y[i];
+	zi = dptr->z[i];
+
+      
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t15 = t4*t5*t6;
+  t11 = t10-t15;
+  t12 = cos(pa);
+  t14 = px*t9;
+  t16 = py*t11;
+  t17 = t9*xi;
+  t18 = t11*yi;
+  t19 = pz*t4*t12;
+  t20 = t4*t12*zi;
+  t13 = t14-t16-t17+t18+t19-t20;
+  t21 = t4*t6;
+  t22 = t21-t2*t3*t5;
+  t23 = t2*t4;
+  t24 = t3*t5*t6;
+  t25 = t23+t24;
+  t26 = px*t22-py*t25-t22*xi+t25*yi-pz*t3*t12+t3*t12*zi;
+  t27 = 1.0/c;
+  t28 = t*t13*t27;
+  t29 = t28-1.0;
+  t30 = 1.0/(t29*t29);
+  t31 = pz*t5-t5*zi-px*t2*t12-py*t6*t12+t2*t12*xi+t6*t12*yi;
+  t32 = 1.0/e2;
+  t33 = 1.0/e1;
+  x[i] = (pow(pow(pow(1.0/(a*a)*t30*(t31*t31),t32)+pow(1.0/(b*b)*(t26*t26)*t30,t32),e2*t33)+pow(1.0/(c*c)*(t13*t13),t33),e1)-1.0)*sqrt(a*b*c);
+}
+    
+    /*
     for( int i = 0; i < n; ++i ) {
 	
 	xi = dptr->x[i];
@@ -311,7 +366,7 @@ void levmar_fx( double *p, double* x,
 		    pow(1.0/(p[2]*p[2])*(t13*t13),t22), p[3] )
 		-1.0) * sqrt(p[0]*p[1]*p[2]);       		
     } // end for
-    
+    */
 }
 
 
@@ -445,6 +500,74 @@ void levmar_tampering_fx( double *p, double* x, int m, int n, void* data ) {
     dptr = (struct levmar_data*) data;
     
     double xi, yi, zi;
+    double t2, t3, t4, t5, t6;
+    double t7, t8, t9, t10;
+    double t11, t12, t13, t14, t15;
+    double t16, t17, t18, t19, t20;
+    double t21, t22;
+
+    double t23, t24, t25, t26, t27, t28, t29, t30, t31, t32, t33;
+
+
+    double a,b,c,e1,e2,px,py,pz,ra,pa,ya,t;
+    a = p[0]; b = p[1]; c = p[2];
+    e1 = p[3]; e2 = p[4];
+    px = p[5]; py = p[6]; pz = p[7];
+    ra = p[8]; pa = p[9]; ya = p[10];
+    t = p[11];
+
+    
+    for( int i = 0; i < n; ++i ) {
+
+
+	xi = dptr->x[i];
+	yi = dptr->y[i];
+	zi = dptr->z[i];
+
+      
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t15 = t4*t5*t6;
+  t11 = t10-t15;
+  t12 = cos(pa);
+  t14 = px*t9;
+  t16 = py*t11;
+  t17 = t9*xi;
+  t18 = t11*yi;
+  t19 = pz*t4*t12;
+  t20 = t4*t12*zi;
+  t13 = t14-t16-t17+t18+t19-t20;
+  t21 = t4*t6;
+  t22 = t21-t2*t3*t5;
+  t23 = t2*t4;
+  t24 = t3*t5*t6;
+  t25 = t23+t24;
+  t26 = px*t22-py*t25-t22*xi+t25*yi-pz*t3*t12+t3*t12*zi;
+  t27 = 1.0/c;
+  t28 = t*t13*t27;
+  t29 = t28-1.0;
+  t30 = 1.0/(t29*t29);
+  t31 = pz*t5-t5*zi-px*t2*t12-py*t6*t12+t2*t12*xi+t6*t12*yi;
+  t32 = 1.0/e2;
+  t33 = 1.0/e1;
+  x[i] = (pow(pow(pow(1.0/(a*a)*t30*(t31*t31),t32)+pow(1.0/(b*b)*(t26*t26)*t30,t32),e2*t33)+pow(1.0/(c*c)*(t13*t13),t33),e1)-1.0)*sqrt(a*b*c);
+}
+
+  
+
+  
+  /*
+    struct levmar_data* dptr;
+    dptr = (struct levmar_data*) data;
+    
+    double xi, yi, zi;
     double a, b, c, e1, e2, ra, pa, ya, px,py,pz,t;
     a = p[0]; b = p[1]; c = p[2];
     e1 = p[3]; e2 = p[4];
@@ -461,7 +584,7 @@ void levmar_tampering_fx( double *p, double* x, int m, int n, void* data ) {
     x[i] = (pow(pow(1.0/(c*c)*pow(px*(sin(ra)*sin(ya)+cos(ra)*cos(ya)*sin(pa))-py*(cos(ya)*sin(ra)-cos(ra)*sin(pa)*sin(ya))-xi*(sin(ra)*sin(ya)+cos(ra)*cos(ya)*sin(pa))+yi*(cos(ya)*sin(ra)-cos(ra)*sin(pa)*sin(ya))+pz*cos(pa)*cos(ra)-zi*cos(pa)*cos(ra),2.0),1.0/e1)+pow(pow(1.0/(b*b)*1.0/pow((t*(px*(sin(ra)*sin(ya)+cos(ra)*cos(ya)*sin(pa))-py*(cos(ya)*sin(ra)-cos(ra)*sin(pa)*sin(ya))-xi*(sin(ra)*sin(ya)+cos(ra)*cos(ya)*sin(pa))+yi*(cos(ya)*sin(ra)-cos(ra)*sin(pa)*sin(ya))+pz*cos(pa)*cos(ra)-zi*cos(pa)*cos(ra)))/c-1.0,2.0)*pow(px*(cos(ra)*sin(ya)-cos(ya)*sin(pa)*sin(ra))-py*(cos(ra)*cos(ya)+sin(pa)*sin(ra)*sin(ya))-xi*(cos(ra)*sin(ya)-cos(ya)*sin(pa)*sin(ra))+yi*(cos(ra)*cos(ya)+sin(pa)*sin(ra)*sin(ya))-pz*cos(pa)*sin(ra)+zi*cos(pa)*sin(ra),2.0),1.0/e2)+pow(1.0/(a*a)*1.0/pow((t*(px*(sin(ra)*sin(ya)+cos(ra)*cos(ya)*sin(pa))-py*(cos(ya)*sin(ra)-cos(ra)*sin(pa)*sin(ya))-xi*(sin(ra)*sin(ya)+cos(ra)*cos(ya)*sin(pa))+yi*(cos(ya)*sin(ra)-cos(ra)*sin(pa)*sin(ya))+pz*cos(pa)*cos(ra)-zi*cos(pa)*cos(ra)))/c-1.0,2.0)*pow(pz*sin(pa)-zi*sin(pa)-px*cos(pa)*cos(ya)+xi*cos(pa)*cos(ya)-py*cos(pa)*sin(ya)+yi*cos(pa)*sin(ya),2.0),1.0/e2),e2/e1),e1)-1.0)*sqrt(a*b*c);
 
     } // end for
-
+  */
 }
 
 

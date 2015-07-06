@@ -45,6 +45,8 @@ void sampleSQ_uniform_pn( const double &_a1,
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform( const SQ_parameters &_par );
 
+pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform_t( const SQ_parameters &_par );
+
 
 pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSE_uniform( const double &_a1, 
 						      const  double &_a2,

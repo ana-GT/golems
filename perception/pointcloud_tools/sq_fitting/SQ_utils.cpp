@@ -72,6 +72,54 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform( const SQ_parameters &_par 
 
 }
 
+/**
+ * @function sampleSQ_uniform
+ */
+pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform_t( const SQ_parameters &_par ) {
+  
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_raw( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_tamp( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ>() );
+  
+
+  // Get canonic SQ
+  cloud_raw = sampleSQ_uniform( _par.dim[0], _par.dim[1], _par.dim[2],
+				_par.e[0], _par.e[1] );
+
+  // Apply tampering
+  pcl::PointCloud<pcl::PointXYZ>::iterator it;
+  pcl::PointXYZ p;
+  double K = _par.tamp;
+  
+  for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
+    p = *it;
+    p.y = ( 1 + (K/_par.dim[2])*p.z )*p.y;
+    p.x = ( 1 + (K/_par.dim[2])*p.z )*p.x;
+    cloud_tamp->points.push_back( p );
+  }
+  cloud_tamp->height = 1; cloud_tamp->width = cloud_tamp->points.size();
+
+  // Apply transform
+  Eigen::Matrix4d transf = Eigen::Matrix4d::Identity();
+  transf.block(0,3,3,1) = Eigen::Vector3d( _par.trans[0], _par.trans[1], _par.trans[2] );
+  Eigen::Matrix3d rot;
+  rot = Eigen::AngleAxisd( _par.rot[2], Eigen::Vector3d::UnitZ() )*
+    Eigen::AngleAxisd( _par.rot[1], Eigen::Vector3d::UnitY() )*
+    Eigen::AngleAxisd( _par.rot[0], Eigen::Vector3d::UnitX() );
+  transf.block(0,0,3,3) = rot;
+
+  pcl::transformPointCloud( *cloud_tamp,
+			    *cloud,
+			    transf );
+  
+  cloud->height = 1;
+  cloud->width = cloud->points.size();
+  
+  return cloud;
+  
+}
+
+
 
 
 /**
