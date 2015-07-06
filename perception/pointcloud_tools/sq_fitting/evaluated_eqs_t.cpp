@@ -290,26 +290,7 @@ bool evaluated_sqs_t::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
   switch( _type ) {
 
   case SQ_FX_RADIAL_T: {
-    
-    double* xt = new double[n];
-    evaluated_sqs_t::fr_add( p, xt, m, n, (void*)&data );
-    std::ofstream out( "radial_t_fx.txt", std::ofstream::out );
-    for( int k = 0; k < n; ++k ) {
-      out << xt[k] << std::endl;
-    }
-    out.close();
-
-    double* jt = new double[m*n];
-    evaluated_sqs_t::Jr_add( p, jt, m, n, (void*)&data );
-    std::ofstream outJ( "radial_t_jc.txt", std::ofstream::out );
-    for( int k = 0; k < n; ++k ) {
-      for( int l = 0; l < m; ++l ) {
-	outJ << jt[m*k + l] << " ";
-      }
-      outJ << std::endl;
-    }
-    outJ.close();
-    
+        
     ret = dlevmar_bc_der( evaluated_sqs_t::fr_add,
 			  evaluated_sqs_t::Jr_add,
 			  p, y, m, n,
@@ -325,25 +306,6 @@ bool evaluated_sqs_t::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 
 
   case SQ_FX_SOLINA_T: {
-    
-    double* xt = new double[n];
-    evaluated_sqs_t::fs_add( p, xt, m, n, (void*)&data );
-    std::ofstream out( "solina_t_fx.txt", std::ofstream::out );
-    for( int k = 0; k < n; ++k ) {
-      out << xt[k] << std::endl;
-    }
-    out.close();
-
-    double* jt = new double[m*n];
-    evaluated_sqs_t::Js_add( p, jt, m, n, (void*)&data );
-    std::ofstream outJ( "solina_t_jc.txt", std::ofstream::out );
-    for( int k = 0; k < n; ++k ) {
-      for( int l = 0; l < m; ++l ) {
-	outJ << jt[m*k + l] << " ";
-      }
-      outJ << std::endl;
-    }
-    outJ.close();
     
     ret = dlevmar_bc_der( evaluated_sqs_t::fs_add,
 			  evaluated_sqs_t::Js_add,
@@ -399,6 +361,21 @@ bool evaluated_sqs_t::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
     
     ret = dlevmar_bc_der( evaluated_sqs_t::fc_add,
 			  evaluated_sqs_t::Jc_add,
+			  p, y, m, n,
+			  lb, ub,
+			  NULL,
+			  1000,
+			  opts, info,
+			  NULL, NULL, (void*)&data );
+
+    
+    printf("Ret: %d \n", ret);
+  }  break;        
+
+  case SQ_FX_5_T: {
+    
+    ret = dlevmar_bc_der( evaluated_sqs_t::f5_add,
+			  evaluated_sqs_t::J5_add,
 			  p, y, m, n,
 			  lb, ub,
 			  NULL,
@@ -1203,3 +1180,256 @@ void evaluated_sqs_t::Jc_add( double* p, double* jac,
   }
 
 }
+
+
+/**
+ * @function f5_add
+ */
+void evaluated_sqs_t::f5_add( double* p, double* _x,
+			      int m, int n, void* data ) {
+    
+  struct levmar_data* dptr;
+  dptr = (struct levmar_data*) data;
+  double x, y, z;
+
+
+  double a,b,c,e1,e2,px,py,pz,ra,pa,ya,k;
+  a = p[0]; b = p[1]; c = p[2];
+  e1 = p[3]; e2 = p[4];
+  px = p[5]; py = p[6]; pz = p[7];
+  ra = p[8]; pa = p[9]; ya = p[10];
+  k = p[11];
+
+  register double t0, t2, t3, t4, t5, t6, t7, t8, t9;
+  register double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
+  register double t20, t21, t22, t23, t24, t25, t26, t27, t28, t29; 
+  register double t30, t31, t32, t33, t34, t35, t36, t37, t38, t39; 
+  register double t40, t41, t42, t43, t44, t45, t46, t47, t48, t49; 
+  
+  for( int i = 0; i < n; ++i ) {
+    
+    x = dptr->x[i];
+    y = dptr->y[i];
+    z = dptr->z[i];
+
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t15 = t4*t5*t6;
+  t11 = t10-t15;
+  t12 = cos(pa);
+  t14 = px*t9;
+  t16 = py*t11;
+  t17 = t9*x;
+  t18 = t11*y;
+  t19 = pz*t4*t12;
+  t20 = t4*t12*z;
+  t13 = t14-t16-t17+t18+t19-t20;
+  t21 = t4*t6;
+  t35 = t2*t3*t5;
+  t22 = t21-t35;
+  t23 = t2*t4;
+  t24 = t3*t5*t6;
+  t25 = t23+t24;
+  t36 = px*t22;
+  t37 = py*t25;
+  t38 = t22*x;
+  t39 = t25*y;
+  t40 = pz*t3*t12;
+  t41 = t3*t12*z;
+  t26 = t36-t37-t38+t39-t40+t41;
+  t27 = 1.0/c;
+  t28 = k*t13*t27;
+  t29 = t28-1.0;
+  t30 = 1.0/(t29*t29);
+  t43 = pz*t5;
+  t44 = t5*z;
+  t45 = px*t2*t12;
+  t46 = t2*t12*x;
+  t47 = py*t6*t12;
+  t48 = t6*t12*y;
+  t31 = t43-t44-t45+t46-t47+t48;
+  t32 = 1.0/e2;
+  t33 = 1.0/e1;
+  t34 = t13*t13;
+  t42 = t26*t26;
+  t49 = t31*t31;
+  t0 = (pow(pow(1.0/(c*c)*t34,t33)+pow(pow(1.0/(a*a)*t30*t49,t32)+pow(1.0/(b*b)*t30*t42,t32),e2*t33),e1)-1.0)*sqrt(t34+t30*t42+t30*t49);
+
+    _x[i] = t0;
+  }
+}
+
+
+/**
+ * @function J5_add
+ * @brief Trial 5
+ */
+void evaluated_sqs_t::J5_add( double* p, double* jac,
+			      int m, int n, void* data ) {
+
+  struct levmar_data* dptr;
+  dptr = (struct levmar_data*) data;
+
+  double x, y, z;
+  double a, b, c, e1, e2, ra, pa, ya, px,py,pz,k;
+
+  
+  a = p[0]; b = p[1]; c = p[2];
+  e1 = p[3]; e2 = p[4];
+  px = p[5]; py = p[6]; pz = p[7];
+  ra = p[8]; pa = p[9]; ya = p[10];
+  k = p[11];
+
+  register double t2, t3, t4, t5, t6, t7, t8, t9;
+  register double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
+  register double t20, t21, t22, t23, t24, t25, t26, t27, t28, t29;
+  register double t30, t31, t32, t33, t34, t35, t36, t37, t38, t39;
+  register double t40, t41, t42, t43, t44, t45, t46, t47, t48, t49;
+  register double t50, t51, t52, t53, t54, t55, t56, t57, t58, t59;
+  register double t60, t61, t62, t63, t64, t65, t66, t67, t68, t69;
+  register double t70, t71, t72, t73, t74, t75, t76, t77, t78, t79;
+  register double t80, t81, t82, t83, t84, t85, t86, t87, t88, t89;
+  register double t90, t91, t92, t93, t94, t95, t96, t97, t98, t99;
+  register double t100, t101, t102, t103, t104, t105, t106, t107, t108, t109;
+
+  for( int i = 0; i < n; ++i ) {
+    
+    x = dptr->x[i];
+    y = dptr->y[i];
+    z = dptr->z[i];
+
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t15 = t4*t5*t6;
+  t11 = t10-t15;
+  t12 = cos(pa);
+  t14 = px*t9;
+  t16 = py*t11;
+  t17 = t9*x;
+  t18 = t11*y;
+  t19 = pz*t4*t12;
+  t20 = t4*t12*z;
+  t13 = t14-t16-t17+t18+t19-t20;
+  t21 = t4*t6;
+  t35 = t2*t3*t5;
+  t22 = t21-t35;
+  t23 = t2*t4;
+  t24 = t3*t5*t6;
+  t25 = t23+t24;
+  t36 = px*t22;
+  t37 = py*t25;
+  t38 = t22*x;
+  t39 = t25*y;
+  t40 = pz*t3*t12;
+  t41 = t3*t12*z;
+  t26 = t36-t37-t38+t39-t40+t41;
+  t27 = 1.0/c;
+  t28 = k*t13*t27;
+  t29 = t28-1.0;
+  t30 = 1.0/(t29*t29);
+  t46 = pz*t5;
+  t47 = t5*z;
+  t48 = px*t2*t12;
+  t49 = t2*t12*x;
+  t50 = py*t6*t12;
+  t51 = t6*t12*y;
+  t31 = t46-t47-t48+t49-t50+t51;
+  t32 = 1.0/e2;
+  t33 = 1.0/e1;
+  t34 = 1.0/(b*b);
+  t42 = t26*t26;
+  t43 = t30*t34*t42;
+  t44 = pow(t43,t32);
+  t45 = 1.0/(a*a);
+  t52 = t31*t31;
+  t53 = t30*t45*t52;
+  t54 = pow(t53,t32);
+  t55 = t44+t54;
+  t56 = e2*t33;
+  t57 = t13*t13;
+  t58 = 1.0/(c*c);
+  t59 = t57*t58;
+  t60 = pow(t59,t33);
+  t61 = pow(t55,t56);
+  t62 = t60+t61;
+  t63 = e1-1.0;
+  t64 = pow(t62,t63);
+  t65 = t56-1.0;
+  t66 = pow(t55,t65);
+  t67 = t30*t42;
+  t68 = t30*t52;
+  t69 = t57+t67+t68;
+  t70 = sqrt(t69);
+  t71 = t32-1.0;
+  t72 = 1.0/(t29*t29*t29);
+  t73 = pow(t43,t71);
+  t74 = pow(t53,t71);
+  t75 = pow(t62,e1);
+  t76 = 1.0/(e1*e1);
+  t77 = log(t55);
+  t78 = 1.0/(e2*e2);
+  t79 = t75-1.0;
+  t80 = 1.0/sqrt(t69);
+  t81 = t33-1.0;
+  t82 = pow(t59,t81);
+  t83 = pz*t4*t5;
+  t84 = t2*t4*t12*x;
+  t85 = t4*t6*t12*y;
+  t87 = t4*t5*z;
+  t88 = px*t2*t4*t12;
+  t89 = py*t4*t6*t12;
+  t86 = t83+t84+t85-t87-t88-t89;
+  t90 = pz*t3*t5;
+  t91 = t2*t3*t12*x;
+  t92 = t3*t6*t12*y;
+  t93 = t90+t91+t92-t3*t5*z-px*t2*t3*t12-py*t3*t6*t12;
+  t94 = pz*t12;
+  t95 = px*t2*t5;
+  t96 = py*t5*t6;
+  t97 = t94+t95+t96-t12*z-t2*t5*x-t5*t6*y;
+  t98 = px*t11;
+  t99 = py*t9;
+  t101 = t11*x;
+  t102 = t9*y;
+  t100 = t98+t99-t101-t102;
+  t103 = px*t25;
+  t104 = py*t22;
+  t105 = t103+t104-t25*x-t22*y;
+  t106 = t2*t12*y;
+  t107 = px*t6*t12;
+  t108 = t106+t107-py*t2*t12-t6*t12*x;
+  jac[12*i+0] = 1.0/(a*a*a)*t30*t52*t64*t66*t70*t74*-2.0;
+  jac[12*i+1] = 1.0/(b*b*b)*t30*t42*t64*t66*t70*t73*-2.0;
+  jac[12*i+2] = t79*t80*(k*t13*t42*t58*t72*2.0+k*t13*t52*t58*t72*2.0)*(1.0/2.0)-e1*t64*t70*(1.0/(c*c*c)*t33*t57*t82*2.0-e2*t33*t66*(k*t13*t32*t34*t42*t58*t72*t73*2.0+k*t13*t32*t45*t52*t58*t72*t74*2.0));
+  jac[12*i+3] = t70*(t75*log(t62)-e1*t64*(t60*t76*log(t59)+e2*t61*t76*t77));
+  jac[12*i+4] = e1*t64*t70*(t33*t61*t77-e2*t33*t66*(t44*t78*log(t43)+t54*t78*log(t53)));
+  jac[12*i+5] = t79*t80*(t9*t13*-2.0-t22*t26*t30*2.0+t2*t12*t30*t31*2.0+k*t9*t27*t42*t72*2.0+k*t9*t27*t52*t72*2.0)*(-1.0/2.0)-e1*t64*t70*(e2*t33*t66*(t32*t74*(t2*t12*t30*t31*t45*2.0+k*t9*t27*t45*t52*t72*2.0)-t32*t73*(t22*t26*t30*t34*2.0-k*t9*t27*t34*t42*t72*2.0))-t9*t13*t33*t58*t82*2.0);
+  jac[12*i+6] = t79*t80*(t11*t13*2.0+t25*t26*t30*2.0+t6*t12*t30*t31*2.0-k*t11*t27*t42*t72*2.0-k*t11*t27*t52*t72*2.0)*(-1.0/2.0)-e1*t64*t70*(e2*t33*t66*(t32*t74*(t6*t12*t30*t31*t45*2.0-k*t11*t27*t45*t52*t72*2.0)+t32*t73*(t25*t26*t30*t34*2.0-k*t11*t27*t34*t42*t72*2.0))+t11*t13*t33*t58*t82*2.0);
+  jac[12*i+7] = t79*t80*(t4*t12*t13*-2.0-t5*t30*t31*2.0+t3*t12*t26*t30*2.0+k*t4*t12*t27*t42*t72*2.0+k*t4*t12*t27*t52*t72*2.0)*(-1.0/2.0)+e1*t64*t70*(e2*t33*t66*(t32*t74*(t5*t30*t31*t45*2.0-k*t4*t12*t27*t45*t52*t72*2.0)-t32*t73*(t3*t12*t26*t30*t34*2.0+k*t4*t12*t27*t34*t42*t72*2.0))+t4*t12*t13*t33*t58*t82*2.0);
+  jac[12*i+8] = t79*t80*(t13*t26*-2.0+t13*t26*t30*2.0+k*t26*t27*t42*t72*2.0+k*t26*t27*t52*t72*2.0)*(-1.0/2.0)-e1*t64*t70*(e2*t33*t66*(t32*t73*(t13*t26*t30*t34*2.0+k*t26*t27*t34*t42*t72*2.0)+k*t26*t27*t32*t45*t52*t72*t74*2.0)-t13*t26*t33*t58*t82*2.0);
+  jac[12*i+9] = t79*t80*(t13*t86*-2.0+t26*t30*t93*2.0+t30*t31*t97*2.0+k*t27*t42*t72*t86*2.0+k*t27*t52*t72*t86*2.0)*(1.0/2.0)+e1*t64*t70*(e2*t33*t66*(t32*t73*(t26*t30*t34*t93*2.0+k*t27*t34*t42*t72*t86*2.0)+t32*t74*(t30*t31*t45*t97*2.0+k*t27*t45*t52*t72*t86*2.0))-t13*t33*t58*t82*t86*2.0);
+  jac[12*i+10] = t79*t80*(t13*t100*2.0+t26*t30*t105*2.0+t30*t31*t108*2.0-k*t27*t42*t72*t100*2.0-k*t27*t52*t72*t100*2.0)*(1.0/2.0)+e1*t64*t70*(e2*t33*t66*(t32*t73*(t26*t30*t34*t105*2.0-k*t27*t34*t42*t72*t100*2.0)+t32*t74*(t30*t31*t45*t108*2.0-k*t27*t45*t52*t72*t100*2.0))+t13*t33*t58*t82*t100*2.0);
+  jac[12*i+11] = t79*t80*(t13*t27*t42*t72*2.0+t13*t27*t52*t72*2.0)*(-1.0/2.0)-e2*t64*t66*t70*(t13*t27*t32*t34*t42*t72*t73*2.0+t13*t27*t32*t45*t52*t72*t74*2.0);
+
+
+  }
+
+}
+
+
+
+

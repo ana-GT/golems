@@ -119,6 +119,52 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform_t( const SQ_parameters &_pa
   
 }
 
+/**
+ * @function sampleSQ_uniform_b
+ */
+pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform_b( const SQ_parameters &_par ) {
+  
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_raw( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_bent( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ>() );
+  
+
+  // Get canonic SQ
+  cloud_raw = sampleSQ_uniform( _par.dim[0], _par.dim[1], _par.dim[2],
+				_par.e[0], _par.e[1] );
+
+  // Apply bending
+  pcl::PointCloud<pcl::PointXYZ>::iterator it;
+  pcl::PointXYZ p;
+  double R = _par.R;
+  
+  for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
+    p = *it;
+    p.y = p.y - R + sqrt(R*R-p.z*p.z);
+    p.z = R*sin(p.z/R);
+    cloud_bent->points.push_back( p );
+  }
+  cloud_bent->height = 1; cloud_bent->width = cloud_bent->points.size();
+
+  // Apply transform
+  Eigen::Matrix4d transf = Eigen::Matrix4d::Identity();
+  transf.block(0,3,3,1) = Eigen::Vector3d( _par.trans[0], _par.trans[1], _par.trans[2] );
+  Eigen::Matrix3d rot;
+  rot = Eigen::AngleAxisd( _par.rot[2], Eigen::Vector3d::UnitZ() )*
+    Eigen::AngleAxisd( _par.rot[1], Eigen::Vector3d::UnitY() )*
+    Eigen::AngleAxisd( _par.rot[0], Eigen::Vector3d::UnitX() );
+  transf.block(0,0,3,3) = rot;
+
+  pcl::transformPointCloud( *cloud_bent,
+			    *cloud,
+			    transf );
+  
+  cloud->height = 1;
+  cloud->width = cloud->points.size();
+  
+  return cloud;
+  
+}
 
 
 

@@ -1,7 +1,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Generate derivative code for Jacobian and Hessian stuff
 
-syms a b c e1 e2 px py pz ra pa ya k
+syms a b c e1 e2 px py pz ra pa ya r
 
 % Local Variables
 syms nx ny nz ox oy oz ax ay az
@@ -32,9 +32,9 @@ xc = (nx*x + ny*y + nz*z - px*nx - py*ny - pz*nz);
 yc = (ox*x + oy*y + oz*z - px*ox - py*oy - pz*oz);
 zc = (ax*x + ay*y + az*z - px*ax - py*ay - pz*az);
 
-xi = xc / ( (k/c)*zc + 1 );
-yi = yc / ( (k/c)*zc + 1 );
-zi = zc;
+xi = xc;
+yi = yc + r - sqrt(r*r-zc*zc);
+zi = r*asin(zc/r);
 
 Fb = ( ( (xi/a)^(2))^(1.0/e2) + ( (yi/b)^(2))^(1.0/e2) )^(e2 / e1) + ( (zi/c)^(2))^(1.0/e1);    
 F = Fb^(e1/2);
@@ -63,35 +63,35 @@ Er2 = (1 - Fb^e1)^2;
 Er4 = sqrt(xi^2 + yi^2 + zi^2)*abs(1 - 1.0/F);
 
 % Jacobian
-Jr = [ diff(Fr,a), diff(Fr,b), diff(Fr,c), diff(Fr,e1), diff(Fr,e2), diff(Fr,px), diff(Fr,py), diff(Fr,pz), diff(Fr,ra), diff(Fr,pa), diff(Fr,ya), diff(Fr,k) ];
-Js = [ diff(Fs,a), diff(Fs,b), diff(Fs,c), diff(Fs,e1), diff(Fs,e2), diff(Fs,px), diff(Fs,py), diff(Fs,pz), diff(Fs,ra), diff(Fs,pa), diff(Fs,ya), diff(Fs,k) ];
+%Jr = [ diff(Fr,a), diff(Fr,b), diff(Fr,c), diff(Fr,e1), diff(Fr,e2), diff(Fr,px), diff(Fr,py), diff(Fr,pz), diff(Fr,ra), diff(Fr,pa), diff(Fr,ya), diff(Fr,r) ];
+Js = [ diff(Fs,a), diff(Fs,b), diff(Fs,c), diff(Fs,e1), diff(Fs,e2), diff(Fs,px), diff(Fs,py), diff(Fs,pz), diff(Fs,ra), diff(Fs,pa), diff(Fs,ya), diff(Fs,r) ];
 %Ji = [ diff(Fi,a), diff(Fi,b), diff(Fi,c), diff(Fi,e1), diff(Fi,e2), diff(Fi,px), diff(Fi,py), diff(Fi,pz), diff(Fi,ra), diff(Fi,pa), diff(Fi,ya) ];
-Jc = [ diff(Fc,a), diff(Fc,b), diff(Fc,c), diff(Fc,e1), diff(Fc,e2), diff(Fc,px), diff(Fc,py), diff(Fc,pz), diff(Fc,ra), diff(Fc,pa), diff(Fc,ya), diff(Fc,k) ];
-J5 = [ diff(F5,a), diff(F5,b), diff(F5,c), diff(F5,e1), diff(F5,e2), diff(F5,px), diff(F5,py), diff(F5,pz), diff(F5,ra), diff(F5,pa), diff(F5,ya), diff(F5,k) ];
+Jc = [ diff(Fc,a), diff(Fc,b), diff(Fc,c), diff(Fc,e1), diff(Fc,e2), diff(Fc,px), diff(Fc,py), diff(Fc,pz), diff(Fc,ra), diff(Fc,pa), diff(Fc,ya), diff(Fc,r) ];
+%J5 = [ diff(F5,a), diff(F5,b), diff(F5,c), diff(F5,e1), diff(F5,e2), diff(F5,px), diff(F5,py), diff(F5,pz), diff(F5,ra), diff(F5,pa), diff(F5,ya), diff(F5,r) ];
 %J6 = [ diff(F6,a), diff(F6,b), diff(F6,c), diff(F6,e1), diff(F6,e2), diff(F6,px), diff(F6,py), diff(F6,pz), diff(F6,ra), diff(F6,pa), diff(F6,ya) ];
 
 
 % C Code Generation
-ccode(Fr,'file','Fr_t.txt');
-ccode(Jr,'file','Jr_t.txt');
+%ccode(Fr,'file','Fr_b.txt');
+%ccode(Jr,'file','Jr_b.txt');
 
-ccode(Fs,'file','Fs_t.txt');
-ccode(Js,'file','Js_t.txt');
+ccode(Fs,'file','Fs_b.txt');
+ccode(Js,'file','Js_b.txt');
 
 %ccode(Fi,'file','Fi.txt');
 %ccode(Ji,'file','Ji.txt');
 
-ccode(Fc,'file','Fc_t.txt');
-ccode(Jc,'file','Jc_t.txt');
+ccode(Fc,'file','Fc_b.txt');
+ccode(Jc,'file','Jc_b.txt');
 
-ccode(F5,'file','F5_t.txt');
-ccode(J5,'file','J5_t.txt');
+%ccode(F5,'file','F5_b.txt');
+%ccode(J5,'file','J5_b.txt');
 
 %ccode(F6,'file','F6.txt');
 %ccode(J6,'file','J6.txt');
 
 
-ccode(Er1,'file','Er1_t.txt');
-ccode(Er2,'file','Er2_t.txt');
-ccode(Er4,'file','Er4_t.txt');
+%ccode(Er1,'file','Er1_b.txt');
+%ccode(Er2,'file','Er2_b.txt');
+%ccode(Er4,'file','Er4_b.txt');
 

@@ -7,21 +7,21 @@
 #include <pcl/io/pcd_io.h>
 #include <SQ_utils.h>
 
-enum SQ_FX_T_TYPES {
-  SQ_FX_RADIAL_T = 0,
-  SQ_FX_ICHIM_T = 1,
-  SQ_FX_SOLINA_T = 2,
-  SQ_FX_CHEVALIER_T = 3,
-  SQ_FX_5_T = 4,
-  SQ_FX_6_T = 5,
-  SQ_FX_OLD_T = 7,
-  SQ_FX_CHECK_T = 8
+enum SQ_FX_B_TYPES {
+  SQ_FX_RADIAL_B = 0,
+  SQ_FX_ICHIM_B = 1,
+  SQ_FX_SOLINA_B = 2,
+  SQ_FX_CHEVALIER_B = 3,
+  SQ_FX_5_B = 4,
+  SQ_FX_6_B = 5,
+  SQ_FX_OLD_B = 7,
+  SQ_FX_CHECK_B = 8
 };
 
 /**
- * @class evaluated_sqs_t
+ * @class evaluated_sqs_b
  */
-class evaluated_sqs_t {
+class evaluated_sqs_b {
 
  public:
   void getBoundingBox( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
@@ -30,7 +30,7 @@ class evaluated_sqs_t {
 		       double _rot[3] );
   bool minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 		 SQ_parameters &_par, double &_e1, double &_e2, double &_e4,
-		 int _type = SQ_FX_RADIAL_T );  
+		 int _type = SQ_FX_RADIAL_B );  
 
 void error_metric( const SQ_parameters &_par,
 		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
@@ -63,11 +63,6 @@ double Err_4( const double &a, const double &b, const double &c,
 
 
 /*****************/
-static void fr_add( double* p, double* x,
-		    int m, int n, void* data );
-static void Jr_add( double* p, double* jac,
-		    int m, int n, void* data );
-
 static void fs_add( double* p, double* x,
 		    int m, int n, void* data );
 static void Js_add( double* p, double* jac,
@@ -78,10 +73,6 @@ static void fc_add( double* p, double* x,
 static void Jc_add( double* p, double* jac,
 		    int m, int n, void* data );
 
-static void f5_add( double* p, double* x,
-		    int m, int n, void* data );
-static void J5_add( double* p, double* jac,
-		    int m, int n, void* data );
 
 };
 
