@@ -281,7 +281,7 @@ bool evaluated_sqs_t::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
   
   // Set limits
   double ub[m], lb[m];
-  for( i = 0; i < 3; ++i ) { lb[i] = 0.01; ub[i] = 0.3; }
+  for( i = 0; i < 3; ++i ) { lb[i] = 0.01; ub[i] = 0.35; }
   for( i = 0; i < 2; ++i ) { lb[i+3] = 0.1; ub[i+3] = 1.9; }
   for( i = 0; i < 3; ++i ) { lb[i+5] = -1.5; ub[i+5] = 1.5; }
   for( i = 0; i < 3; ++i ) { lb[i+8] = -M_PI; ub[i+8] = M_PI; }

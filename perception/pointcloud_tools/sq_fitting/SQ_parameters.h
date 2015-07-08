@@ -22,6 +22,7 @@ struct SQ_parameters {
   double tamp;
   /** Bending */
   double R;
+  double k; double alpha;
 };
 
 /**

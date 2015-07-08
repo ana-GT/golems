@@ -4,7 +4,6 @@
  */
 #include "evaluated_eqs.h"
 #include "evaluated_eqs_t.h"
-#include "evaluated_eqs_b.h"
 #include <SQ_utils.h>
 #include <SQ_fitter.h>
 #include <pcl/common/centroid.h>
@@ -15,10 +14,6 @@ int fx_sq[6] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_
 
 char* fx_t_names[5] = { "Radial_T", "Solina T", "Old T", "Chevalier T", "F5 T"};
 int fx_t[5] = { SQ_FX_RADIAL_T, SQ_FX_SOLINA_T, SQ_FX_OLD_T, SQ_FX_CHEVALIER_T, SQ_FX_5_T};
-
-char* fx_b_names[2] = { "Solina_B", "Chevalier B"};
-int fx_b[2] = { SQ_FX_SOLINA_B, SQ_FX_CHEVALIER_B};
-
 
 const double gDev = 0.0025;
 
@@ -77,7 +72,7 @@ int main( int argc, char*argv[] ) {
   double er1, er2, er4;
   SQ_parameters par;
   pcl::PointCloud<pcl::PointXYZ>::Ptr approx( new pcl::PointCloud<pcl::PointXYZ>() );
-  /*  
+  /*
   for( int i = 0; i < 6; ++i ) {
 
     printf( "Function: %s \n", fx_names[i] );
@@ -95,7 +90,7 @@ int main( int argc, char*argv[] ) {
     sprintf( name, "%s_%d.pcd", gOutput.c_str(), i );
     pcl::io::savePCDFileASCII( name, *approx );
   }
-
+  */
   // Try with simple
   evaluated_sqs_t est;
   for( int i = 0; i < 5; ++i ) {
@@ -116,25 +111,6 @@ int main( int argc, char*argv[] ) {
     pcl::io::savePCDFileASCII( name, *approx );
     
   }
-*/
-    evaluated_sqs_b esb;
-  for( int i = 0; i < 2; ++i ) {
-    printf( "Function: %s \n", fx_b_names[i] );
-    ts = clock();
-    esb.minimize( down, par, er1, er2, er4, fx_b[i] );
-    tf = clock();
-    dt = (tf-ts) / (double) CLOCKS_PER_SEC;
-    printf("Dim: %f %f %f \t e: %f %f \t R: %f --- t: %f \t er1: %f er2: %f er4: %f \n",
-	   par.dim[0], par.dim[1], par.dim[2],
-	   par.e[0], par.e[1],
-	   par.R, dt,
-	   er1, er2, er4);
-    approx = sampleSQ_uniform_b(par);
-    char name[50];
-    sprintf( name, "%s_b_%d.pcd", gOutput.c_str(), i );
-    pcl::io::savePCDFileASCII( name, *approx );
-  }
-  
   
 }
 

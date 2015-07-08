@@ -21,12 +21,12 @@
 
 // Global variables
 const int fx_types[6] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5, SQ_FX_6};
-const double dev = 0.0025; // Standard deviation for noise
+const double dev = 0.005; // Standard deviation for noise
 const double leaf_size = 0.02;
 const int gNum_threads = 7;
 
 // Variables that user can set as input
-int gT = 50;
+int gT = 100;
 double gE1, gE2;
 std::string gFilename;
 
@@ -65,8 +65,8 @@ std::mt19937 gen(rd());
 int main( int argc, char* argv[] ) {
 
   // Initialize, in case user does not enter values of e1 and e2
-  gE1 = 0.5; gE2 = 0.5;
-  //gFilename = std::string("omp_result.txt");
+  gE1 = 1.0; gE2 = 1.0;
+  gFilename = std::string("omp_result.txt");
 
   int v;
   while( (v=getopt(argc, argv, "e:f:t:n:")) != -1 ) {

@@ -166,6 +166,67 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform_b( const SQ_parameters &_pa
   
 }
 
+/**
+ * @function sampleSQ_uniform_b2
+ * @brief Sample bent shape with 2 parameters: alpha and k (from Solina)
+ */
+pcl::PointCloud<pcl::PointXYZ>::Ptr sampleSQ_uniform_b2( const SQ_parameters &_par ) {
+  
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_raw( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_bent( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ>() );
+  
+
+  // Get canonic SQ
+  cloud_raw = sampleSQ_uniform( _par.dim[0], _par.dim[1], _par.dim[2],
+				_par.e[0], _par.e[1] );
+
+  // Apply bending
+  pcl::PointCloud<pcl::PointXYZ>::iterator it;
+  pcl::PointXYZ p;
+  
+  double k = _par.k;
+  double alpha = _par.alpha;
+
+  double x, y, z;
+  double r,gamma, beta, R;
+  printf("ALpha: %f \n", _par.alpha);
+  for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
+
+    x = (*it).x; y = (*it).y; z = (*it).z;
+
+    beta = atan2( y, x);
+    r = cos(alpha - beta)*sqrt(x*x + y*y);
+    gamma = z*k;
+    R = (1/k) - cos(gamma)*(1.0/k-r);
+    
+    p.x = x + cos(alpha)*(R-r);
+    p.y = y + sin(alpha)*(R-r);
+    p.z = sin(gamma)*(1.0/k-1);
+    
+    cloud_bent->points.push_back( p );
+  }
+  cloud_bent->height = 1; cloud_bent->width = cloud_bent->points.size();
+
+  // Apply transform
+  Eigen::Matrix4d transf = Eigen::Matrix4d::Identity();
+  transf.block(0,3,3,1) = Eigen::Vector3d( _par.trans[0], _par.trans[1], _par.trans[2] );
+  Eigen::Matrix3d rot;
+  rot = Eigen::AngleAxisd( _par.rot[2], Eigen::Vector3d::UnitZ() )*
+    Eigen::AngleAxisd( _par.rot[1], Eigen::Vector3d::UnitY() )*
+    Eigen::AngleAxisd( _par.rot[0], Eigen::Vector3d::UnitX() );
+  transf.block(0,0,3,3) = rot;
+
+  pcl::transformPointCloud( *cloud_bent,
+			    *cloud,
+			    transf );
+  
+  cloud->height = 1;
+  cloud->width = cloud->points.size();
+  
+  return cloud;
+  
+}
 
 
 /**

@@ -269,7 +269,6 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 			  1000,
 			  opts, info,
 			  NULL, NULL, (void*)&data );
-    printf("Ret: %d \n", ret);
     break;
   case SQ_FX_ICHIM:
     ret = dlevmar_bc_der( fi_add,
@@ -280,7 +279,6 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 			  1000,
 			  opts, info,
 			  NULL, NULL, (void*)&data );
-    printf("Ret: %d \n", ret);
     break;
 
   case SQ_FX_SOLINA:
@@ -292,7 +290,6 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 			  1000,
 			  opts, info,
 			  NULL, NULL, (void*)&data );
-    printf("Ret: %d \n", ret);
     break;
 
   case SQ_FX_CHEVALIER:
@@ -304,7 +301,6 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 			  1000,
 			  opts, info,
 			  NULL, NULL, (void*)&data );
-    printf("Ret: %d \n", ret);
     break;
   case SQ_FX_5:
     ret = dlevmar_bc_der( f5_add,
@@ -315,7 +311,6 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 			  1000,
 			  opts, info,
 			  NULL, NULL, (void*)&data );
-    printf("Ret: %d \n", ret);
     break;
 
   case SQ_FX_6:
@@ -327,12 +322,10 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
 			  1000,
 			  opts, info,
 			  NULL, NULL, (void*)&data );
-    printf("Ret: %d \n", ret);
     break;
 
     
     }
-    printf("INfo bt: %d \n", info[6]);
   // If stopped by invalid (TODO: Add other reasons)
   if( info[6] == 7 ) {
     _par.dim[0] = 0; _par.dim[1] = 0; _par.dim[2] = 0;
