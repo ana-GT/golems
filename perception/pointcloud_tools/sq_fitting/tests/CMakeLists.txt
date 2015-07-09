@@ -59,10 +59,10 @@ set_target_properties( es_tests_3 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
-add_executable( deformations_tests_0 deformations_tests_0.cpp )
-target_link_libraries( deformations_tests_0 sq_deformations sq_utils ${PCL_LIBRARIES} )
-set_target_properties( deformations_tests_0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+#add_executable( deformations_tests_0 deformations_tests_0.cpp )
+#target_link_libraries( deformations_tests_0 sq_deformations sq_utils ${PCL_LIBRARIES} )
+#set_target_properties( deformations_tests_0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable( deformations_tests_1 deformations_tests_1.cpp )
 target_link_libraries( deformations_tests_1 sq_deformations sq_utils ${PCL_LIBRARIES} )
