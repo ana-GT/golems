@@ -91,6 +91,6 @@ case "$1" in
    draw_e2 $@
   ;;
   *)
-   echo "[ERROR] Only options are t/er1/er2/er4 with argument 0/1/2/3 (clean/noisy/partial clean/partial noisy. You gave me $1"
+   echo "[ERROR] Only options are t/er1/er2/er4/e1/e2 with argument 0/1/2/3 (clean/noisy/partial clean/partial noisy. You gave me $1"
   ;;
 esac
