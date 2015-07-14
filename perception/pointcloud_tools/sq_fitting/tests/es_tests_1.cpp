@@ -19,6 +19,19 @@
 #include <future>
 #include <thread>
 
+
+/**
+ * @brief Structure used to store output lines
+ */
+struct output_sq{
+  SQ_parameters par;
+  double t;
+  double er_g, er_r;
+  double er_v;
+  double er_e1;
+  double er_e2;
+};
+
 // Global variables
 const int gNum_threads = 7;
 
@@ -35,48 +48,16 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::Poi
 
 // Global variables to generate noise
 double getRand( const double &_minVal, const double &_maxVal );
-
-/**
- * @function beta
- */
-double beta( double z,double w) {
-  double gz, gw, gzw;
-  
-  gz = tgamma(z);
-  gw = tgamma(w);
-  gzw = tgamma(z+w);
-  return  gz*gw/gzw;
-}
-
-/**
- * @function volSQ
- */
-double volSQ( double a, double b, double c, double e1, double e2 ) {
-  return 2*a*b*c*e1*e2*beta(e1*0.5, e1+1)*beta(e2*0.5, e2*0.5+1);
-}
-
-
-
-/**
- * @brief Structure used to store output lines
- */
-struct output_sq{
-  SQ_parameters par;
-  double t;
-  double er_g, er_r;
-  double er_v;
-  double er_e1;
-  double er_e2;
-};
-
-
+double beta( double z,double w);
+double volSQ( double a, double b, double c, double e1, double e2 );
 void saveParams( std::ofstream &_output, const SQ_parameters &_par, double _t,
                  double _eg, double _er, 
                  double _e_e1, double _e_e2,
                  double _e_v );
-
 std::vector<output_sq> createCases( int _id );
 std::vector<output_sq> createCase();
+
+
 
 
 /**
@@ -293,4 +274,17 @@ double getRand( const double &_minVal, const double &_maxVal ) {
 
   return _minVal + (_maxVal - _minVal)*((double)rand() / (double)RAND_MAX);
   
+}
+
+double beta( double z,double w) {
+  double gz, gw, gzw;
+  
+  gz = tgamma(z);
+  gw = tgamma(w);
+  gzw = tgamma(z+w);
+  return  gz*gw/gzw;
+}
+
+double volSQ( double a, double b, double c, double e1, double e2 ) {
+  return 2*a*b*c*e1*e2*beta(e1*0.5, e1+1)*beta(e2*0.5, e2*0.5+1);
 }

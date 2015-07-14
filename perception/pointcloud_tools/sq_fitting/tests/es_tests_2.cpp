@@ -1,15 +1,42 @@
 /**
- * @file es_tests_0.cpp
- * @brief Test an individual case, values entered by user (a,b,c,e1,e2,px,py,pz,ra,pa,ya)
+ * @file es_tests_2.cpp
+ * @brief Test a set of random cases for noise and partiality using threads
  */
 #include "evaluated_eqs.h"
 #include <SQ_utils.h>
 #include <pcl/common/centroid.h>
 #include <pcl/filters/voxel_grid.h>
 
-char* fx_names[6] = { "Radial", "Solina", "Ichim", "Chevalier", "F5", "F6"};
-int fx_sq[6] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5, SQ_FX_6 };
+#include <future>
+#include <thread>
+
+/**
+ * @brief Structure used to store output lines
+ */
+struct output_sq{
+  SQ_parameters par;
+  double t;
+  double er_g, er_r;
+  double er_v;
+  double er_e1;
+  double er_e2;
+};
+
+
+// Global variables
+const int gnF = 5;
+char* fx_names[gnF] = { "Radial", "Solina", "Ichim", "Chevalier", "F5"};
+int fx_sq[gnF] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5};
 const double gDev = 0.0025;
+
+const int gNum_threads = 7;
+int gT = 50;
+std::string gFilename;
+double gD = 0.015;
+
+// Global variables to generate noise
+std::random_device rd;
+std::mt19937 gen(rd());
 
 // Functions to get partial and noisy versions of original pointcloud
 pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_input,
@@ -18,85 +45,154 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cut_cloud( const pcl::PointCloud<pcl::PointX
 pcl::PointCloud<pcl::PointXYZ>::Ptr get_noisy( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
 					       const double &_dev );
 double getRand( const double &_minVal, const double &_maxVal );
+double beta( double z,double w);
+double volSQ( double a, double b, double c, double e1, double e2 );
+void saveParams( std::ofstream &_output, const SQ_parameters &_par, double _t,
+                 double _eg, double _er, 
+                 double _e_e1, double _e_e2,
+                 double _e_v );
+std::vector<output_sq> createCases( int _id );
+std::vector<output_sq> createCase();
 
 
-// Global variables to generate noise
-std::random_device rd;
-std::mt19937 gen(rd());
-double gD;
 
 /**
  * @function main
  */
 int main( int argc, char*argv[] ) {
 
-  double a1 = 0.15;
-  double a2 = 0.03;
-  double a3 = 0.06; 
-  double e1 = 0.5;
-  double e2 = 0.75; 
-  double px = 0.1; double py = 0.2; double pz = 0.4;
-  double ra = 0.4; double pa = -0.3; double ya = 0.1;
-  gD = 0.0; // Downsampling
-  int N = 50;
-  int v;
-  
-  while( (v=getopt(argc, argv, "n:a:b:c:e:f:x:y:z:r:p:d:")) != -1 ) {
-    switch(v) { 
 
-    case 'a' : {
-      a1 = atof(optarg);
-    } break;
-    case 'b' : {
-      a2 = atof(optarg);
-    } break;
-    case 'c' : {
-      a3 = atof(optarg);
-    } break;
+  /* initialize random seed: */
+  srand (time(NULL));
+  
+  // Initialize, in case user does not enter values of e1 and e2
+  gFilename = std::string("test_2_result.txt");
+  
+  int v;  
+  while( (v=getopt(argc, argv, "t:n:h")) != -1 ) {
+    switch(v) { 
     case 'n' : {
-      N = atoi(optarg);
+      gFilename.assign(optarg);
     } break;
-    case 'e' : {
-      e1 = atof(optarg);
+    case 't' : {
+      gT = atoi(optarg);
     } break;
-    case 'f' : {
-      e2 = atof(optarg);
-    } break;
-    case 'x' : {
-      px = atof(optarg);
-    } break;
-    case 'y' : {
-      py = atof(optarg);
-    } break;
-    case 'z' : {
-      pz = atof(optarg);
-    } break;
-    case 'r' : {
-      ra = atof(optarg);
-    } break;
-    case 'p' : {
-      pa = atof(optarg);
-    } break;
-    case 'd' : {
-     gD = atof(optarg);
+    case 'h' : {
+      printf("Executable to save T randomized runs to test noise and partial view \n");
+      printf("Usage: ./executable -t T -n output_filename.txt \n");
+      return 0;
     } break;
     } // switch end
   }
+
+  struct timespec start, finish;
+  double elapsed;
+  clock_gettime(CLOCK_MONOTONIC, &start);
   
+  srand(time(NULL));
+      
+  std::ofstream output( gFilename.c_str(), std::ofstream::out );
+  output << gT << std::endl;
   
+  // Launch threads
+  std::vector<std::future< std::vector<output_sq> > > futures;
+  for( int i = 0; i < gNum_threads; ++i ) {
+    futures.push_back( std::async( std::launch::async, &createCases, i) );
+  }
+
+  for( size_t i = 0; i < futures.size(); ++i ) {
+    futures[i].wait();
+  }
+
+  for( size_t i = 0; i < futures.size(); ++i ) {
+    std::vector<output_sq> s;
+    s = futures[i].get();
+    for( int m = 0; m < s.size(); ++m ) {
+      saveParams( output, s[m].par, s[m].t, s[m].er_g, s[m].er_r,
+		  s[m].er_e1, s[m].er_e2, s[m].er_v );
+    }
+  }  
+  
+  clock_gettime(CLOCK_MONOTONIC, &finish);
+  
+  elapsed = (finish.tv_sec - start.tv_sec);
+  elapsed += (finish.tv_nsec - start.tv_nsec) / 1000000000.0;
+  printf("* Total time: %f \n", elapsed );
+  
+  output.close();
+  return 0;
+
+}
+
+/**
+ * @function createCases
+ * @brief Create cases per each thread
+ */
+std::vector<output_sq> createCases(int _id ) {
+
+  std::vector<output_sq> ss;
+  std::vector<output_sq> si;
+  for( int i = _id; i < gT; i = i + gNum_threads ) {
+    si = createCase();
+    for( int j = 0; j < si.size(); ++j ) {
+      ss.push_back( si[j] );
+    }    
+  }
+  
+  return ss;
+}
+
+/**
+ * @function createCase
+ * @brief Create individual case (base + 6*4 tests)
+ */
+std::vector<output_sq> createCase() {
+
+  std::vector<output_sq> output;
   pcl::PointCloud<pcl::PointXYZ>::Ptr input( new pcl::PointCloud<pcl::PointXYZ>() );
   pcl::PointCloud<pcl::PointXYZ>::Ptr down( new pcl::PointCloud<pcl::PointXYZ>() );
-
-  SQ_parameters par;
-  double er1, er2, er4;
-  par.dim[0] = a1; par.dim[1] = a2; par.dim[2] = a3;
-  par.e[0] = e1; par.e[1] = e2;
-  par.trans[0] = px; par.trans[1] = py; par.trans[2] = pz;
-  par.rot[0] = ra; par.rot[1] = pa; par.rot[2] = ya;
-
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> testCloud(4);
   
+  SQ_parameters par;
+  double er_g, er_r, er_d;
+  evaluated_sqs es;
+    
+  // Dimensions
+  par.dim[0] = getRand(0.025, 0.39);
+  par.dim[1] = getRand(0.025, 0.39);
+  par.dim[2] = getRand(0.025, 0.39);
+  
+  // Translations
+  par.trans[0] = getRand(-0.8, 0.8);
+  par.trans[1] = getRand(-0.8, 0.8);
+  par.trans[2] = getRand(0.3, 1.4);
+  
+  // Rotation
+  par.rot[0] = getRand(-M_PI, M_PI);
+  par.rot[1] = getRand(-M_PI, M_PI); 
+  par.rot[2] = getRand(-M_PI, M_PI); 
+
+  // E parameters
+  par.e[0] = getRand(0.1,1.9);
+  par.e[1] = getRand(0.1,1.9);
+
+
+  // Store original data
+  output_sq base;
+  base.par = par;
+  base.er_r = 0; base.er_g = 0; base.t = 0; base.er_v = 0;
+  base.er_e1 = 0; base.er_e2 = 0;
+  output.push_back( base );
+    
+  // 1. Generate clean pointcloud
   input = sampleSQ_uniform( par );
+
+  struct timespec ts, tf;
+  double elapsed;
+  double d;
+  double vr, vc;
+  output_sq oi;
+
   if( gD == 0 ) { down = input; }
   else { down = downsampling( input, gD ); }
   testCloud[0] = down;    
@@ -104,31 +200,34 @@ int main( int argc, char*argv[] ) {
   testCloud[2] = cut_cloud( testCloud[0] );
   testCloud[3] = cut_cloud( testCloud[1] );
 
-  
-  printf("Size of real input: %d \n", input->points.size() );
-
-  printf("Size of input to minimization: %d \n", down->points.size() );
-  
-  clock_t ts, tf; double dt;
-  evaluated_sqs es;
-
-  for( int i = 0; i < 6; ++i ) {
-    printf( "Function: %s \n", fx_names[i] );
-    for( int j = 0; j < 1; ++j ) {
-      ts = clock();
-      es.minimize( testCloud[j], par, er1, er2, er4, fx_sq[i] );
-      error_metric( par, input, er1, er2, er4 );
-      tf = clock();
-      dt = (tf-ts) / (double) CLOCKS_PER_SEC;
-      printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er1: %f er2: %f er4: %f \n",
-	     par.dim[0], par.dim[1], par.dim[2],
-	     par.e[0], par.e[1], dt,
-	     er1, er2, er4);
+  for( int i = 0; i < gnF; ++i ) {
+    for( int j = 0; j < 4; ++j ) {
+      
+      clock_gettime(CLOCK_MONOTONIC, &ts);    
+      es.minimize( testCloud[j], par, er_g, er_r, er_d, fx_sq[i] );
+      clock_gettime(CLOCK_MONOTONIC, &tf);
+      error_metric( par,input, er_g, er_r, er_d );
+      
+      elapsed = (tf.tv_sec - ts.tv_sec);
+      elapsed += (tf.tv_nsec - ts.tv_nsec) / 1000000000.0;
+     
+      oi.par = par;
+      oi.er_g = er_g; oi.er_r = er_r; oi.t = elapsed;
+      oi.er_e1 = fabs(base.par.e[0] - par.e[0]);
+      oi.er_e2 = fabs(base.par.e[1] - par.e[1]);
+      
+      vc =  volSQ(par.dim[0], par.dim[1], par.dim[2], par.e[0], par.e[1]);
+      vr = volSQ(base.par.dim[0],base.par.dim[1],base.par.dim[2],  base.par.e[0], base.par.e[1] );
+      oi.er_v = (vc - vr)/vr*100.0;
+    
+      output.push_back( oi );    
       
     }
   }
-   
+    
+  return output;
 }
+
 
 
 /**
@@ -217,4 +316,37 @@ double getRand( const double &_minVal, const double &_maxVal ) {
 
   return _minVal + (_maxVal - _minVal)*((double)rand() / (double)RAND_MAX);
   
+}
+
+
+double beta( double z,double w) {
+  double gz, gw, gzw;
+  
+  gz = tgamma(z);
+  gw = tgamma(w);
+  gzw = tgamma(z+w);
+  return  gz*gw/gzw;
+}
+
+double volSQ( double a, double b, double c, double e1, double e2 ) {
+  return 2*a*b*c*e1*e2*beta(e1*0.5, e1+1)*beta(e2*0.5, e2*0.5+1);
+}
+
+
+/**
+ * @function saveParams
+ */
+void saveParams( std::ofstream &_output,
+		 const SQ_parameters &_par,
+		 double _t,
+		 double _eg, double _er, 
+                 double _e_e1, double _e_e2,
+                 double _e_v ) {
+  
+  _output << _par.dim[0] << " " << _par.dim[1] << " " << _par.dim[2] << " "
+	  << _par.e[0] << " " << _par.e[1] << " "
+	  << _par.trans[0] << " " << _par.trans[1] << " " << _par.trans[2] << " "
+	  << _par.rot[0] << " " << _par.rot[1] << " " << _par.rot[2]
+	  << " " << _t << " "<< _eg << " " << _er << " " << _e_e1 << "  " 
+          << _e_e2 << " "<< _e_v << std::endl;
 }

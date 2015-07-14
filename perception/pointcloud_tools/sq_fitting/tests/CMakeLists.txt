@@ -31,11 +31,16 @@ target_link_libraries( es_read_tests_1 evaluated_eqs sq_fitting ${PCL_LIBRARIES}
 set_target_properties( es_read_tests_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( es_tests_2 es_tests_2.cpp )
+target_link_libraries( es_tests_2 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )
+set_target_properties( es_tests_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-#add_executable( es_tests_2 es_tests_2.cpp )
-#target_link_libraries( es_tests_2 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )
-#set_target_properties( es_tests_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+add_executable( es_read_tests_2 es_read_tests_2.cpp )
+target_link_libraries( es_read_tests_2 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )
+set_target_properties( es_read_tests_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 
 #add_executable( es_tests_3 es_tests_3.cpp )
 #target_link_libraries( es_tests_3 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )
