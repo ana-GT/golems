@@ -34,25 +34,26 @@ class evaluated_sqs {
 
 void error_metric( const SQ_parameters &_par,
 		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
-		   double& _e1, double &_e2, double &_e4);
+		   double& _e_g, double &_e_r, double &_e_d);
 
 void error_metric( double* p,
 		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
-		   double& _e1, double &_e2, double &_e4);
+		   double& _e_g, double &_e_r, double &_e_d);
 
-double Err_1( const double &a, const double &b, const double &c,
+// Radial Error
+double Err_r( const double &a, const double &b, const double &c,
 	      const double &e1, const double &e2,
 	      const double &px, const double &py, const double &pz,
 	      const double &ra, const double &pa, const double &ya,
 	      const double &x, const double &y, const double &z );
-
-double Err_2( const double &a, const double &b, const double &c,
+// Error used in Duncan to stop iterations
+double Err_d( const double &a, const double &b, const double &c,
 	      const double &e1, const double &e2,
 	      const double &px, const double &py, const double &pz,
 	      const double &ra, const double &pa, const double &ya,
 	      const double &x, const double &y, const double &z );
-
-double Err_4( const double &a, const double &b, const double &c,
+// Error Goodness-Of-Fit, as defined by Gupta and Bajcsy
+double Err_g( const double &a, const double &b, const double &c,
 	      const double &e1, const double &e2,
 	      const double &px, const double &py, const double &pz,
 	      const double &ra, const double &pa, const double &ya,

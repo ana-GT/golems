@@ -1,20 +1,14 @@
 /**
- * @file es_tests_2.cpp
- * @brief Test an individual case, pointcloud is a real one entered from terminal
+ * @file es_tests_0.cpp
+ * @brief Test an individual case, values entered by user (a,b,c,e1,e2,px,py,pz,ra,pa,ya)
  */
 #include "evaluated_eqs.h"
-#include "evaluated_eqs_t.h"
 #include <SQ_utils.h>
-#include <SQ_fitter.h>
 #include <pcl/common/centroid.h>
 #include <pcl/filters/voxel_grid.h>
 
 char* fx_names[6] = { "Radial", "Solina", "Ichim", "Chevalier", "F5", "F6"};
 int fx_sq[6] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5, SQ_FX_6 };
-
-char* fx_t_names[5] = { "Radial_T", "Solina T", "Old T", "Chevalier T", "F5 T"};
-int fx_t[5] = { SQ_FX_RADIAL_T, SQ_FX_SOLINA_T, SQ_FX_OLD_T, SQ_FX_CHEVALIER_T, SQ_FX_5_T};
-
 const double gDev = 0.0025;
 
 // Functions to get partial and noisy versions of original pointcloud
@@ -25,93 +19,115 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr get_noisy( const pcl::PointCloud<pcl::PointX
 					       const double &_dev );
 double getRand( const double &_minVal, const double &_maxVal );
 
-std::string gInput;
-std::string gOutput;
 
 // Global variables to generate noise
 std::random_device rd;
 std::mt19937 gen(rd());
-
+double gD;
 
 /**
  * @function main
  */
 int main( int argc, char*argv[] ) {
 
+  double a1 = 0.15;
+  double a2 = 0.03;
+  double a3 = 0.06; 
+  double e1 = 0.5;
+  double e2 = 0.75; 
+  double px = 0.1; double py = 0.2; double pz = 0.4;
+  double ra = 0.4; double pa = -0.3; double ya = 0.1;
+  gD = 0.0; // Downsampling
+  int N = 50;
   int v;
-  while( (v=getopt(argc, argv, "n:o:")) != -1 ) {
-    switch(v) {
+  
+  while( (v=getopt(argc, argv, "n:a:b:c:e:f:x:y:z:r:p:d:")) != -1 ) {
+    switch(v) { 
 
+    case 'a' : {
+      a1 = atof(optarg);
+    } break;
+    case 'b' : {
+      a2 = atof(optarg);
+    } break;
+    case 'c' : {
+      a3 = atof(optarg);
+    } break;
     case 'n' : {
-      gInput = std::string(optarg);
+      N = atoi(optarg);
     } break;
-    case 'o' : {
-      gOutput = std::string(optarg);
+    case 'e' : {
+      e1 = atof(optarg);
     } break;
-
+    case 'f' : {
+      e2 = atof(optarg);
+    } break;
+    case 'x' : {
+      px = atof(optarg);
+    } break;
+    case 'y' : {
+      py = atof(optarg);
+    } break;
+    case 'z' : {
+      pz = atof(optarg);
+    } break;
+    case 'r' : {
+      ra = atof(optarg);
+    } break;
+    case 'p' : {
+      pa = atof(optarg);
+    } break;
+    case 'd' : {
+     gD = atof(optarg);
+    } break;
     } // switch end
   }
+  
   
   pcl::PointCloud<pcl::PointXYZ>::Ptr input( new pcl::PointCloud<pcl::PointXYZ>() );
   pcl::PointCloud<pcl::PointXYZ>::Ptr down( new pcl::PointCloud<pcl::PointXYZ>() );
 
-  pcl::io::loadPCDFile<pcl::PointXYZ> ( gInput.c_str(), *input ); 
-  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> testCloud(4);  
-  down = downsampling( input, 0.01 );
+  SQ_parameters par;
+  double er1, er2, er4;
+  par.dim[0] = a1; par.dim[1] = a2; par.dim[2] = a3;
+  par.e[0] = e1; par.e[1] = e2;
+  par.trans[0] = px; par.trans[1] = py; par.trans[2] = pz;
+  par.rot[0] = ra; par.rot[1] = pa; par.rot[2] = ya;
+
+  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> testCloud(4);
+  
+  input = sampleSQ_uniform( par );
+  if( gD == 0 ) { down = input; }
+  else { down = downsampling( input, gD ); }
   testCloud[0] = down;    
   testCloud[1]= get_noisy( testCloud[0], gDev );
   testCloud[2] = cut_cloud( testCloud[0] );
   testCloud[3] = cut_cloud( testCloud[1] );
 
   
-  printf("Size of input: %d \n", input->points.size() );
-  printf("Size of down: %d \n", down->points.size() );
+  printf("Size of real input: %d \n", input->points.size() );
+
+  printf("Size of input to minimization: %d \n", down->points.size() );
   
   clock_t ts, tf; double dt;
   evaluated_sqs es;
-  double er1, er2, er4;
-  SQ_parameters par;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr approx( new pcl::PointCloud<pcl::PointXYZ>() );
-  /*
+
   for( int i = 0; i < 6; ++i ) {
-
     printf( "Function: %s \n", fx_names[i] );
-    ts = clock();
-    es.minimize( down, par, er1, er2, er4, fx_sq[i] );
-    tf = clock();
-    dt = (tf-ts) / (double) CLOCKS_PER_SEC;
-    printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er1: %f er2: %f er4: %f \n",
-	   par.dim[0], par.dim[1], par.dim[2],
-	   par.e[0], par.e[1], dt,
-	   er1, er2, er4);
-
-    approx = sampleSQ_uniform( par );
-    char name[50];
-    sprintf( name, "%s_%d.pcd", gOutput.c_str(), i );
-    pcl::io::savePCDFileASCII( name, *approx );
+    for( int j = 0; j < 1; ++j ) {
+      ts = clock();
+      es.minimize( testCloud[j], par, er1, er2, er4, fx_sq[i] );
+      error_metric( par, input, er1, er2, er4 );
+      tf = clock();
+      dt = (tf-ts) / (double) CLOCKS_PER_SEC;
+      printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er1: %f er2: %f er4: %f \n",
+	     par.dim[0], par.dim[1], par.dim[2],
+	     par.e[0], par.e[1], dt,
+	     er1, er2, er4);
+      
+    }
   }
-  */
-  // Try with simple
-  evaluated_sqs_t est;
-  for( int i = 0; i < 5; ++i ) {
-
-    printf( "Function: %s \n", fx_t_names[i] );
-    ts = clock();
-    est.minimize( down, par, er1, er2, er4, fx_t[i] );
-    tf = clock();
-    dt = (tf-ts) / (double) CLOCKS_PER_SEC;
-    printf("Dim: %f %f %f \t e: %f %f \t K: %f --- t: %f \t er1: %f er2: %f er4: %f \n",
-	   par.dim[0], par.dim[1], par.dim[2],
-	   par.e[0], par.e[1],
-	   par.tamp, dt,
-	   er1, er2, er4);
-    approx = sampleSQ_uniform_t(par);
-    char name[50];
-    sprintf( name, "%s_t_%d.pcd", gOutput.c_str(), i );
-    pcl::io::savePCDFileASCII( name, *approx );
-    
-  }
-  
+   
 }
 
 
@@ -199,6 +215,6 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr get_noisy( const pcl::PointCloud<pcl::PointX
  */
 double getRand( const double &_minVal, const double &_maxVal ) {
 
-  return _minVal + (_maxVal - _minVal)*((double)rand() / RAND_MAX);
+  return _minVal + (_maxVal - _minVal)*((double)rand() / (double)RAND_MAX);
   
 }

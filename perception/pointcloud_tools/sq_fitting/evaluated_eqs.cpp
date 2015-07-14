@@ -15,141 +15,106 @@ extern "C" {
 
 /**
  * @function error_metric
+ * @brief Errors goodness-of-fit, Radial distance, Duncan's stopping (GoF^2)
  */
 void error_metric( const SQ_parameters &_par,
 		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
-		   double& _e1, double &_e2, double &_e4) {
+		   double& _e_g, double &_e_r, double &_e_d ) {
+  
   double* p = new double[11];
   p[0] = _par.dim[0];   p[1] = _par.dim[1];   p[2] = _par.dim[2];
   p[3] = _par.e[0];   p[4] = _par.e[1];
   p[5] = _par.trans[0]; p[6] = _par.trans[1];   p[7] = _par.trans[2];
   p[8] = _par.rot[0]; p[9] = _par.rot[1];   p[10] = _par.rot[2];
-
-  return error_metric( p, _cloud, _e1, _e2, _e4 );
+  
+  return error_metric( p, _cloud, _e_g, _e_r, _e_d );
 }
 
+/**
+ * @brief
+ */
 void error_metric( double* p,
 		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
-		   double& _e1, double &_e2, double &_e4) {
+		   double& _e_g, double &_e_r, double &_e_d) {
 
-  _e1 = 0;
-  _e2 = 0;
-  _e4 = 0;
+  _e_g = 0;
+  _e_r = 0;
+  _e_d = 0;
   
   typename pcl::PointCloud<pcl::PointXYZ>::iterator it;
   for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
-    _e1 += Err_1( p[0], p[1], p[2],
+    _e_g += Err_g( p[0], p[1], p[2],
 		   p[3], p[4],
 		   p[5], p[6], p[7],
 		   p[8], p[9], p[10],
 		   (*it).x, (*it).y, (*it).z );
 
-    _e2 += Err_2( p[0], p[1], p[2],
+    _e_r += Err_r( p[0], p[1], p[2],
 		   p[3], p[4],
 		   p[5], p[6], p[7],
 		   p[8], p[9], p[10],
 		   (*it).x, (*it).y, (*it).z );
 
     
-    _e4 += Err_4( p[0], p[1], p[2],
+    _e_d += Err_d( p[0], p[1], p[2],
 		   p[3], p[4],
 		   p[5], p[6], p[7],
 		   p[8], p[9], p[10],
 		   (*it).x, (*it).y, (*it).z );
     
   }
-  
+ 
+  _e_g /= _cloud->points.size();
+  _e_r /= _cloud->points.size();
+  _e_d /= _cloud->points.size(); 
+}
+
+/**
+ * @brief Get goodness-of-fit error for a pointcloud
+ */
+double error_metric_g( const SQ_parameters &_par,
+		       const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud ) {
+
+  double* p = new double[11];
+  p[0] = _par.dim[0];   p[1] = _par.dim[1];   p[2] = _par.dim[2];
+  p[3] = _par.e[0];   p[4] = _par.e[1];
+  p[5] = _par.trans[0]; p[6] = _par.trans[1];   p[7] = _par.trans[2];
+  p[8] = _par.rot[0]; p[9] = _par.rot[1];   p[10] = _par.rot[2];
+
+  double er = 0;
+  typename pcl::PointCloud<pcl::PointXYZ>::iterator it;
+  for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
+
+    er += Err_g( p[0], p[1], p[2],
+		 p[3], p[4],
+		 p[5], p[6], p[7],
+		 p[8], p[9], p[10],
+		 (*it).x, (*it).y, (*it).z );
+    
+  }
+ 
+  er /= _cloud->points.size();
+
+  return er;
 }
 
 
-/****/
-double Err_1( const double &a, const double &b, const double &c,
+
+/**
+ * @brief Radial Distance Error per point
+ */
+double Err_r( const double &a, const double &b, const double &c,
 	      const double &e1, const double &e2,
 	      const double &px, const double &py, const double &pz,
 	      const double &ra, const double &pa, const double &ya,
 	      const double &x, const double &y, const double &z ) {
-
-  double t2, t3, t4, t5, t6, t7, t8, t9;
-  double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
-  double t20, t21, t22, t23;
-
-    t2 = cos(ya);
-  t3 = sin(ra);
-  t4 = cos(ra);
-  t5 = sin(pa);
-  t6 = sin(ya);
-  t7 = t3*t6;
-  t8 = t2*t4*t5;
-  t9 = t7+t8;
-  t10 = t2*t3;
-  t11 = t10-t4*t5*t6;
-  t12 = cos(pa);
-  t13 = px*t9-py*t11-t9*x+t11*y+pz*t4*t12-t4*t12*z;
-  t14 = t4*t6;
-  t15 = t14-t2*t3*t5;
-  t16 = t2*t4;
-  t17 = t3*t5*t6;
-  t18 = t16+t17;
-  t19 = px*t15-py*t18-t15*x+t18*y-pz*t3*t12+t3*t12*z;
-  t20 = pz*t5-t5*z-px*t2*t12-py*t6*t12+t2*t12*x+t6*t12*y;
-  t21 = 1.0/e2;
-  t22 = 1.0/e1;
-  t23 = pow(pow(1.0/(a*a)*(t20*t20),t21)+pow(1.0/(b*b)*(t19*t19),t21),e2*t22)+pow(1.0/(c*c)*(t13*t13),t22)-1.0;
-  
-  return t23*t23;
-}
-
-/****/
-double Err_2( const double &a, const double &b, const double &c,
-	      const double &e1, const double &e2,
-	      const double &px, const double &py, const double &pz,
-	      const double &ra, const double &pa, const double &ya,
-	      const double &x, const double &y, const double &z ) {
-
-  double t2, t3, t4, t5, t6, t7, t8, t9;
-  double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
-  double t20, t21, t22, t23;
-
-    t2 = cos(ya);
-  t3 = sin(ra);
-  t4 = cos(ra);
-  t5 = sin(pa);
-  t6 = sin(ya);
-  t7 = t3*t6;
-  t8 = t2*t4*t5;
-  t9 = t7+t8;
-  t10 = t2*t3;
-  t11 = t10-t4*t5*t6;
-  t12 = cos(pa);
-  t13 = px*t9-py*t11-t9*x+t11*y+pz*t4*t12-t4*t12*z;
-  t14 = t4*t6;
-  t15 = t14-t2*t3*t5;
-  t16 = t2*t4;
-  t17 = t3*t5*t6;
-  t18 = t16+t17;
-  t19 = px*t15-py*t18-t15*x+t18*y-pz*t3*t12+t3*t12*z;
-  t20 = pz*t5-t5*z-px*t2*t12-py*t6*t12+t2*t12*x+t6*t12*y;
-  t21 = 1.0/e2;
-  t22 = 1.0/e1;
-  t23 = pow(pow(pow(1.0/(a*a)*(t20*t20),t21)+pow(1.0/(b*b)*(t19*t19),t21),e2*t22)+pow(1.0/(c*c)*(t13*t13),t22),e1)-1.0;
-  
-  return t23*t23;
-  
-}
-
-/****/
-double Err_4( const double &a, const double &b, const double &c,
-	      const double &e1, const double &e2,
-	      const double &px, const double &py, const double &pz,
-	      const double &ra, const double &pa, const double &ya,
-	      const double &x, const double &y, const double &z ) {
-
+  double t0;
   double t2, t3, t4, t5, t6, t7, t8, t9;
   double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
   double t20, t21, t22, t23, t24, t25, t26, t27, t28, t29;
   double t30, t31, t32, t33, t34, t35, t36, t37, t38, t39;
   double t40, t41, t42, t43, t44, t45;
-
+    
   t2 = cos(ya);
   t3 = sin(ra);
   t4 = cos(ra);
@@ -194,17 +159,100 @@ double Err_4( const double &a, const double &b, const double &c,
   t30 = t13*t13;
   t38 = t19*t19;
   t45 = t20*t20;
+  t0 = fabs(pow(pow(1.0/(c*c)*t30,t22)+pow(pow(1.0/(a*a)*t45,t21)+pow(1.0/(b*b)*t38,t21),e2*t22),e1*(-1.0/2.0))-1.0)*sqrt(t30+t38+t45);
 
-  return fabs(-(pow(pow(1.0/(c*c)*t30,t22)+pow(pow(1.0/(a*a)*t45,t21)+pow(1.0/(b*b)*t38,t21),e2*t22),e1*(-1.0/2.0))-1.0)*sqrt(t30+t38+t45));
+  return t0;  
+}
 
+/**
+ * @brief Goodness-of-fit per point
+ */
+double Err_g( const double &a, const double &b, const double &c,
+	      const double &e1, const double &e2,
+	      const double &px, const double &py, const double &pz,
+	      const double &ra, const double &pa, const double &ya,
+	      const double &x, const double &y, const double &z ) {
+
+  double t0;
+  double t2, t3, t4, t5, t6, t7, t8, t9;
+  double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
+  double t20, t21, t22;
+
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t11 = t10-t4*t5*t6;
+  t12 = cos(pa);
+  t13 = px*t9-py*t11-t9*x+t11*y+pz*t4*t12-t4*t12*z;
+  t14 = t4*t6;
+  t15 = t14-t2*t3*t5;
+  t16 = t2*t4;
+  t17 = t3*t5*t6;
+  t18 = t16+t17;
+  t19 = px*t15-py*t18-t15*x+t18*y-pz*t3*t12+t3*t12*z;
+  t20 = pz*t5-t5*z-px*t2*t12-py*t6*t12+t2*t12*x+t6*t12*y;
+  t21 = 1.0/e2;
+  t22 = 1.0/e1;
+  t0 = fabs(pow(pow(1.0/(a*a)*(t20*t20),t21)+pow(1.0/(b*b)*(t19*t19),t21),e2*t22)+pow(1.0/(c*c)*(t13*t13),t22)-1.0);
+  
+  return t0;
+}
+
+/**
+ * @brief Using Duncan for stopping criterion (per point)
+ */
+double Err_d( const double &a, const double &b, const double &c,
+	      const double &e1, const double &e2,
+	      const double &px, const double &py, const double &pz,
+	      const double &ra, const double &pa, const double &ya,
+	      const double &x, const double &y, const double &z ) {
+
+  double t0;
+  double t2, t3, t4, t5, t6, t7, t8, t9;
+  double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
+  double t20, t21, t22, t23;
+
+  
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t11 = t10-t4*t5*t6;
+  t12 = cos(pa);
+  t13 = px*t9-py*t11-t9*x+t11*y+pz*t4*t12-t4*t12*z;
+  t14 = t4*t6;
+  t15 = t14-t2*t3*t5;
+  t16 = t2*t4;
+  t17 = t3*t5*t6;
+  t18 = t16+t17;
+  t19 = px*t15-py*t18-t15*x+t18*y-pz*t3*t12+t3*t12*z;
+  t20 = pz*t5-t5*z-px*t2*t12-py*t6*t12+t2*t12*x+t6*t12*y;
+  t21 = 1.0/e2;
+  t22 = 1.0/e1;
+  t23 = pow(pow(pow(1.0/(a*a)*(t20*t20),t21)+pow(1.0/(b*b)*(t19*t19),t21),e2*t22)+pow(1.0/(c*c)*(t13*t13),t22),e1)-1.0;
+  t0 = t23*t23;
+
+  return t0;
 }
 
 
 /**
  * @function minimize
+ * @brief Outputs Goodness-of-Fitness,Radial Distance, Duncan
  */
 bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
-			      SQ_parameters &_par, double &_e1, double &_e2, double &_e4,
+			      SQ_parameters &_par, double &_eg, double &_er, double &_ed,
 			      int _type ) {
   
   // Get parameters to start minimization
@@ -252,7 +300,7 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
   
   // Set limits
   double ub[m], lb[m];
-  for( i = 0; i < 3; ++i ) { lb[i] = 0.01; ub[i] = 0.3; }
+  for( i = 0; i < 3; ++i ) { lb[i] = 0.01; ub[i] = 0.5; }
   for( i = 0; i < 2; ++i ) { lb[i+3] = 0.1; ub[i+3] = 1.9; }
   for( i = 0; i < 3; ++i ) { lb[i+5] = -1.5; ub[i+5] = 1.5; }
   for( i = 0; i < 3; ++i ) { lb[i+8] = -M_PI; ub[i+8] = M_PI; }
@@ -332,7 +380,7 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
     _par.e[0] = 0; _par.e[1] = 0;
     _par.trans[0] = 0; _par.trans[1] = 0; _par.trans[2] = 0;
     _par.rot[0] = 0; _par.rot[1] = 0; _par.rot[2] = 0;
-    _e1 = 10000; _e2 = 10000; _e4 = 10000; // A big number
+    _eg = 10000; _er = 10000; _ed = 10000; // A big number
     return false;
   } else {
     _par.dim[0] = p[0]; _par.dim[1] = p[1]; _par.dim[2] = p[2];
@@ -340,7 +388,7 @@ bool evaluated_sqs::minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
     _par.trans[0] = p[5]; _par.trans[1] = p[6]; _par.trans[2] = p[7];
     _par.rot[0] = p[8]; _par.rot[1] = p[9]; _par.rot[2] = p[10];
 
-    error_metric( p, _input, _e1, _e2, _e4 );
+    error_metric( p, _input, _eg, _er, _ed );
    
     return true;
   }

@@ -13,7 +13,8 @@ struct minks{
   double trans[3];
   double rot[3];
   double t;
-  double er1, er2, er4;
+  double er_g, er_r;
+  double er_e1, er_e2, er_v;
 };
 
 void readSQline( std::stringstream &_input, minks &_d );
@@ -55,24 +56,21 @@ int main( int argc, char* argv[] ) {
   input.close();
 
   // Calculate the mean time, er1, er2, and er4
-  double sum_er1[6][4];
-  double sum_er2[6][4];
-  double sum_er4[6][4];
+  double sum_er_e1[6][4];
+  double sum_er_e2[6][4];
+  double sum_er_er[6][4];
+  double sum_er_eg[6][4];
   double sum_time[6][4];
-  double sum_volume[6][4];
-
-  double sum_e1_error[6][4];
-  double sum_e2_error[6][4];
+  double sum_er_v[6][4];
 
   for( int i = 0; i < 6; ++i ) { 
     for(int j = 0; j < 4; ++j ) { 
-      sum_er1[i][j] = 0; 
-      sum_er2[i][j] = 0; 
-      sum_er4[i][j] = 0; 
+      sum_er_e1[i][j] = 0; 
+      sum_er_e2[i][j] = 0; 
+      sum_er_er[i][j] = 0; 
       sum_time[i][j] = 0; 
-      sum_volume[i][j] = 0;
-      sum_e1_error[i][j] = 0;
-      sum_e2_error[i][j] = 0;
+      sum_er_v[i][j] = 0;
+      sum_er_eg[i][j] = 0;
     } 
   }
 
@@ -80,17 +78,24 @@ int main( int argc, char* argv[] ) {
     for( int j = 0; j < 4; ++j ) {  // each type of input
       for( int k = 0; k < T; ++k ) { // each instance
 	
-  minks d = info[i][k][j];
-  double vol = baseline[k].dim[0]*baseline[k].dim[1]*baseline[k].dim[2];
+         minks d = info[i][k][j];
 
-	sum_er1[i][j] += d.er1/(double)T;
-	sum_er2[i][j] += d.er2/(double)T;
-	sum_er4[i][j] += d.er4/(double)T; 
-	sum_time[i][j] += d.t/(double)T;
-  sum_volume[i][j] += fabs((d.dim[0]*d.dim[1]*d.dim[2]) - vol)/vol*100.0/(double)T;
-  sum_e1_error[i][j] += fabs(d.e[0] - baseline[k].e[0] ) / baseline[k].e[0]*100.0/(double)T;
-  sum_e2_error[i][j] += fabs(d.e[1] - baseline[k].e[1] ) / baseline[k].e[1]*100.0/(double)T;
+	sum_er_e1[i][j] += fabs(d.er_e1);
+	sum_er_e2[i][j] += fabs(d.er_e2);
+	sum_er_er[i][j] += fabs(d.er_r); 
+	sum_er_eg[i][j] += fabs(d.er_g);
+	sum_time[i][j] += d.t;
+        sum_er_v[i][j] += fabs(d.er_v);;
       }
+
+
+	sum_er_e1[i][j] /= (double)T;
+	sum_er_e2[i][j] /= (double)T;
+	sum_er_er[i][j] /= (double)T; 
+	sum_er_eg[i][j] /= (double)T;
+	sum_time[i][j] /= (double)T;
+        sum_er_v[i][j] /= (double)T;
+
     }
   }
 
@@ -101,8 +106,8 @@ int main( int argc, char* argv[] ) {
   for(int j = 0; j < 4; ++j ) { 
     for( int i = 0; i < 6; ++i ) { 
       if( i == 2 || i == 5 ) { continue; }
-      printf("& $F_{%c}$ & %f & %.3f\\% & %.3f\\% & %.3f\\% & %.3f \\\ \n", car[i], sum_er1[i][j], sum_volume[i][j],
-	     sum_e1_error[i][j], sum_e2_error[i][j], sum_time[i][j] ); 
+      printf("& $F_{%c}$ & %f & %.3f & %.3f & %.3f\\% & %.3f \\\ \n", car[i], sum_er_er[i][j], sum_er_eg[i][j], sum_er_e1[i][j],
+	     sum_er_e2[i][j], sum_er_v[i][j], sum_time[i][j] ); 
     }
     printf("\n");
   }
@@ -111,7 +116,7 @@ int main( int argc, char* argv[] ) {
 
   for(int j = 0; j < 4; ++j ) { 
     for( int i = 0; i < 6; ++i ) { 
-       printf("Er1 average for F %d in pointcloud %d: %f \n", i, j, sum_er1[i][j] ); 
+       printf("E1 average for F %d in pointcloud %d: %f \n", i, j, sum_er_e1[i][j] ); 
     }
     printf("\n");
   }
@@ -119,7 +124,7 @@ int main( int argc, char* argv[] ) {
 
   for(int j = 0; j < 4; ++j ) { 
     for( int i = 0; i < 6; ++i ) { 
-       printf("Er2 average for F %d in pointcloud %d: %f \n", i, j, sum_er2[i][j] ); 
+       printf("E2 average for F %d in pointcloud %d: %f \n", i, j, sum_er_e2[i][j] ); 
     }
     printf("\n");
   }
@@ -128,7 +133,7 @@ int main( int argc, char* argv[] ) {
  
   for(int j = 0; j < 4; ++j ) { 
     for( int i = 0; i < 6; ++i ) { 
-       printf("Er4 average for F %d in pointcloud %d: %f \n", i, j, sum_er4[i][j] ); 
+       printf("Er_r average for F %d in pointcloud %d: %f \n", i, j, sum_er_er[i][j] ); 
     }
     printf("\n");
   }
@@ -147,7 +152,7 @@ int main( int argc, char* argv[] ) {
   
   for(int j = 0; j < 4; ++j ) { 
     for( int i = 0; i < 6; ++i ) { 
-       printf("Error volume for F %d in pointcloud %d: %f \n", i, j, sum_volume[i][j] ); 
+       printf("Error volume for F %d in pointcloud %d: %f \n", i, j, sum_er_v[i][j] ); 
     }
     printf("\n");
   }
@@ -156,41 +161,34 @@ int main( int argc, char* argv[] ) {
 
   for(int j = 0; j < 4; ++j ) { 
     for( int i = 0; i < 6; ++i ) { 
-       printf("Error e1 for F %d in pointcloud %d: %f \n", i, j, sum_e1_error[i][j] ); 
+       printf("Error eg for F %d in pointcloud %d: %f \n", i, j, sum_er_eg[i][j] ); 
     }
     printf("\n");
   }
   printf("**********************************\n");
 
 
-  for(int j = 0; j < 4; ++j ) { 
-    for( int i = 0; i < 6; ++i ) { 
-       printf("Error e2 for F %d in pointcloud %d: %f \n", i, j, sum_e2_error[i][j] ); 
-    }
-    printf("\n");
-  }
-  printf("**********************************\n");
 
   // Save errors
   for( int i = 0; i < 4; ++i ) {
     char name[50];
-    sprintf(name, "er1_%d.txt", i );
-    std::ofstream output_er1( name, std::ofstream::out );
+    sprintf(name, "e1_%d.txt", i );
+    std::ofstream output_e1( name, std::ofstream::out );
 
-    sprintf(name, "er2_%d.txt", i );
-    std::ofstream output_er2( name, std::ofstream::out );
+    sprintf(name, "e2_%d.txt", i );
+    std::ofstream output_e2( name, std::ofstream::out );
    
-    sprintf(name, "er4_%d.txt", i );
-    std::ofstream output_er4( name, std::ofstream::out );
+    sprintf(name, "er_r_%d.txt", i );
+    std::ofstream output_er_r( name, std::ofstream::out );
  
     sprintf(name,"t_%d.txt", i);
     std::ofstream output_t( name, std::ofstream::out );
 
-    sprintf(name,"e1_%d.txt", i);
-    std::ofstream output_e1( name, std::ofstream::out );
+    sprintf(name,"er_g_%d.txt", i);
+    std::ofstream output_er_g( name, std::ofstream::out );
 
-    sprintf(name,"e2_%d.txt", i);
-    std::ofstream output_e2( name, std::ofstream::out );
+    sprintf(name,"er_v_%d.txt", i);
+    std::ofstream output_er_v( name, std::ofstream::out );
         
     for( int j = 0; j < T; ++j ) {
       
@@ -198,27 +196,27 @@ int main( int argc, char* argv[] ) {
       output_e2 << baseline[j].e[1] << " ";
       
       for( int k = 0; k < 6; ++k ) {	
-	output_er1 << info[k][j][i].er1 << " ";
-	output_er2 << info[k][j][i].er2 << " ";
-	output_er4 << info[k][j][i].er4 << " ";
-        output_t << info[k][j][i].t << " ";
-	output_e1 << info[k][j][i].e[0] << " ";
-	output_e2 << info[k][j][i].e[1] << " ";
+	//output_er1 << info[k][j][i].er1 << " ";
+	//output_er2 << info[k][j][i].er2 << " ";
+	//output_er4 << info[k][j][i].er4 << " ";
+        //output_t << info[k][j][i].t << " ";
+	//output_e1 << info[k][j][i].e[0] << " ";
+	//output_e2 << info[k][j][i].e[1] << " ";
 	
       }
-      output_er1 << std::endl;
-      output_er2 << std::endl;
-      output_er4 << std::endl;
-      output_t << std::endl;
-      output_e1 << std::endl;
-      output_e2 << std::endl;      
+      //output_er1 << std::endl;
+      //output_er2 << std::endl;
+      //output_er4 << std::endl;
+      //output_t << std::endl;
+      //output_e1 << std::endl;
+      //output_e2 << std::endl;      
     }
-    output_er1.close();
-    output_er2.close();
-    output_er4.close();
-    output_t.close();
-    output_e1.close();
-    output_e2.close();    
+    //output_er1.close();
+    //output_er2.close();
+    //output_er4.close();
+    //output_t.close();
+    //output_e1.close();
+    //output_e2.close();    
   }
   
 }
@@ -233,5 +231,5 @@ void readSQline( std::stringstream &_input,
 	 >> _d.e[0] >> _d.e[1] 
 	 >> _d.trans[0] >> _d.trans[1] >> _d.trans[2]
 	 >> _d.rot[0] >> _d.rot[1] >> _d.rot[2]
-	 >> _d.t >> _d.er1 >> _d.er2 >> _d.er4;
+	 >> _d.t >> _d.er_g >> _d.er_r >> _d.er_e1 >> _d.er_e2 >> _d.er_v;
 }

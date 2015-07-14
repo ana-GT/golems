@@ -76,10 +76,10 @@ int main( int argc, char*argv[] ) {
 
     sfe.getFinalParams( par );
     error_metric( par, input, er1, er2, er4 );
-    printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er1: %f er2: %f er4: %f \n",
+    printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er_g: %f er_r: %f  \n",
 	   par.dim[0], par.dim[1], par.dim[2],
 	   par.e[0], par.e[1], dt,
-	   er1/n, er2/n, er4/n);
+	   er1, er2);
     
     approx = sampleSQ_uniform( par );
     char name[50];

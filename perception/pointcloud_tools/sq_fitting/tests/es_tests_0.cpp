@@ -19,11 +19,26 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr get_noisy( const pcl::PointCloud<pcl::PointX
 					       const double &_dev );
 double getRand( const double &_minVal, const double &_maxVal );
 
+double beta( double z,double w) {
+  double gz, gw, gzw;
+  
+  gz = tgamma(z);
+  gw = tgamma(w);
+  gzw = tgamma(z+w);
+  return  gz*gw/gzw;
+}
+
+double volSQ( double a, double b, double c, double e1, double e2 ) {
+  return 2*a*b*c*e1*e2*beta(e1*0.5, e1+1)*beta(e2*0.5, e2*0.5+1);
+}
+
+
+
 
 // Global variables to generate noise
 std::random_device rd;
 std::mt19937 gen(rd());
-
+double gD;
 
 /**
  * @function main
@@ -37,12 +52,17 @@ int main( int argc, char*argv[] ) {
   double e2 = 0.75; 
   double px = 0.1; double py = 0.2; double pz = 0.4;
   double ra = 0.4; double pa = -0.3; double ya = 0.1;
+  gD = 0.0; // Downsampling
   int N = 50;
   int v;
   
-  while( (v=getopt(argc, argv, "n:a:b:c:e:f:x:y:z:r:p:")) != -1 ) {
-    switch(v) {
+  while( (v=getopt(argc, argv, "n:a:b:c:e:f:x:y:z:r:p:d:h")) != -1 ) {
+    switch(v) { 
 
+    case 'h' : {
+      printf("Syntax: ./executable -a -b -c -e -f -x -y -z -r -p -d DOWNSAMPLE_STEP \n");
+      return 0;
+    } break;
     case 'a' : {
       a1 = atof(optarg);
     } break;
@@ -76,7 +96,9 @@ int main( int argc, char*argv[] ) {
     case 'p' : {
       pa = atof(optarg);
     } break;
-
+    case 'd' : {
+     gD = atof(optarg);
+    } break;
     } // switch end
   }
   
@@ -84,25 +106,28 @@ int main( int argc, char*argv[] ) {
   pcl::PointCloud<pcl::PointXYZ>::Ptr input( new pcl::PointCloud<pcl::PointXYZ>() );
   pcl::PointCloud<pcl::PointXYZ>::Ptr down( new pcl::PointCloud<pcl::PointXYZ>() );
 
-  SQ_parameters par;
-  double er1, er2, er4;
+  SQ_parameters par, base;
+  double er_g, er_r, er_d, er_v;
+  double vr, vc;
   par.dim[0] = a1; par.dim[1] = a2; par.dim[2] = a3;
   par.e[0] = e1; par.e[1] = e2;
   par.trans[0] = px; par.trans[1] = py; par.trans[2] = pz;
   par.rot[0] = ra; par.rot[1] = pa; par.rot[2] = ya;
+  base = par;
 
   std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> testCloud(4);
   
   input = sampleSQ_uniform( par );
-  down = downsampling( input, 0.01 );
+  if( gD == 0 ) { down = input; }
+  else { down = downsampling( input, gD ); }
   testCloud[0] = down;    
   testCloud[1]= get_noisy( testCloud[0], gDev );
   testCloud[2] = cut_cloud( testCloud[0] );
   testCloud[3] = cut_cloud( testCloud[1] );
 
   
-  printf("Size of input: %d \n", input->points.size() );
-
+  printf("Size of real input: %d \n", input->points.size() );
+  printf("Size of input to minimization: %d \n", down->points.size() );
   
   clock_t ts, tf; double dt;
   evaluated_sqs es;
@@ -111,13 +136,19 @@ int main( int argc, char*argv[] ) {
     printf( "Function: %s \n", fx_names[i] );
     for( int j = 0; j < 4; ++j ) {
       ts = clock();
-      es.minimize( testCloud[j], par, er1, er2, er4, fx_sq[i] );
+      es.minimize( testCloud[j], par, er_g, er_r, er_d, fx_sq[i] );
       tf = clock();
       dt = (tf-ts) / (double) CLOCKS_PER_SEC;
-      printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er1: %f er2: %f er4: %f \n",
+
+      error_metric( par, input, er_g, er_r, er_d );
+      vc =  volSQ(par.dim[0], par.dim[1], par.dim[2], par.e[0], par.e[1]);
+      vr = volSQ(base.dim[0],base.dim[1],base.dim[2],  base.e[0], base.e[1] );
+      er_v = (vc - vr)/vr*100.0;
+      
+      printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er_g: %f er_r: %f er_d: %f er_v: %f \% \n",
 	     par.dim[0], par.dim[1], par.dim[2],
 	     par.e[0], par.e[1], dt,
-	     er1, er2, er4);
+	     er_g, er_r, er_d, er_v);
       
     }
   }

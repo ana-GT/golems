@@ -53,9 +53,9 @@ F5 = sqrt(xi^2 + yi^2 + zi^2)*(F_simple^e1-1);
 F6 = (1-1/F)*sqrt(xi^2 + yi^2 + zi^2)*(F_simple^e1-1);
 
 % Different error measures
-Er1 = (1 - F_simple)^2;
-Er2 = (1 - F_simple^e1)^2;
-Er4 = sqrt(xi^2 + yi^2 + zi^2)*abs(1 - 1.0/F);
+Er_g = abs(F_simple - 1); % Goodness of fitness
+Er_d = (1 - F_simple^e1)^2; % Used in Duncan as stopping criterion
+Er_r = sqrt(xi^2 + yi^2 + zi^2)*abs(1 - 1.0/F); % Radial error
 
 % Jacobian
 Jr = [ diff(Fr,a), diff(Fr,b), diff(Fr,c), diff(Fr,e1), diff(Fr,e2), diff(Fr,px), diff(Fr,py), diff(Fr,pz), diff(Fr,ra), diff(Fr,pa), diff(Fr,ya) ];
@@ -86,8 +86,7 @@ ccode(F6,'file','F6.txt');
 ccode(J6,'file','J6.txt');
 
 
-ccode(Er1,'file','Er1.txt');
-ccode(Er2,'file','Er2.txt');
-%ccode(Er3,'file','Er3.txt');
-ccode(Er4,'file','Er4.txt');
+ccode(Er_g,'file','Er_g.txt');
+ccode(Er_d,'file','Er_d.txt');
+ccode(Er_r,'file','Er_r.txt');
 

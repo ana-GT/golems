@@ -28,7 +28,7 @@ SQ_fitter_evaluated<PointT>::SQ_fitter_evaluated() :
   mGotInitApprox(false) {
   
   int i;
-  for( i = 0; i < 3; ++i ) { mLowerLim_dim[i] = 0.01; mUpperLim_dim[i] = 0.30; }
+  for( i = 0; i < 3; ++i ) { mLowerLim_dim[i] = 0.01; mUpperLim_dim[i] = 0.40; }
   mLowerLim_e = 0.1;  mUpperLim_e = 1.9;
   for( i = 0; i < 3; ++i ) { mLowerLim_trans[i] = -2.0; mUpperLim_trans[i] = 2.0; }
   for( i = 0; i < 3; ++i ) { mLowerLim_rot[i] = -M_PI; mUpperLim_rot[i] = M_PI; }
@@ -125,7 +125,7 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
 
   // Run loop
   par_i = par_in_;
-  error_i = error_metric( par_i, cloud_ );
+  error_i = error_metric_d( par_i, cloud_ );
   fitted = false;
 
   int i;
@@ -150,7 +150,6 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
     
     // [CONDITION]
     double de = (error_i_1 - error_i);
-    //std::cout << "\t ** Diff of errors at iter "<<i<<": "<<de << std::endl;
     if(  de < thresh_ && i >=2  ) {
       fitted = true;
       break;
@@ -248,6 +247,7 @@ void SQ_fitter_evaluated<PointT>::downsample( const PointCloudPtr &_cloud,
 /**
  * @function minimize
  * @brief Apply bounded Levenberg-Marquadt with _in initial parameters
+ * @brief Returns goodness-of-error results
  * @output _out
  */
 template<typename PointT>
@@ -389,8 +389,8 @@ bool SQ_fitter_evaluated<PointT>::minimize( const int &_type,
   for( i = 0; i < 3; ++i ) { _out.rot[i] = p[i+8]; }
   
   
-  // Return status and error
-  _error = error_metric( _out, cloud_ );
+  // Return status and goodness-of-fitness error
+  _error = error_metric_Eg( _out, cloud_ );
   
   // If stopped by invalid (TODO: Add other reasons)
   if( info[6] == 7 ) {
@@ -398,22 +398,6 @@ bool SQ_fitter_evaluated<PointT>::minimize( const int &_type,
   } else {
     return true;
   }
-}
-
-
-/**
- * @function error_metric
- * @brief Calculates the error 
- */
-template<typename PointT>
-double SQ_fitter_evaluated<PointT>::error_metric( SQ_parameters _par,
-						  const PointCloudPtr &_cloud ) {
-
-  evaluated_sqs es;
-  double e2;
-  e2 = es.error_metric_Err_2( _par, _cloud );
-
-  return e2 / (double) _cloud->points.size();
 }
 
 
