@@ -15,6 +15,11 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
 #set_target_properties( test_mirror PROPERTIES RUNTIME_OUTPUT_DIRECTORY
 #  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( sampleSQ sampleSQ.cpp )
+target_link_libraries( sampleSQ sq_utils ${PCL_LIBRARIES} )
+set_target_properties( sampleSQ PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 
 add_executable( es_tests_0 es_tests_0.cpp )
 target_link_libraries( es_tests_0 evaluated_eqs sq_fitting ${PCL_LIBRARIES} )
@@ -99,9 +104,5 @@ set_target_properties( es_tests_5 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
 
 
 
-#add_executable( sampleSQ_naive sampleSQ_naive.cpp )
-#target_link_libraries( sampleSQ_naive SQ_utils ${PCL_LIBRARIES} )
-#set_target_properties( sampleSQ_naive PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
