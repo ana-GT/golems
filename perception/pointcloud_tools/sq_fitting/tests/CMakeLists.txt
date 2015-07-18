@@ -10,10 +10,10 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
 #find_package( OpenCV REQUIRED )
 #include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-#add_executable( test_mirror test_mirror.cpp )
-#target_link_libraries( test_mirror SQ_fitter mindGapper ${PCL_LIBRARIES} ${CERES_LIBRARIES} ${OpenCV_LIBRARIES} pthread )
-#set_target_properties( test_mirror PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+add_executable( test_mirror test_mirror.cpp )
+target_link_libraries( test_mirror SQ_fitter mindGapper ${PCL_LIBRARIES} ${CERES_LIBRARIES} ${OpenCV_LIBRARIES} pthread )
+set_target_properties( test_mirror PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable( sampleSQ sampleSQ.cpp )
 target_link_libraries( sampleSQ sq_utils ${PCL_LIBRARIES} )

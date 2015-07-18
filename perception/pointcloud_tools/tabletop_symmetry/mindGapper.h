@@ -47,13 +47,14 @@ class mindGapper {
   void reset();
 
   /**< Generates mirroring cloud */
-  int complete( PointCloudPtr &_cloud );
+  int complete( PointCloudPtr &_cloud,
+		bool _completeCloud = true );
 
   /**< Get the symmetry Tf: Z is the table plane and the rest comes from the symmetry plane */
   void getSymmetryApprox( Eigen::Isometry3d &_Tf,
 			  Eigen::Vector3d &_dim );
 
-  void calculateSymmTf( const Eigen::Matrix3d &_Rt,
+  void calculateSymmTf( const Eigen::Isometry3d &_Rt,
 			const PointCloudPtr &_cloud );
   
   bool generate2DMask( PointCloudPtr _segmented_cloud,

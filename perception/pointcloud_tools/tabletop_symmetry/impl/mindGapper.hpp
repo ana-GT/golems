@@ -55,7 +55,8 @@ std::vector<unsigned int> sortIndices( std::vector<double> _metrics,
  * @brief Use symmetries on plane to complete pointcloud 
  */
 template<typename PointT>
-int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
+int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
+				  bool _completeCloud ) {
   
   // Variables
   PointCloudIter it;
@@ -65,13 +66,13 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud ) {
   // 0. Store cloud, visibility mask, depth and 
   // the distance transform (DT) in 2D matrices
   mCloud = _cloud;
-printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
   if( !this->generate2DMask( mCloud,
 			    mMarkMask,
 			    mDepthMask ) ) {
     printf("Error generating 2D mask \n");
     return 0;
   }
+
   mDTMask = matDT( mMarkMask );
   generateBorder();
 
@@ -111,8 +112,8 @@ printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
   Eigen::VectorXd sp(4);
   Eigen::Vector3d np, cp, dir;
 
-  Eigen::Matrix3d symmRt;
-  std::vector<Eigen::Matrix3d> candidateSymmRts;
+  Eigen::Isometry3d symmRt;
+  std::vector<Eigen::Isometry3d> candidateSymmRts;
   std::vector<double>  candidateDists;
 
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
@@ -125,12 +126,15 @@ printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
     np = s_sample.cross( Np ); np.normalize();
     
     // Store symmetry reference Transformation
-    symmRt.col(2) = Np; symmRt.col(1) = s_sample; symmRt.col(0) = np;
- 
+    symmRt.linear().col(2) = Np; 
+    symmRt.linear().col(1) = s_sample; 
+    symmRt.linear().col(0) = np;
+    
     for( int j = 0; j < mN; ++j ) {
       
       if( np.dot(v) > -np.dot(v) ) { dir = np; } else { dir = -np; }
       cp = mC + dir*mDj*j;
+      symmRt.translation() = cp;
 
       //Set symmetry plane coefficients
       sp << np(0), np(1), np(2), -1*np.dot( cp );
@@ -195,13 +199,6 @@ printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
       if( frontOfMask == 0 ) { mDelta2[i] = 1000000;  }
       else { mDelta2[i] =  (double) frontOfMask; } //(delta_2 / (double)frontOfMask); }
     
-      //cv::imshow("debug", mi );
-      //printf("[%d] Delta1: %f px delta 2: %f cm - d1: %f, # d1: %d  d2: %f, #d2: %d \n", i, mDelta1[i], mDelta2[i], delta_1, outOfMask, delta_2, frontOfMask );
-      /*
-      while( true ) {
-        char b = cv::waitKey(200);
-        if( b == 'n' ) { break; }
-      }*/
     } // end else mValidity
 
   } // for each candidate
@@ -219,15 +216,9 @@ printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
     else { d1max = mDelta1[i]; break; }
   }   
   double d1cut = d1min + 0.1*(d1max - d1min);
-  //printf("Delta 1 min: %f - delta 1 max: %f delta 1 cut: %f \n", d1min, d1max, d1cut );
 
   for( int i = 0; i < (int)(0.1*mCandidates.size()); ++i ) {
-    //if( mDelta1[delta1_priority[i]] < d1cut ) {
       delta2_selected.push_back( mDelta2[ delta1_priority[i] ] );
-      //printf("[%d] Candidate : %d - delta 1: %f delta 2: %f \n", i, delta1_priority[i], mDelta1[delta1_priority[i]],  mDelta2[delta1_priority[i]] );
-    //} else {
-     // break;
-    //}
   }
 
   // Prioritize according to delta_2
@@ -236,8 +227,12 @@ printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
   
   int minIndex = delta1_priority[delta2_priority[0]];
     
-  _cloud = mCandidates[ minIndex ];
-  _cloud->insert( _cloud->end(), mCloud->begin(), mCloud->end() );
+  // Complete pointcloud if required
+  if( _completeCloud ) {
+    _cloud->insert( _cloud->end(), mCandidates[minIndex].begin(),
+		    mCandidates[minIndex].end() );
+  }
+
   _cloud->width = 1; _cloud->height = _cloud->points.size();
   printf("Min index: %d \n", minIndex );
 
@@ -255,32 +250,38 @@ printf("Size of input to complete cloud: %d \n", mCloud->points.size() );
  * @brief Calculate the symmetry plane and bounding box approximation
  */
 template<typename PointT>
-void mindGapper<PointT>::calculateSymmTf( const Eigen::Matrix3d &_Rt,
+void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
 					  const PointCloudPtr &_cloud ) {
-
+  
   PointCloudPtr Ps( new PointCloud() );
-  Eigen::Affine3f Tf; Tf.setIdentity();
-  Eigen::Matrix3f Rf; Rf = _Rt.cast<float>();
-  Tf.matrix().block(0,0,3,3) = Rf.transpose(); 
-  pcl::transformPointCloud( *_cloud, *Ps, Tf );
+  Eigen::Affine3f Tcw;
+  Tcw = (_Twc.cast<float>()).inverse();
+
+  pcl::transformPointCloud( *_cloud, *Ps, Tcw );
 
   pcl::MomentOfInertiaEstimation <PointT> feature_extractor;  
   feature_extractor.setInputCloud (Ps);
   feature_extractor.compute();
   PointT mp, Mp;
   feature_extractor.getAABB (mp, Mp);
+  std::cout <<"Max point: " << Mp.x << ", " << Mp.y << ","<< Mp.z << " -- Min: "<<
+    mp.x << "," << mp.y << ","<< mp.z << std::endl;
 
   // Tf
   mSymmTf.setIdentity();
-  mSymmTf.linear() = _Rt;
+  mSymmTf.linear() = _Twc.linear();
   mSymmTf.translation() << (double)0.5*(mp.x + Mp.x), 
     (double)0.5*(mp.y + Mp.y), (double)0.5*(mp.z + Mp.z);
   
-  mSymmTf.translation() = _Rt*mSymmTf.translation();
+  mSymmTf.translation() = _Twc.linear()*mSymmTf.translation();
+
+  std::cout << "mSymmTf transformation: \n" << mSymmTf.matrix() << std::endl;
+  std::cout << "Twc: \n" << _Twc.matrix() << std::endl;
 
   // Dimm
   mBBDim << (double)0.5*(Mp.x - mp.x), 
     (double)0.5*(Mp.y - mp.y), (double)0.5*(Mp.z - mp.z);
+  
 }
 
 /**
