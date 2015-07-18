@@ -173,8 +173,8 @@ std::vector<output_sq> createCase() {
   par.rot[2] = getRand(-M_PI, M_PI); 
 
   // E parameters
-  par.e[0] = 1.0; //getRand(0.1,1.9);
-  par.e[1] = 1.0; //getRand(0.1,1.9);
+  par.e[0] = getRand(0.1,1.9);
+  par.e[1] = getRand(0.1,1.9);
 
 
   // Store original data

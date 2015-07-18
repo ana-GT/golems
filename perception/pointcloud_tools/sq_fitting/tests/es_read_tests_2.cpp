@@ -93,14 +93,20 @@ int main( int argc, char* argv[] ) {
     }
   }
 
-  
+  // Store
+  output_sq fr[gT][4];
+  output_sq fs[gT][4];
+  output_sq fi[gT][4];
+  output_sq fc[gT][4];
+  output_sq f5[gT][4];
+
   for( int i = 0; i < gT; ++i ) {
 
     // Read base
     std::getline( input, line );
     std::stringstream ss(line);
     readSQline( ss, ou );
-
+    
     // Read downsampling results
     for( int j = 0; j < gnF; ++j ) {
       for( int k = 0; k < 4; ++k ) {
@@ -108,6 +114,18 @@ int main( int argc, char* argv[] ) {
 	std::stringstream ss(line);
 	readSQline( ss, ou );
 	
+	if( j == 0 ) {
+	  fr[i][k] = ou;
+	} else if( j == 1 ) {
+	  fs[i][k] = ou;
+	} else if( j == 2 ) {
+	  fi[i][k] = ou;
+	} else if( j == 3 ) {
+	  fc[i][k] = ou;
+	} else if( j == 4 ) {
+	  f5[i][k] = ou;
+	}
+
 	// Store accumulated error
 	acc_er_g[j][k] += ou.er_g;
 	acc_er_r[j][k] += ou.er_r;
@@ -134,7 +152,19 @@ int main( int argc, char* argv[] ) {
 	     i, j, acc_er_g[i][j],  acc_er_r[i][j],  acc_er_v[i][j], acc_t[i][j]);
     }
   }
+  /*
+  std::ofstream outing("outing.txt", std::ofstream::out );
+  for( int i = 0; i < gT; ++i ) {
+    printf("[%d] F0 - 4: \t er_r[3]: %f \t er_s[3]: %f \t er_i[3]: %f \t er_c[3]: %f \t er_5[3]: %f \n", i, fr[i][3].er_v, fs[i][3].er_v, fi[i][3].er_v, fc[i][3].er_v, f5[i][3].er_v );
+    char line[200];
+    //sprintf( line, "%f \t %f %f " );
+    outing << fr[i][2].par.e[0] << " \t " << fr[i][2].par.e[1] << " \t "
+	   << fr[i][2].er_g << " \t " << fr[i][2].er_r << " \t "
+	   << fabs(fr[i][2].er_v) << " \t " << fr[i][2].t << std::endl;
+   }
   
+  outing.close();
+*/
   input.close();
   return 0;
 }
