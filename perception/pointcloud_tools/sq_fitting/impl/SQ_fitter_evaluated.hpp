@@ -125,7 +125,9 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
 
   // Run loop
   par_i = par_in_;
-  error_i = error_metric_d( par_i, cloud_ );
+  double eg, er;
+  pcl::PointCloud<pcl::PointXYZ>::Ptr ana; // cloud_
+  error_metric( par_i, ana, eg, er, error_i );
   fitted = false;
 
   int i;
@@ -390,7 +392,8 @@ bool SQ_fitter_evaluated<PointT>::minimize( const int &_type,
   
   
   // Return status and goodness-of-fitness error
-  _error = error_metric_Eg( _out, cloud_ );
+  double eg, er;
+  error_metric( _out, cloud_, eg, er, _error );
   
   // If stopped by invalid (TODO: Add other reasons)
   if( info[6] == 7 ) {

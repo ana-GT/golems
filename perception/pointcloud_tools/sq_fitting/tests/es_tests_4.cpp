@@ -40,7 +40,7 @@ int main( int argc, char*argv[] ) {
   gTableCoeffs[1] = -0.526281;
   gTableCoeffs[2] = 0.850153;
   gTableCoeffs[3] = -0.667902;
-  
+
   mg.setTablePlane( gTableCoeffs );
   mg.setFittingParams();
   mg.setDeviceParams();
@@ -52,9 +52,11 @@ int main( int argc, char*argv[] ) {
   
   *completed = *input;
   mg.reset();
-  mg.complete( completed );
-  mg.getSymmetryApprox( Tsymm, Bb );
 
+  mg.complete( completed );
+  printf("Finished completing \n");
+  mg.getSymmetryApprox( Tsymm, Bb );
+  /*
   clock_t ts, tf; double dt;
   SQ_fitter_evaluated<pcl::PointXYZ> sfe;
   sfe.setInitialApprox( Tsymm, Bb );
@@ -86,6 +88,6 @@ int main( int argc, char*argv[] ) {
     sprintf( name, "%s_hierarchical_%d.pcd", gOutput.c_str(), i );
     pcl::io::savePCDFileASCII( name, *approx );
   }
-  
+  */
 }
 

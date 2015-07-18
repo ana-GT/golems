@@ -100,7 +100,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;
   v = mC; // viewing vector from Kinect origin (0,0,0) to centroid of projected cloud (mC)
-
+  std::cout << "Centroid: "<< mC.transpose() << std::endl;
   // s: Line which is the intersection between symmetry and table planes
   if( abs(v.dot(mEa)) <= abs(v.dot(mEb)) ) { s = mEa; } 
   else { s = mEb; }
@@ -112,30 +112,29 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   Eigen::VectorXd sp(4);
   Eigen::Vector3d np, cp, dir;
 
-  Eigen::Isometry3d symmRt;
-  std::vector<Eigen::Isometry3d> candidateSymmRts;
+  Eigen::Isometry3d symmRt; symmRt.setIdentity();
+  std::vector<Eigen::Isometry3d, Eigen::aligned_allocator<Eigen::Isometry3d> > candidateSymmRts;
   std::vector<double>  candidateDists;
 
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
-    
   for( int i = 0; i < mM; ++i ) {
         
     ang = -mAlpha +i*dang;
     s_sample = Eigen::AngleAxisd( ang, Np )*s;
     np = s_sample.cross( Np ); np.normalize();
     
+
     // Store symmetry reference Transformation
     symmRt.linear().col(2) = Np; 
     symmRt.linear().col(1) = s_sample; 
     symmRt.linear().col(0) = np;
-    
+
     for( int j = 0; j < mN; ++j ) {
       
       if( np.dot(v) > -np.dot(v) ) { dir = np; } else { dir = -np; }
       cp = mC + dir*mDj*j;
       symmRt.translation() = cp;
-
       //Set symmetry plane coefficients
       sp << np(0), np(1), np(2), -1*np.dot( cp );
 
@@ -226,21 +225,21 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   delta2_priority = sortIndices( delta2_selected, candidateDists );
   
   int minIndex = delta1_priority[delta2_priority[0]];
-    
-  // Complete pointcloud if required
-  if( _completeCloud ) {
-    _cloud->insert( _cloud->end(), mCandidates[minIndex].begin(),
-		    mCandidates[minIndex].end() );
-  }
-
-  _cloud->width = 1; _cloud->height = _cloud->points.size();
-  printf("Min index: %d \n", minIndex );
 
   // Set symmetry transformation
   symmRt = candidateSymmRts[minIndex];
-
   // Put in symmetry axis
   calculateSymmTf( symmRt, _cloud );
+
+
+  // Complete pointcloud if required
+  // (do this AFTER setting the symmRt and calclating symmTf above)
+  if( _completeCloud ) {
+    _cloud->insert( _cloud->end(), mCandidates[minIndex]->begin(),
+		    mCandidates[minIndex]->end() );
+  }
+
+  _cloud->width = 1; _cloud->height = _cloud->points.size();
 
   return minIndex;
 }
@@ -252,11 +251,10 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 template<typename PointT>
 void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
 					  const PointCloudPtr &_cloud ) {
-  
+
   PointCloudPtr Ps( new PointCloud() );
   Eigen::Affine3f Tcw;
   Tcw = (_Twc.cast<float>()).inverse();
-
   pcl::transformPointCloud( *_cloud, *Ps, Tcw );
 
   pcl::MomentOfInertiaEstimation <PointT> feature_extractor;  
@@ -272,8 +270,8 @@ void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
   mSymmTf.linear() = _Twc.linear();
   mSymmTf.translation() << (double)0.5*(mp.x + Mp.x), 
     (double)0.5*(mp.y + Mp.y), (double)0.5*(mp.z + Mp.z);
-  
-  mSymmTf.translation() = _Twc.linear()*mSymmTf.translation();
+  std::cout << "Middle : "<< mSymmTf.translation().transpose() << std::endl;
+  mSymmTf.translation() = _Twc.linear()*mSymmTf.translation() + _Twc.translation();
 
   std::cout << "mSymmTf transformation: \n" << mSymmTf.matrix() << std::endl;
   std::cout << "Twc: \n" << _Twc.matrix() << std::endl;

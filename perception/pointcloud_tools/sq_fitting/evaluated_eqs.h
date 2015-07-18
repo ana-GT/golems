@@ -16,6 +16,15 @@ enum SQ_FX_TYPES {
   SQ_FX_6 = 5
 };
 
+void error_metric( const SQ_parameters &_par,
+		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+		   double& _e_g, double &_e_r, double &_e_d);
+
+void error_metric( double* p,
+		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+		   double& _e_g, double &_e_r, double &_e_d);
+
+
 /**
  * @class evaluated_sqs
  */
@@ -32,13 +41,6 @@ class evaluated_sqs {
 
 };
 
-void error_metric( const SQ_parameters &_par,
-		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
-		   double& _e_g, double &_e_r, double &_e_d);
-
-void error_metric( double* p,
-		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
-		   double& _e_g, double &_e_r, double &_e_d);
 
 // Radial Error
 double Err_r( const double &a, const double &b, const double &c,

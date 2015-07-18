@@ -6,12 +6,19 @@ include_directories( ${CMAKE_SOURCE_DIR} )
 link_directories( ${PCL_LIBRARY_DIRS} )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
 
+# PCL
+find_package(PCL 1.7 REQUIRED COMPONENTS common search io features)
+include_directories(${PCL_INCLUDE_DIRS})
+link_directories(${PCL_LIBRARY_DIRS})
+add_definitions(${PCL_DEFINITIONS})
+
+
 # OpenCV
 #find_package( OpenCV REQUIRED )
 #include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 add_executable( test_mirror test_mirror.cpp )
-target_link_libraries( test_mirror SQ_fitter mindGapper ${PCL_LIBRARIES} ${CERES_LIBRARIES} ${OpenCV_LIBRARIES} pthread )
+target_link_libraries( test_mirror sq_fitting mindGapper ${PCL_LIBRARIES} ${CERES_LIBRARIES} ${OpenCV_LIBRARIES} pthread )
 set_target_properties( test_mirror PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
@@ -53,10 +60,10 @@ set_target_properties( es_read_tests_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
 #  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
-#add_executable( es_tests_4 es_tests_4.cpp )
-#target_link_libraries( es_tests_4 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )
-#set_target_properties( es_tests_4 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+add_executable( es_tests_4 es_tests_4.cpp )
+target_link_libraries( es_tests_4 evaluated_eqs sq_fitting mindGapper ${PCL_LIBRARIES} levmar ${OpenCV_LIBRARIES})
+set_target_properties( es_tests_4 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable( es_tests_5 es_tests_5.cpp )
 target_link_libraries( es_tests_5 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levmar )

@@ -52,8 +52,8 @@ class SQ_fitter_evaluated {
 			SQ_parameters &_out,
 			double &_error );
 
-  double error_metric( SQ_parameters _par,
-		       const PointCloudPtr &_cloud );
+  double errorM( SQ_parameters _par,
+		 const PointCloudPtr &_cloud );
   void printResults();
   PointCloudPtr getSampledOutput();
   
