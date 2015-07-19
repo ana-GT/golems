@@ -81,7 +81,10 @@ target_link_libraries( es_tests_6 evaluated_eqs sq_fitting ${PCL_LIBRARIES} levm
 set_target_properties( es_tests_6 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-
+add_executable( es_tests_7 es_tests_7.cpp )
+target_link_libraries( es_tests_7 evaluated_eqs sq_fitting mindGapper ${PCL_LIBRARIES} levmar ${OpenCV_LIBRARIES} )
+set_target_properties( es_tests_7 PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 #add_executable( SQ_fitter_test1 SQ_fitter_test1.cpp )
 #target_link_libraries( SQ_fitter_test1 sq_fitting ${PCL_COMMON_LIBRARIES} ${PCL_FILTERS_LIBRARIES}  pthread )

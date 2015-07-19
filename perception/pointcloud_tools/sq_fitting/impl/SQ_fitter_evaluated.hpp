@@ -98,7 +98,8 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
   double s_i; bool fitted; 
   SQ_parameters par_i, par_i_1;
   
-  ds = (smax_ - smin_) / (double) (N_-1);
+  if( N_ == 1 ) { ds = 0; }
+  else { ds = (smax_ - smin_) / (double) (N_-1); }
   
   // 1. Initialize par_in_ with bounding box values
   if( mGotInitApprox ) {
@@ -126,8 +127,7 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
   // Run loop
   par_i = par_in_;
   double eg, er;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr ana; // cloud_
-  error_metric( par_i, ana, eg, er, error_i );
+  error_metric( par_i,cloud_, eg, er, error_i );
   fitted = false;
 
   int i;
@@ -138,9 +138,8 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
     error_i_1 = error_i;
 
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
-    downsample( cloud_,
-		s_i,
-		cloud_i );
+    if( N_ == 1 ) { cloud_i = cloud_; }
+    else { downsample( cloud_, s_i, cloud_i ); }
 
     if( cloud_i->points.size() < 11 ) { continue; }
     

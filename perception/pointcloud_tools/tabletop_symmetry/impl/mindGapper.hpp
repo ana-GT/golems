@@ -203,7 +203,6 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   } // for each candidate
 
   // Select the upper section according to delta_1
- //printf("Num candidates: %d \n", mCandidates.size() );
   std::vector<unsigned int> delta1_priority;
   delta1_priority = sortIndices( mDelta1, candidateDists );
   std::vector<double> delta2_selected;
@@ -270,7 +269,9 @@ void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
   // Dimm
   if( fabs(mp.x) > fabs(Mp.x) ) { mBBDim(0) = fabs(mp.x); } else { mBBDim(0) = fabs(Mp.x); }
   if( fabs(mp.y) > fabs(Mp.y) ) { mBBDim(1) = fabs(mp.y); } else { mBBDim(1) = fabs(Mp.y); }
-  mBBDim(2) = 0.5*fabs(Mp.z - mp.z);
+  printf("Mp: %f %f %f \n", Mp.x, Mp.y, Mp.z);
+  printf("mp: %f %f %f \n", mp.x, mp.y,mp.z);
+  mBBDim(2) = fabs(Mp.z); //fabs(Mp.z - mp.z);
   
   // Tf
   mSymmTf.setIdentity();

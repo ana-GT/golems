@@ -34,10 +34,10 @@ struct output_sq{
 
 // Global variables
 const int gnF = 5;
-double gD = 0.015;
+double gD = 0.01;
 int fx_sq[gnF] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5};
 
-std::string gFilename;
+std::string gFilename, gOutput;
 pcl::PointCloud<pcl::PointXYZ>::Ptr gInput( new pcl::PointCloud<pcl::PointXYZ>() );
 pcl::PointCloud<pcl::PointXYZ>::Ptr gDown( new pcl::PointCloud<pcl::PointXYZ>() );
 output_sq createCase(int i);
@@ -65,11 +65,14 @@ int main( int argc, char* argv[] ) {
   srand (time(NULL));
   
   int v;
-  while( (v=getopt(argc, argv, "n:h")) != -1 ) {
+  while( (v=getopt(argc, argv, "n:o:h")) != -1 ) {
     switch(v) {
     case 'n' : {
       gFilename.assign( optarg );
     } break;
+    case 'o' : {
+      gOutput.assign( optarg );
+   } break;
     case 'h' : {
       printf("Executable to evaluate simple input pointcloud w.r.t. 5 functions \n");
       printf("Usage: ./executable -n input_filename.txt \n");
@@ -82,8 +85,8 @@ int main( int argc, char* argv[] ) {
     printf("Error loading pcd : %s \n", gFilename.c_str() );
     return 0;
   } else {
-    printf("OK loading pcd : %s with %d points \n", gFilename.c_str(), gInput->points.size() ); 
     gDown = downsampling( gInput, gD );
+    printf("OK loading pcd : %s with %d points  and downsampled to %d \n", gFilename.c_str(), gInput->points.size(), gDown->points.size() ); 
   }
 
   struct timespec start, finish;
@@ -114,7 +117,7 @@ int main( int argc, char* argv[] ) {
   // 1. Store name
   char* name = new char[50];
   char inna[50];
-  strcpy( inna, gFilename.c_str() );
+  strcpy( inna, gOutput.c_str() );
   name = strtok( inna, "." );
   for( int i = 0; i < gnF; ++i ) {
 
@@ -152,7 +155,7 @@ output_sq createCase(int i) {
 	
 
     clock_gettime(CLOCK_MONOTONIC, &ts);    
-    es.minimize( gInput, par, er_g, er_r, er_d, fx_sq[i] );
+    es.minimize( gDown, par, er_g, er_r, er_d, fx_sq[i] );
     clock_gettime(CLOCK_MONOTONIC, &tf);
     error_metric( par,gInput, er_g, er_r, er_d );
       
