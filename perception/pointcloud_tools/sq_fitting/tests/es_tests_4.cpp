@@ -36,10 +36,10 @@ int main( int argc, char*argv[] ) {
 
   mindGapper<pcl::PointXYZ> mg;
   std::vector<double> gTableCoeffs(4);
-  gTableCoeffs[0] = -0.0163878;
-  gTableCoeffs[1] = -0.526281;
-  gTableCoeffs[2] = 0.850153;
-  gTableCoeffs[3] = -0.667902;
+  gTableCoeffs[0] = 0.0163878;
+  gTableCoeffs[1] = 0.526281;
+  gTableCoeffs[2] = -0.850153;
+  gTableCoeffs[3] = 0.667902;
 
   mg.setTablePlane( gTableCoeffs );
   mg.setFittingParams();
@@ -53,7 +53,7 @@ int main( int argc, char*argv[] ) {
   *completed = *input;
   mg.reset();
 
-  mg.complete( completed );
+  mg.complete( completed, false );
   printf("Finished completing \n");
   mg.getSymmetryApprox( Tsymm, Bb );
   /*

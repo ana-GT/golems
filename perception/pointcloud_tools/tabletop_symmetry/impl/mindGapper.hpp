@@ -7,7 +7,7 @@
 #include <pcl/common/pca.h>
 #include <pcl/common/centroid.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
-
+#include <pcl/io/pcd_io.h>
 #include "../dt/dt.h"
 
 /** Helpers to improve mask */
@@ -252,6 +252,7 @@ template<typename PointT>
 void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
 					  const PointCloudPtr &_cloud ) {
 
+  pcl::io::savePCDFileASCII( "testOriginal.pcd", *_cloud );  
   PointCloudPtr Ps( new PointCloud() );
   Eigen::Affine3f Tcw;
   Tcw = (_Twc.cast<float>()).inverse();
@@ -262,25 +263,37 @@ void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
   feature_extractor.compute();
   PointT mp, Mp;
   feature_extractor.getAABB (mp, Mp);
-  std::cout <<"Max point: " << Mp.x << ", " << Mp.y << ","<< Mp.z << " -- Min: "<<
-    mp.x << "," << mp.y << ","<< mp.z << std::endl;
+  Eigen::Vector3d dm, dM;
+  dm << fabs(mp.x), fabs(mp.y), fabs(0.5*(Mp.z -mp.z));
+  dM << fabs(Mp.x), fabs(Mp.y), fabs(0.5*(mp.z -Mp.z));
 
+  // Dimm
+  if( fabs(mp.x) > fabs(Mp.x) ) { mBBDim(0) = fabs(mp.x); } else { mBBDim(0) = fabs(Mp.x); }
+  if( fabs(mp.y) > fabs(Mp.y) ) { mBBDim(1) = fabs(mp.y); } else { mBBDim(1) = fabs(Mp.y); }
+  mBBDim(2) = 0.5*fabs(Mp.z - mp.z);
+  
   // Tf
   mSymmTf.setIdentity();
   mSymmTf.linear() = _Twc.linear();
-  mSymmTf.translation() << (double)0.5*(mp.x + Mp.x), 
-    (double)0.5*(mp.y + Mp.y), (double)0.5*(mp.z + Mp.z);
-  std::cout << "Middle : "<< mSymmTf.translation().transpose() << std::endl;
-  mSymmTf.translation() = _Twc.linear()*mSymmTf.translation() + _Twc.translation();
+  mSymmTf.translation() = _Twc.linear()*Eigen::Vector3d(0,0,0.5*(mp.z+Mp.z)) + _Twc.translation();
 
-  std::cout << "mSymmTf transformation: \n" << mSymmTf.matrix() << std::endl;
-  std::cout << "Twc: \n" << _Twc.matrix() << std::endl;
-
-  // Dimm
-  mBBDim << (double)0.5*(Mp.x - mp.x), 
-    (double)0.5*(Mp.y - mp.y), (double)0.5*(Mp.z - mp.z);
+  std::cout << "mBB: \n"<< mBBDim.transpose() << std::endl;
+  std::cout << "mSymmTf: \n"<< mSymmTf.matrix() << std::endl;
+  std::cout << "Translation: "<< mSymmTf.translation()(0)<<","
+	    << mSymmTf.translation()(1)<<","
+	    << mSymmTf.translation()(2)  << std::endl;
+  Eigen::Quaterniond q( mSymmTf.linear() );
+  char command[200];
+  std::cout << "Rotation q: "<< q.x() << ","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
+  sprintf( command, "./visualization_cube_cloud  -x %f -y %f -z %f -r %f -p %f -q %f -n %f -a %f -b %f -c %f \n",
+	  mSymmTf.translation()(0), mSymmTf.translation()(1), mSymmTf.translation()(2),
+	  q.x(), q.y(), q.z(), q.w(),
+	  mBBDim(0), mBBDim(1), mBBDim(2) );
+  system(command);
   
 }
+
+
 
 /**
  * @function getSymmetryApprox

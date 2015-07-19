@@ -64,8 +64,8 @@ Eigen::Matrix4d getPlaneTransform ( pcl::ModelCoefficients coeffs,
     z << 0, 0, up_direction;
   }
   else {
-    //make sure z points "up"
-    if ( z.dot( Eigen::Vector3d(0, 0, up_direction) ) < 0) {
+    //make sure z points "up" (the plane normal and the table must have a > 90 angle, hence the cosine must be negative)
+    if ( z.dot( Eigen::Vector3d(0, 0, up_direction) ) > 0) {
       z = -1.0 * z;
     }
   }
@@ -101,12 +101,12 @@ TabletopSegmentor<PointT>::TabletopSegmentor() {
   y_filter_min_ = -0.6;  y_filter_max_ = 0.6;
   x_filter_min_ = -0.6; x_filter_max_ = 0.6;
 
-  table_obj_height_filter_min_= 0.03;
+  table_obj_height_filter_min_= 0.01;
   table_obj_height_filter_max_= 0.50;
   cluster_distance_ = 0.03;
   min_cluster_size_ = 300;
   processing_frame_ = "";
-  up_direction_ = -1.0;
+  up_direction_ = 1.0;
   table_padding_ = 0.0;
 }
 
@@ -157,7 +157,7 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   n3d_.setSearchMethod (normals_tree_);
 
   // Table model fitting parameters
-  seg_.setDistanceThreshold (0.03);
+  seg_.setDistanceThreshold (0.01);
   seg_.setMaxIterations (10000);
   seg_.setNormalDistanceWeight (0.1);
   seg_.setOptimizeCoefficients (true);
@@ -245,6 +245,29 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
 	    inlier_threshold_ );
     return false;
   }
+
+  pcl::ExtractIndices<PointT> extract;
+  PointCloudPtr tablePointsPtr( new PointCloud );
+  extract.setInputCloud( cloud_downsampled_ptr );
+  extract.setIndices( table_inliers_ptr );
+  extract.setNegative(false);
+  extract.filter( *tablePointsPtr );
+  printf("Saving projected table \n");
+  printf("Should pass here \n");
+  int na = tablePointsPtr->points.size();
+  printf("Size of table: %d \n", na );
+  printf("Should pass here 2 \n");
+  if( na > 0 ) {
+    for( int a = 0; a < na; ++a ) {
+      tablePointsPtr->points[a].r = 255;
+      tablePointsPtr->points[a].g = 255;
+      tablePointsPtr->points[a].b = 255;
+      tablePointsPtr->points[a].a = 255;
+    }
+    pcl::io::savePCDFileASCII( "table_points.pcd", *tablePointsPtr );
+
+  }
+  printf("Should pass here 3 \n");
   
   // Store table's plane coefficients
   mTableCoeffs.resize(4);
@@ -262,8 +285,6 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   // ---[ Estimate the convex hull (not in table frame)
   hull_.setInputCloud (table_projected_ptr);
   hull_.reconstruct (*table_hull_ptr);
-
-  pcl::io::savePCDFile( "tableProjected.pcd", *table_projected_ptr, true );
 
   // Save points in the hull with some points down
   mTable_Points.points.resize(0);

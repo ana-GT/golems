@@ -17,6 +17,12 @@ add_definitions(${PCL_DEFINITIONS})
 #find_package( OpenCV REQUIRED )
 #include_directories( ${OpenCV_INCLUDE_DIRS} )
 
+add_executable ( visualization_cube_cloud visualization_cube_cloud.cpp)
+target_link_libraries(visualization_cube_cloud ${PCL_LIBRARIES})
+set_target_properties( visualization_cube_cloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
 add_executable( test_mirror test_mirror.cpp )
 target_link_libraries( test_mirror sq_fitting mindGapper ${PCL_LIBRARIES} ${CERES_LIBRARIES} ${OpenCV_LIBRARIES} pthread )
 set_target_properties( test_mirror PROPERTIES RUNTIME_OUTPUT_DIRECTORY
