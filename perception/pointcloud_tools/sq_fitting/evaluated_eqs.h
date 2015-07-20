@@ -16,14 +16,19 @@ enum SQ_FX_TYPES {
   SQ_FX_6 = 5
 };
 
+template<typename PointT> 
 void error_metric( const SQ_parameters &_par,
-		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+		   const typename pcl::PointCloud<PointT>::Ptr &_cloud,
 		   double& _e_g, double &_e_r, double &_e_d);
 
+template<typename PointT> 
 void error_metric( double* p,
-		   const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+		   const typename pcl::PointCloud<PointT>::Ptr &_cloud,
 		   double& _e_g, double &_e_r, double &_e_d);
 
+template<typename PointT> 
+double error_metric_g( const SQ_parameters &_par,
+		       const typename pcl::PointCloud<PointT>::Ptr &_cloud ); 
 
 /**
  * @class evaluated_sqs
@@ -173,4 +178,97 @@ void f6_add( double* p, double* x,
 	     int m, int n, void* data );
 void J6_add( double* p, double* jac,
 	     int m, int n, void* data );
+
+
+////////////////////////////////////////
+
+/**
+ * @function error_metric
+ * @brief Errors goodness-of-fit, Radial distance, Duncan's stopping (GoF^2)
+ */
+template<typename PointT> 
+void error_metric( const SQ_parameters &_par,
+		   const typename pcl::PointCloud<PointT>::Ptr &_cloud,
+		   double& _e_g, double &_e_r, double &_e_d ) {
+  
+  double* p = new double[11];
+  p[0] = _par.dim[0];   p[1] = _par.dim[1];   p[2] = _par.dim[2];
+  p[3] = _par.e[0];   p[4] = _par.e[1];
+  p[5] = _par.trans[0]; p[6] = _par.trans[1];   p[7] = _par.trans[2];
+  p[8] = _par.rot[0]; p[9] = _par.rot[1];   p[10] = _par.rot[2];
+  
+  return error_metric<PointT>( p, _cloud, _e_g, _e_r, _e_d );
+}
+
+/**
+ * @brief
+ */
+template<typename PointT> 
+void error_metric( double* p,
+		   const typename pcl::PointCloud<PointT>::Ptr &_cloud,
+		   double& _e_g, double &_e_r, double &_e_d) {
+
+  _e_g = 0;
+  _e_r = 0;
+  _e_d = 0;
+  
+  typename pcl::PointCloud<PointT>::iterator it;
+  for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
+    _e_g += Err_g( p[0], p[1], p[2],
+		   p[3], p[4],
+		   p[5], p[6], p[7],
+		   p[8], p[9], p[10],
+		   (*it).x, (*it).y, (*it).z );
+
+    _e_r += Err_r( p[0], p[1], p[2],
+		   p[3], p[4],
+		   p[5], p[6], p[7],
+		   p[8], p[9], p[10],
+		   (*it).x, (*it).y, (*it).z );
+
+    
+    _e_d += Err_d( p[0], p[1], p[2],
+		   p[3], p[4],
+		   p[5], p[6], p[7],
+		   p[8], p[9], p[10],
+		   (*it).x, (*it).y, (*it).z );
+    
+  }
+ 
+  _e_g /= _cloud->points.size();
+  _e_r /= _cloud->points.size();
+  _e_d /= _cloud->points.size(); 
+}
+
+/**
+ * @brief Get goodness-of-fit error for a pointcloud
+ */
+template<typename PointT> 
+double error_metric_g( const SQ_parameters &_par,
+		       const typename pcl::PointCloud<PointT>::Ptr &_cloud ) {
+
+  double* p = new double[11];
+  p[0] = _par.dim[0];   p[1] = _par.dim[1];   p[2] = _par.dim[2];
+  p[3] = _par.e[0];   p[4] = _par.e[1];
+  p[5] = _par.trans[0]; p[6] = _par.trans[1];   p[7] = _par.trans[2];
+  p[8] = _par.rot[0]; p[9] = _par.rot[1];   p[10] = _par.rot[2];
+
+  double er = 0;
+  typename pcl::PointCloud<PointT>::iterator it;
+  for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
+
+    er += Err_g( p[0], p[1], p[2],
+		 p[3], p[4],
+		 p[5], p[6], p[7],
+		 p[8], p[9], p[10],
+		 (*it).x, (*it).y, (*it).z );
+    
+  }
+ 
+  er /= _cloud->points.size();
+
+  return er;
+}
+
+
 

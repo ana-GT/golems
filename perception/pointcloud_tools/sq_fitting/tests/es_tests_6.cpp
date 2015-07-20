@@ -19,6 +19,7 @@
 #include <future>
 #include <thread>
 
+typedef pcl::PointXYZ PointT;
 
 /**
  * @brief Structure used to store output lines
@@ -38,12 +39,12 @@ double gD = 0.01;
 int fx_sq[gnF] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5};
 
 std::string gFilename, gOutput;
-pcl::PointCloud<pcl::PointXYZ>::Ptr gInput( new pcl::PointCloud<pcl::PointXYZ>() );
-pcl::PointCloud<pcl::PointXYZ>::Ptr gDown( new pcl::PointCloud<pcl::PointXYZ>() );
+pcl::PointCloud<PointT>::Ptr gInput( new pcl::PointCloud<PointT>() );
+pcl::PointCloud<PointT>::Ptr gDown( new pcl::PointCloud<PointT>() );
 output_sq createCase(int i);
 
 // Functions to get partial and noisy versions of original pointcloud
-pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_input,
+pcl::PointCloud<PointT>::Ptr downsampling( const pcl::PointCloud<PointT>::Ptr &_input,
 						  const double &_voxelSize );
 
 // Global variables to generate noise
@@ -81,7 +82,7 @@ int main( int argc, char* argv[] ) {
     } // switch end
   }
 
-  if( pcl::io::loadPCDFile<pcl::PointXYZ> (gFilename, *gInput) == -1) {
+  if( pcl::io::loadPCDFile<PointT> (gFilename, *gInput) == -1) {
     printf("Error loading pcd : %s \n", gFilename.c_str() );
     return 0;
   } else {
@@ -123,7 +124,7 @@ int main( int argc, char* argv[] ) {
 
     char iname[60];
     sprintf( iname, "res/%s_%d.pcd", name, i );
-    pcl::PointCloud<pcl::PointXYZ>::Ptr sample( new pcl::PointCloud<pcl::PointXYZ>() );
+    pcl::PointCloud<PointT>::Ptr sample( new pcl::PointCloud<PointT>() );
     sample = sampleSQ_uniform( rs[i].par );
     pcl::io::savePCDFileASCII ( iname, *sample);
 
@@ -157,7 +158,7 @@ output_sq createCase(int i) {
     clock_gettime(CLOCK_MONOTONIC, &ts);    
     es.minimize( gDown, par, er_g, er_r, er_d, fx_sq[i] );
     clock_gettime(CLOCK_MONOTONIC, &tf);
-    error_metric( par,gInput, er_g, er_r, er_d );
+    error_metric<PointT>( par,gInput, er_g, er_r, er_d );
       
     elapsed = (tf.tv_sec - ts.tv_sec);
     elapsed += (tf.tv_nsec - ts.tv_nsec) / 1000000000.0;
@@ -174,13 +175,13 @@ output_sq createCase(int i) {
 /**
  * @function downsampling
  */
-pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_input,
+pcl::PointCloud<PointT>::Ptr downsampling( const pcl::PointCloud<PointT>::Ptr &_input,
 						  const double &_voxelSize ) {
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<PointT>::Ptr cloud_downsampled( new pcl::PointCloud<PointT>() );
   
   // Create the filtering object
-  pcl::VoxelGrid< pcl::PointXYZ > downsampler;
+  pcl::VoxelGrid< PointT > downsampler;
   // Set input cloud
   downsampler.setInputCloud( _input );
   // Set size of voxel

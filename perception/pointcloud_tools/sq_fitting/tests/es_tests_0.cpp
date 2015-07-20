@@ -11,11 +11,13 @@ char* fx_names[6] = { "Radial", "Solina", "Ichim", "Chevalier", "F5", "F6"};
 int fx_sq[6] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5, SQ_FX_6 };
 const double gDev = 0.0025;
 
+typedef pcl::PointXYZ PointT;
+
 // Functions to get partial and noisy versions of original pointcloud
-pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_input,
+pcl::PointCloud<PointT>::Ptr downsampling( const pcl::PointCloud<PointT>::Ptr &_input,
 						  const double &_voxelSize );
-pcl::PointCloud<pcl::PointXYZ>::Ptr cut_cloud( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud );
-pcl::PointCloud<pcl::PointXYZ>::Ptr get_noisy( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+pcl::PointCloud<PointT>::Ptr cut_cloud( const pcl::PointCloud<PointT>::Ptr &_cloud );
+pcl::PointCloud<PointT>::Ptr get_noisy( const pcl::PointCloud<PointT>::Ptr &_cloud,
 					       const double &_dev );
 double getRand( const double &_minVal, const double &_maxVal );
 
@@ -103,8 +105,8 @@ int main( int argc, char*argv[] ) {
   }
   
   
-  pcl::PointCloud<pcl::PointXYZ>::Ptr input( new pcl::PointCloud<pcl::PointXYZ>() );
-  pcl::PointCloud<pcl::PointXYZ>::Ptr down( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<PointT>::Ptr input( new pcl::PointCloud<PointT>() );
+  pcl::PointCloud<PointT>::Ptr down( new pcl::PointCloud<PointT>() );
 
   SQ_parameters par, base;
   double er_g, er_r, er_d, er_v;
@@ -115,7 +117,7 @@ int main( int argc, char*argv[] ) {
   par.rot[0] = ra; par.rot[1] = pa; par.rot[2] = ya;
   base = par;
 
-  std::vector<pcl::PointCloud<pcl::PointXYZ>::Ptr> testCloud(4);
+  std::vector<pcl::PointCloud<PointT>::Ptr> testCloud(4);
   
   input = sampleSQ_uniform( par );
   if( gD == 0 ) { down = input; }
@@ -140,7 +142,7 @@ int main( int argc, char*argv[] ) {
       tf = clock();
       dt = (tf-ts) / (double) CLOCKS_PER_SEC;
 
-      error_metric( par, input, er_g, er_r, er_d );
+      error_metric<PointT>( par, input, er_g, er_r, er_d );
       vc =  volSQ(par.dim[0], par.dim[1], par.dim[2], par.e[0], par.e[1]);
       vr = volSQ(base.dim[0],base.dim[1],base.dim[2],  base.e[0], base.e[1] );
       er_v = (vc - vr)/vr*100.0;
@@ -159,13 +161,13 @@ int main( int argc, char*argv[] ) {
 /**
  * @function downsampling
  */
-pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_input,
+pcl::PointCloud<PointT>::Ptr downsampling( const pcl::PointCloud<PointT>::Ptr &_input,
 						  const double &_voxelSize ) {
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<PointT>::Ptr cloud_downsampled( new pcl::PointCloud<PointT>() );
   
   // Create the filtering object
-  pcl::VoxelGrid< pcl::PointXYZ > downsampler;
+  pcl::VoxelGrid< PointT > downsampler;
   // Set input cloud
   downsampler.setInputCloud( _input );
   // Set size of voxel
@@ -180,9 +182,9 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::Poi
  * @function cut_cloud
  * @brief Slice cloud by half, leaving only the "visible"points (points towards the eye point (0,0,0))
  */
-pcl::PointCloud<pcl::PointXYZ>::Ptr cut_cloud( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud ) {
+pcl::PointCloud<PointT>::Ptr cut_cloud( const pcl::PointCloud<PointT>::Ptr &_cloud ) {
   
-  pcl::PointCloud<pcl::PointXYZ>::Ptr output( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<PointT>::Ptr output( new pcl::PointCloud<PointT>() );
   
   // Get eigenvectors and centroid of pointcloud
   Eigen::Vector4d c;
@@ -196,11 +198,11 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cut_cloud( const pcl::PointCloud<pcl::PointX
   d = -( N(0)*c(0) + N(1)*c(1) + N(2)*c(2) );
   
   // Cut it
-  for( pcl::PointCloud<pcl::PointXYZ>::iterator it = _cloud->begin();
+  for( pcl::PointCloud<PointT>::iterator it = _cloud->begin();
 	   it != _cloud->end(); it++ ) {
     
     if( (N(0)*((*it).x) + N(1)*((*it).y) + N(2)*((*it).z) + d) > 0 ) {
-      pcl::PointXYZ p;
+      PointT p;
       p = *it;
       output->points.push_back( p );
     }
@@ -215,16 +217,16 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr cut_cloud( const pcl::PointCloud<pcl::PointX
 /**
  * @function get_noisy
  */
-pcl::PointCloud<pcl::PointXYZ>::Ptr get_noisy( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
+pcl::PointCloud<PointT>::Ptr get_noisy( const pcl::PointCloud<PointT>::Ptr &_cloud,
 					       const double &_dev ) {
   
-  pcl::PointCloud<pcl::PointXYZ>::Ptr output( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<PointT>::Ptr output( new pcl::PointCloud<PointT>() );
   std::normal_distribution<double> d(0,_dev);
   
   // Make it dirty
-  for( pcl::PointCloud<pcl::PointXYZ>::iterator it = _cloud->begin();
+  for( pcl::PointCloud<PointT>::iterator it = _cloud->begin();
        it != _cloud->end(); it++ ) {
-    pcl::PointXYZ p;
+    PointT p;
     p.x = (*it).x + d(gen);
     p.y = (*it).y + d(gen);
     p.z = (*it).z + d(gen);

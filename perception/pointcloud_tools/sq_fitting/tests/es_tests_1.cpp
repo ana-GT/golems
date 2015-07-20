@@ -19,6 +19,7 @@
 #include <future>
 #include <thread>
 
+typedef pcl::PointXYZ PointT;
 
 /**
  * @brief Structure used to store output lines
@@ -43,7 +44,7 @@ int gT = 50;
 std::string gFilename;
 
 // Functions to get partial and noisy versions of original pointcloud
-pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_input,
+pcl::PointCloud<PointT>::Ptr downsampling( const pcl::PointCloud<PointT>::Ptr &_input,
 						  const double &_voxelSize );
 
 // Global variables to generate noise
@@ -153,8 +154,8 @@ std::vector<output_sq> createCases(int _id ) {
 std::vector<output_sq> createCase() {
 
   std::vector<output_sq> output;
-  pcl::PointCloud<pcl::PointXYZ>::Ptr input( new pcl::PointCloud<pcl::PointXYZ>() );
-  pcl::PointCloud<pcl::PointXYZ>::Ptr down( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<PointT>::Ptr input( new pcl::PointCloud<PointT>() );
+  pcl::PointCloud<PointT>::Ptr down( new pcl::PointCloud<PointT>() );
   
   SQ_parameters par, par_res;
   double er_g, er_r, er_d;
@@ -206,7 +207,7 @@ std::vector<output_sq> createCase() {
     clock_gettime(CLOCK_MONOTONIC, &ts);    
     es.minimize( down, par_res, er_g, er_r, er_d, SQ_FX_RADIAL );
     clock_gettime(CLOCK_MONOTONIC, &tf);
-    error_metric( par_res,input, er_g, er_r, er_d );
+    error_metric<PointT>( par_res,input, er_g, er_r, er_d );
       
     elapsed = (tf.tv_sec - ts.tv_sec);
     elapsed += (tf.tv_nsec - ts.tv_nsec) / 1000000000.0;
@@ -230,13 +231,13 @@ std::vector<output_sq> createCase() {
 /**
  * @function downsampling
  */
-pcl::PointCloud<pcl::PointXYZ>::Ptr downsampling( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_input,
+pcl::PointCloud<PointT>::Ptr downsampling( const pcl::PointCloud<PointT>::Ptr &_input,
 						  const double &_voxelSize ) {
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_downsampled( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<PointT>::Ptr cloud_downsampled( new pcl::PointCloud<PointT>() );
   
   // Create the filtering object
-  pcl::VoxelGrid< pcl::PointXYZ > downsampler;
+  pcl::VoxelGrid< PointT > downsampler;
   // Set input cloud
   downsampler.setInputCloud( _input );
   // Set size of voxel

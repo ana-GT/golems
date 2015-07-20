@@ -100,7 +100,6 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;
   v = mC; // viewing vector from Kinect origin (0,0,0) to centroid of projected cloud (mC)
-  std::cout << "Centroid: "<< mC.transpose() << std::endl;
   // s: Line which is the intersection between symmetry and table planes
   if( abs(v.dot(mEa)) <= abs(v.dot(mEb)) ) { s = mEa; } 
   else { s = mEb; }
@@ -251,7 +250,6 @@ template<typename PointT>
 void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
 					  const PointCloudPtr &_cloud ) {
 
-  pcl::io::savePCDFileASCII( "testOriginal.pcd", *_cloud );  
   PointCloudPtr Ps( new PointCloud() );
   Eigen::Affine3f Tcw;
   Tcw = (_Twc.cast<float>()).inverse();
@@ -262,36 +260,16 @@ void mindGapper<PointT>::calculateSymmTf( const Eigen::Isometry3d &_Twc,
   feature_extractor.compute();
   PointT mp, Mp;
   feature_extractor.getAABB (mp, Mp);
-  Eigen::Vector3d dm, dM;
-  dm << fabs(mp.x), fabs(mp.y), fabs(0.5*(Mp.z -mp.z));
-  dM << fabs(Mp.x), fabs(Mp.y), fabs(0.5*(mp.z -Mp.z));
 
   // Dimm
   if( fabs(mp.x) > fabs(Mp.x) ) { mBBDim(0) = fabs(mp.x); } else { mBBDim(0) = fabs(Mp.x); }
   if( fabs(mp.y) > fabs(Mp.y) ) { mBBDim(1) = fabs(mp.y); } else { mBBDim(1) = fabs(Mp.y); }
-  printf("Mp: %f %f %f \n", Mp.x, Mp.y, Mp.z);
-  printf("mp: %f %f %f \n", mp.x, mp.y,mp.z);
-  mBBDim(2) = fabs(Mp.z); //fabs(Mp.z - mp.z);
+  mBBDim(2) = 0.5*Mp.z; // Z should always be pointing up. no need to fabs
   
   // Tf
   mSymmTf.setIdentity();
   mSymmTf.linear() = _Twc.linear();
-  mSymmTf.translation() = _Twc.linear()*Eigen::Vector3d(0,0,0.5*(mp.z+Mp.z)) + _Twc.translation();
-
-  std::cout << "mBB: \n"<< mBBDim.transpose() << std::endl;
-  std::cout << "mSymmTf: \n"<< mSymmTf.matrix() << std::endl;
-  std::cout << "Translation: "<< mSymmTf.translation()(0)<<","
-	    << mSymmTf.translation()(1)<<","
-	    << mSymmTf.translation()(2)  << std::endl;
-  Eigen::Quaterniond q( mSymmTf.linear() );
-  char command[200];
-  std::cout << "Rotation q: "<< q.x() << ","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
-  sprintf( command, "./visualization_cube_cloud  -x %f -y %f -z %f -r %f -p %f -q %f -n %f -a %f -b %f -c %f \n",
-	  mSymmTf.translation()(0), mSymmTf.translation()(1), mSymmTf.translation()(2),
-	  q.x(), q.y(), q.z(), q.w(),
-	  mBBDim(0), mBBDim(1), mBBDim(2) );
-  system(command);
-  
+  mSymmTf.translation() = _Twc.linear()*Eigen::Vector3d(0,0,0.5*Mp.z) + _Twc.translation();  
 }
 
 

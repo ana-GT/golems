@@ -44,7 +44,7 @@ void getClustersFromPointCloud2( const pcl::PointCloud<PointT> &_cloud_objects,
  * @function getPlaneTransform
  * @brief Assumes plane coefficients are of the form ax+by+cz+d=0, normalized
 */
-Eigen::Matrix4d getPlaneTransform ( pcl::ModelCoefficients coeffs,
+Eigen::Matrix4d getPlaneTransform ( pcl::ModelCoefficients &coeffs,
 				    double up_direction,
 				    bool flatten_plane ) {
   Eigen::Matrix4d tf = Eigen::Matrix4d::Identity();
@@ -67,6 +67,8 @@ Eigen::Matrix4d getPlaneTransform ( pcl::ModelCoefficients coeffs,
     //make sure z points "up" (the plane normal and the table must have a > 90 angle, hence the cosine must be negative)
     if ( z.dot( Eigen::Vector3d(0, 0, up_direction) ) > 0) {
       z = -1.0 * z;
+      printf("Changing sign \n");
+      coeffs.values[0]*= -1; coeffs.values[1]*= -1; coeffs.values[2]*= -1; coeffs.values[3]*= -1;
     }
   }
   //try to align the x axis with the x axis of the original frame
@@ -252,11 +254,7 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   extract.setIndices( table_inliers_ptr );
   extract.setNegative(false);
   extract.filter( *tablePointsPtr );
-  printf("Saving projected table \n");
-  printf("Should pass here \n");
   int na = tablePointsPtr->points.size();
-  printf("Size of table: %d \n", na );
-  printf("Should pass here 2 \n");
   if( na > 0 ) {
     for( int a = 0; a < na; ++a ) {
       tablePointsPtr->points[a].r = 255;
@@ -267,11 +265,7 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
     pcl::io::savePCDFileASCII( "table_points.pcd", *tablePointsPtr );
 
   }
-  printf("Should pass here 3 \n");
   
-  // Store table's plane coefficients
-  mTableCoeffs.resize(4);
-  for( int i = 0; i < 4; ++i ) { mTableCoeffs[i] = table_coefficients_ptr->values[i]; }
 
   /********** Step 4 : Project the table inliers on the table *********/
   PointCloudPtr table_projected_ptr (new PointCloud);
@@ -293,6 +287,10 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   }
   mTable_Points.width = 1; mTable_Points.height = mTable_Points.points.size();
   
+  // Store table's plane coefficients (after calling getPlaneTransform! because here we check if a sign change is needed)
+  mTableCoeffs.resize(4);
+  for( int i = 0; i < 4; ++i ) { mTableCoeffs[i] = table_coefficients_ptr->values[i]; }
+
   /******* Step 5 : Get the objects on top of the table ******/
   pcl::PointIndices cloud_object_indices;
   prism_.setInputCloud (cloud_filtered_ptr);

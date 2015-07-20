@@ -13,10 +13,12 @@ int main( int argc, char* argv[] ) {
   Eigen::Vector3f trans;
   Eigen::Quaternionf q;
   double a, b, c;
-  
+  std::string gOriginalFile;  
+
   int v;
-  while( (v=getopt(argc,argv,"x:y:z:r:p:q:n:a:b:c:h")) != -1 ) {
+  while( (v=getopt(argc,argv,"x:y:z:r:p:q:n:a:b:c:f:h")) != -1 ) {
   switch(v) {
+  case 'f': { gOriginalFile.assign(optarg); } break;
   case 'x': { trans(0) = atof(optarg); } break;
   case 'y': { trans(1) = atof(optarg); } break;
   case 'z': { trans(2) = atof(optarg); } break;
@@ -35,13 +37,16 @@ int main( int argc, char* argv[] ) {
   viewer->initCameraParameters ();
   viewer->addCoordinateSystem(0.2);
   // Add pointcloud
-  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ>() );
-  pcl::io::loadPCDFile<pcl::PointXYZ> ("testOriginal.pcd", *cloud);
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZRGBA>() );
+  pcl::PointCloud<pcl::PointXYZRGBA>::Ptr table( new pcl::PointCloud<pcl::PointXYZRGBA>() );
+  pcl::io::loadPCDFile<pcl::PointXYZRGBA> (gOriginalFile, *cloud);
+  pcl::io::loadPCDFile<pcl::PointXYZRGBA> ("data_july_18/table_points.pcd", *table);
   viewer->addPointCloud( cloud, "cloud_original");
+  viewer->addPointCloud( table, "table");
   // Add point
   pcl::PointXYZ cp;
   cp.x = trans(0); cp.y = trans(1); cp.z = trans(2);
-  viewer->addSphere( cp, 0.02, "sphere" );
+  viewer->addSphere( cp, 0.005, "sphere" );
   // Add cube
   viewer->addCube( trans, q, 2*a,2*b,2*c);
 

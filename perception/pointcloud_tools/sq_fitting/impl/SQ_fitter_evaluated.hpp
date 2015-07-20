@@ -127,7 +127,7 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
   // Run loop
   par_i = par_in_;
   double eg, er;
-  error_metric( par_i,cloud_, eg, er, error_i );
+  error_metric<PointT>( par_i,cloud_, eg, er, error_i );
   fitted = false;
 
   int i;
@@ -148,17 +148,18 @@ bool SQ_fitter_evaluated<PointT>::fit( const int &_type,
 	      par_i_1,
 	      par_i,
 	      error_i );
-    
+
     // [CONDITION]
     double de = (error_i_1 - error_i);
-    if(  de < thresh_ && i >=2  ) {
+
+    if(  fabs(de) < thresh_   ) {
       fitted = true;
       break;
+
     } 
 
   }
 
-  printf("Number of iterations: %d \n", i);
   par_out_ = par_i;
 
   return fitted;
@@ -392,7 +393,7 @@ bool SQ_fitter_evaluated<PointT>::minimize( const int &_type,
   
   // Return status and goodness-of-fitness error
   double eg, er;
-  error_metric( _out, cloud_, eg, er, _error );
+  error_metric<PointT>( _out, cloud_, eg, er, _error );
   
   // If stopped by invalid (TODO: Add other reasons)
   if( info[6] == 7 ) {

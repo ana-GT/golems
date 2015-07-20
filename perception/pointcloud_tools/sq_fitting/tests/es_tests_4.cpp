@@ -17,7 +17,7 @@ std::string gInput, gOutput;
 int main( int argc, char*argv[] ) {
 
   int v;
-  while( (v=getopt(argc, argv, "n:o:")) != -1 ) {
+  while( (v=getopt(argc, argv, "n:o:h")) != -1 ) {
     switch(v) {
 
     case 'n' : {
@@ -26,7 +26,10 @@ int main( int argc, char*argv[] ) {
     case 'o' : {
       gOutput = std::string(optarg);
     } break;
-
+    case 'h': {
+      printf("Usage: %s -n input_pcd -o output_data \n", argv[0]);
+      return 0;
+    } break;
     } // switch end
   }
   
@@ -56,6 +59,22 @@ int main( int argc, char*argv[] ) {
   mg.complete( completed, false );
   printf("Finished completing \n");
   mg.getSymmetryApprox( Tsymm, Bb );
+
+  std::cout << "mBB: \n"<< Bb.transpose() << std::endl;
+  std::cout << "mSymmTf: \n"<< Tsymm.matrix() << std::endl;
+  std::cout << "Translation: "<< Tsymm.translation()(0)<<","
+	    << Tsymm.translation()(1)<<","
+	    << Tsymm.translation()(2)  << std::endl;
+  Eigen::Quaterniond q( Tsymm.linear() );
+  char command[200];
+  std::cout << "Rotation q: "<< q.x() << ","<<q.y()<<","<<q.z()<<","<<q.w()<<std::endl;
+  sprintf( command, "./visualization_cube_cloud -f %s -x %f -y %f -z %f -r %f -p %f -q %f -n %f -a %f -b %f -c %f \n",
+          gInput.c_str(),
+	  Tsymm.translation()(0), Tsymm.translation()(1), Tsymm.translation()(2),
+	  q.x(), q.y(), q.z(), q.w(),
+	  Bb(0), Bb(1), Bb(2) );
+  system(command);
+
   /*
   clock_t ts, tf; double dt;
   SQ_fitter_evaluated<pcl::PointXYZ> sfe;
