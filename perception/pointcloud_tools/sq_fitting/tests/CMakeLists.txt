@@ -22,6 +22,10 @@ target_link_libraries(get_error_data sq_fitting ${PCL_LIBRARIES} )
 set_target_properties( get_error_data PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable ( get_prioritized_error_data get_prioritized_error_data.cpp)
+target_link_libraries(get_prioritized_error_data sq_fitting ${PCL_LIBRARIES} )
+set_target_properties( get_prioritized_error_data PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable ( draw_comparative_data draw_comparative_data.cpp)
 target_link_libraries(draw_comparative_data sq_fitting ${PCL_LIBRARIES} )

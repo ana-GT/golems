@@ -10,6 +10,7 @@
 char* fx_names[6] = { "Radial", "Solina", "Ichim", "Chevalier", "F5", "F6"};
 int fx_sq[6] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5, SQ_FX_6 };
 const double gDev = 0.0025;
+double gD = 0.01;
 
 typedef pcl::PointXYZ PointT;
 
@@ -40,7 +41,6 @@ double volSQ( double a, double b, double c, double e1, double e2 ) {
 // Global variables to generate noise
 std::random_device rd;
 std::mt19937 gen(rd());
-double gD;
 
 /**
  * @function main
@@ -54,15 +54,14 @@ int main( int argc, char*argv[] ) {
   double e2 = 0.75; 
   double px = 0.1; double py = 0.2; double pz = 0.4;
   double ra = 0.4; double pa = -0.3; double ya = 0.1;
-  gD = 0.0; // Downsampling
   int N = 50;
   int v;
   
-  while( (v=getopt(argc, argv, "n:a:b:c:e:f:x:y:z:r:p:d:h")) != -1 ) {
+  while( (v=getopt(argc, argv, "n:a:b:c:e:f:x:y:z:r:p:q:d:h")) != -1 ) {
     switch(v) { 
 
     case 'h' : {
-      printf("Syntax: ./executable -a -b -c -e -f -x -y -z -r -p -d DOWNSAMPLE_STEP \n");
+      printf("Syntax: ./executable -a -b -c -e -f -x -y -z -r -p -q -d DOWNSAMPLE_STEP \n");
       return 0;
     } break;
     case 'a' : {
@@ -98,6 +97,9 @@ int main( int argc, char*argv[] ) {
     case 'p' : {
       pa = atof(optarg);
     } break;
+    case 'q': {
+       ya = atof(optarg); 
+    } break;
     case 'd' : {
      gD = atof(optarg);
     } break;
@@ -127,6 +129,9 @@ int main( int argc, char*argv[] ) {
   testCloud[2] = cut_cloud( testCloud[0] );
   testCloud[3] = cut_cloud( testCloud[1] );
 
+       char basename[100]; sprintf( basename, "base.pcd" );
+       pcl::io::savePCDFileASCII (basename, *input);
+
   
   printf("Size of real input: %d \n", input->points.size() );
   printf("Size of input to minimization: %d \n", down->points.size() );
@@ -134,7 +139,7 @@ int main( int argc, char*argv[] ) {
   clock_t ts, tf; double dt;
   evaluated_sqs es;
 
-  for( int i = 0; i < 6; ++i ) {
+  for( int i = 0; i < 1; ++i ) {
     printf( "Function: %s \n", fx_names[i] );
     for( int j = 0; j < 4; ++j ) {
       ts = clock();
@@ -147,6 +152,11 @@ int main( int argc, char*argv[] ) {
       vr = volSQ(base.dim[0],base.dim[1],base.dim[2],  base.e[0], base.e[1] );
       er_v = (vc - vr)/vr*100.0;
       
+      pcl::PointCloud<PointT>::Ptr output_p( new pcl::PointCloud<PointT>() );
+       output_p = sampleSQ_uniform( par );
+       char outputname[100]; sprintf( outputname, "output_%d.pcd", j );
+       pcl::io::savePCDFileASCII (outputname, *output_p);
+
       printf("Dim: %f %f %f \t e: %f %f \t t: %f \t er_g: %f er_r: %f er_d: %f er_v: %f \% \n",
 	     par.dim[0], par.dim[1], par.dim[2],
 	     par.e[0], par.e[1], dt,
