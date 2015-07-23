@@ -10,3 +10,12 @@ plot "output_time.txt" using 1:2 with linespoints lw 5  title "Radial", "output_
 plot "output_radial.txt" using 1:2 with linespoints lw 5   title "Radial", "output_radial.txt" using 1:3 with linespoints lw 5   title "Solina","output_radial.txt" using 1:4 with linespoints lw 5    title "Ichim", "output_radial.txt" using 1:5 with linespoints lw 5   title "Chevalier", "output_radial.txt" using 1:6 with linespoints lw 5  title "F5"
 
 plot "output_goodness.txt" using 1:2 with linespoints lw 5   title "Radial", "output_goodness.txt" using 1:3 with linespoints lw 5   title "Solina","output_goodness.txt" using 1:4 with linespoints lw 5    title "Ichim", "output_goodness.txt" using 1:5 with linespoints lw 5   title "Chevalier", "output_goodness.txt" using 1:6 with linespoints lw 5  title "F5"
+
+
+# Hier
+
+plot "output_time_hier.txt" using 1:2 with linespoints lw 5  title "Radial", "output_time_hier.txt" using 1:3 with linespoints lw 5  title "Solina","output_time_hier.txt" using 1:4 with linespoints lw 5   title "Ichim", "output_time_hier.txt" using 1:5 with linespoints lw 5   title "Chevalier", "output_time_hier.txt" using 1:6 with linespoints lw 5   title "F5"
+
+plot "output_radial_hier.txt" using 1:2 with linespoints lw 5   title "Radial", "output_radial_hier.txt" using 1:3 with linespoints lw 5   title "Solina","output_radial_hier.txt" using 1:4 with linespoints lw 5    title "Ichim", "output_radial_hier.txt" using 1:5 with linespoints lw 5   title "Chevalier", "output_radial_hier.txt" using 1:6 with linespoints lw 5  title "F5"
+
+plot "output_goodness_hier.txt" using 1:2 with linespoints lw 5   title "Radial", "output_goodness_hier.txt" using 1:3 with linespoints lw 5   title "Solina","output_goodness_hier.txt" using 1:4 with linespoints lw 5    title "Ichim", "output_goodness_hier.txt" using 1:5 with linespoints lw 5   title "Chevalier", "output_goodness_hier.txt" using 1:6 with linespoints lw 5  title "F5"

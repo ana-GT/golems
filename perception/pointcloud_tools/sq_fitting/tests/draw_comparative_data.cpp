@@ -23,8 +23,8 @@ char* fx_names[gnF] = { "Radial", "Solina", "Ichim", "Chevalier", "F5"};
 
 bool regularFlag = true;
 std::string gGroupName;
-//std::string datapath("/home/ana/Research/golems/bin/data_july_18");
-std::string datapath("/media/ana/ICRA_2015/data_july_18");
+std::string datapath("/home/ana/Research/golems/bin/data_july_18");
+//std::string datapath("/media/ana/ICRA_2015/data_july_18");
 int fx = 0;
 
 int main( int argc, char* argv[] ) {

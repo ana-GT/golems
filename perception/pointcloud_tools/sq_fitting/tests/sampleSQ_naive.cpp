@@ -97,13 +97,21 @@ int main( int argc, char* argv[] ) {
     std::cout <<"\t ** Sampled SQ Information: **"<< std::endl;
     printParamsInfo( par );
 
-    // Generate samples
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud( new pcl::PointCloud<pcl::PointXYZ>() );
-    cloud = sampleSQ_naive( par );
-    
+    // Generate naive
+    pcl::PointCloud<pcl::PointXYZ>::Ptr naive( new pcl::PointCloud<pcl::PointXYZ>() );
+    naive = sampleSQ_naive( par );
+    // 
+    pcl::PointCloud<pcl::PointXYZ>::Ptr uniform( new pcl::PointCloud<pcl::PointXYZ>() );    
+    uniform = sampleSQ_uniform( par );
+
     // Save
-    pcl::io::savePCDFileASCII( filename, *cloud );        
-    std::cout <<"\t [*] Saved "<< filename  << std::endl;
+    char filename_naive[200];
+    char filename_uniform[200];
+    sprintf( filename_naive, "%s_naive.pcd", filename.c_str() );
+    sprintf( filename_uniform, "%s_uniform.pcd", filename.c_str() );
+
+    pcl::io::savePCDFileASCII( filename_naive, *naive );        
+    pcl::io::savePCDFileASCII( filename_uniform, *uniform );        
 
     return 0;
 }

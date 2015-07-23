@@ -131,6 +131,9 @@ int main( int argc, char* argv[] ) {
 	acc_er_r[j][k] += ou.er_r;
 	acc_er_v[j][k] += fabs(ou.er_v);
 	acc_t[j][k] += ou.t;
+        if( ou.er_g > 10 || ou.er_g < -1 ) {
+          printf("Detected extreme value in er_g for: %f - line:  %d - check time: %f \n", ou.er_g, i*20 +j*4 + k, ou.t ); 
+        }
       }
     }
     

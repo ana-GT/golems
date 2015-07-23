@@ -44,9 +44,9 @@ target_link_libraries( test_mirror sq_fitting mindGapper ${PCL_LIBRARIES} ${CERE
 set_target_properties( test_mirror PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-add_executable( sampleSQ sampleSQ.cpp )
-target_link_libraries( sampleSQ sq_utils ${PCL_LIBRARIES} )
-set_target_properties( sampleSQ PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+add_executable( sampleSQ_naive sampleSQ_naive.cpp )
+target_link_libraries( sampleSQ_naive sq_utils ${PCL_LIBRARIES} )
+set_target_properties( sampleSQ_naive PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 

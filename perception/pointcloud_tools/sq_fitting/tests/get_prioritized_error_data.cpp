@@ -10,7 +10,8 @@
 #include <stdio.h>
 
 const int gnF = 5;
-const std::string datapath("/media/ana/ICRA_2015/data_july_18");
+//const std::string datapath("/media/ana/ICRA_2015/data_july_18");
+const std::string datapath("/home/ana/Research/golems/bin/data_july_18");
 const int gnG = 5;
 std::string groupnames[gnG] = {"cylinders", "boxes", "balls","fruits", "shaped_1"};
 
@@ -137,14 +138,19 @@ int main( int argc, char* argv[] ) {
 
   // Output time in order
   std::ofstream output_time("output_time.txt", std::ofstream::out);
+  std::ofstream output_time_h("output_time_hier.txt", std::ofstream::out);
   for( int i = 0; i  < gT; ++i ) {
      output_time << i << " ";
+     output_time_h << i << " ";
      for( int j = 0; j < gnF; ++j ) {
         output_time << out_r[j][ti[i]].t <<" ";
+        output_time_h << out_h[j][ti[i]].t <<" ";
      }
      output_time << std::endl;
+     output_time_h << std::endl;
   }
   output_time.close();
+  output_time_h.close();
 
   // Order according to Er in radial
   std::vector<double> rm;
@@ -156,14 +162,19 @@ int main( int argc, char* argv[] ) {
 
   // Output time in order
   std::ofstream output_radial("output_radial.txt", std::ofstream::out);
+  std::ofstream output_radial_h("output_radial_hier.txt", std::ofstream::out);
   for( int i = 0; i  < gT; ++i ) {
      output_radial << i << " ";
+     output_radial_h << i << " ";
      for( int j = 0; j < gnF; ++j ) {
         output_radial << out_r[j][ri[i]].er_r <<" ";
+        output_radial_h << out_h[j][ri[i]].er_r <<" ";
      }
      output_radial << std::endl;
+     output_radial_h << std::endl;
   }
   output_radial.close();
+  output_radial_h.close();
 
   // Order according to Eg in radial
   std::vector<double> gm;
@@ -175,15 +186,19 @@ int main( int argc, char* argv[] ) {
 
   // Output time in order
   std::ofstream output_goodness("output_goodness.txt", std::ofstream::out);
+  std::ofstream output_goodness_h("output_goodness_hier.txt", std::ofstream::out);
   for( int i = 0; i  < gT; ++i ) {
      output_goodness << i << " ";
+     output_goodness_h << i << " ";
      for( int j = 0; j < gnF; ++j ) {
         output_goodness << out_r[j][ri[i]].er_g <<" ";
+        output_goodness_h << out_h[j][ri[i]].er_g <<" ";
      }
      output_goodness << std::endl;
+     output_goodness_h << std::endl;
   }
   output_goodness.close();
-
+  output_goodness_h.close();
 
 
 }
