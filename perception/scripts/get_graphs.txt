@@ -3,7 +3,8 @@ set key font "Times,30"
 set key spacing 2.0
 set xtics font "Times,30" 
 set ytics font "Times,30" 
-
+set xlabel "Object" font "Times,30"
+set ylabel "mm" font "Times,30"
 
 plot "output_time.txt" using 1:2 with linespoints lw 5  title "Radial", "output_time.txt" using 1:3 with linespoints lw 5  title "Solina","output_time.txt" using 1:4 with linespoints lw 5   title "Ichim", "output_time.txt" using 1:5 with linespoints lw 5   title "Chevalier", "output_time.txt" using 1:6 with linespoints lw 5   title "F5"
 

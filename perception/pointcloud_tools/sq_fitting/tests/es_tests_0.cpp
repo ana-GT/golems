@@ -131,8 +131,11 @@ int main( int argc, char*argv[] ) {
 
        char basename[100]; sprintf( basename, "base.pcd" );
        pcl::io::savePCDFileASCII (basename, *input);
+       pcl::io::savePCDFileASCII ("cloud_0.pcd", *testCloud[0]);
+       pcl::io::savePCDFileASCII ("cloud_1.pcd", *testCloud[1]);
+       pcl::io::savePCDFileASCII ("cloud_2.pcd", *testCloud[2]);
+       pcl::io::savePCDFileASCII ("cloud_3.pcd", *testCloud[3]);  
 
-  
   printf("Size of real input: %d \n", input->points.size() );
   printf("Size of input to minimization: %d \n", down->points.size() );
   

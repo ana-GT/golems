@@ -201,6 +201,108 @@ int main( int argc, char* argv[] ) {
   output_goodness_h.close();
 
 
+////////////////////////////////////////
+
+  // Calculate means
+  double means_eg_r[gnF];
+  double means_er_r[gnF];
+  double means_t_r[gnF];
+
+  double means_eg_h[gnF];
+  double means_er_h[gnF];
+  double means_t_h[gnF];
+
+  double std_eg_r[gnF];
+  double std_er_r[gnF];
+  double std_t_r[gnF];
+
+  double std_eg_h[gnF];
+  double std_er_h[gnF];
+  double std_t_h[gnF];
+
+  
+
+  for( int j = 0; j < gnF; ++j ) {
+      means_eg_r[j] = 0;
+      means_er_r[j] = 0;
+      means_t_r[j] = 0;
+
+      means_eg_h[j] = 0;
+      means_er_h[j] = 0;
+      means_t_h[j] = 0;
+      
+      std_eg_r[j] = 0;
+      std_er_r[j] = 0;
+      std_t_r[j] = 0;
+
+      std_eg_h[j] = 0;
+      std_er_h[j] = 0;
+      std_t_h[j] = 0;           
+  }
+
+  
+  for( int j = 0; j < gnF; ++j ) {
+    for( int i = 0; i < gT; ++i ) {
+      means_eg_r[j] += out_r[j][i].er_g;
+      means_er_r[j] += out_r[j][i].er_r;
+      means_t_r[j] += out_r[j][i].t;
+
+      means_eg_h[j] += out_h[j][i].er_g;
+      means_er_h[j] += out_h[j][i].er_r;
+      means_t_h[j] += out_h[j][i].t;      
+    }
+
+    means_eg_r[j] /= (double) gT;
+    means_er_r[j] /= (double) gT;
+    means_t_r[j] /= (double) gT;
+    
+    means_eg_h[j] /= (double) gT;
+    means_er_h[j]/= (double) gT ;
+    means_t_h[j]/= (double) gT;      
+    
+  }
+
+  for( int j = 0; j < gnF; ++j ) {
+    for( int i = 0; i < gT; ++i ) {
+      std_eg_r[j] += (out_r[j][i].er_g - means_eg_r[j])*(out_r[j][i].er_g - means_eg_r[j]);
+      std_er_r[j] += (out_r[j][i].er_r - means_er_r[j])*(out_r[j][i].er_r - means_er_r[j]);
+      std_t_r[j] += (out_r[j][i].t - means_t_r[j])*(out_r[j][i].t - means_t_r[j]);
+
+      std_eg_h[j] += (out_h[j][i].er_g - means_eg_h[j])*(out_h[j][i].er_g - means_eg_h[j]);
+      std_er_h[j] += (out_h[j][i].er_r - means_er_h[j])*(out_h[j][i].er_r - means_er_h[j]);
+      std_t_h[j] += (out_h[j][i].t - means_t_h[j])*(out_h[j][i].t - means_t_h[j]);      
+    }
+
+    std_eg_r[j] = sqrt( std_eg_r[j]/(double) gT);
+    std_er_r[j] = sqrt( std_er_r[j]/(double) gT);
+    std_t_r[j] = sqrt( std_t_r[j]/(double) gT);
+    
+    std_eg_h[j] = sqrt(std_eg_h[j]/(double) gT);
+    std_er_h[j] = sqrt(std_er_h[j]/(double) gT);
+    std_t_h[j] = sqrt(std_t_h[j]/(double) gT);      
+    
+  }
+  
+  printf("REGULAR \n");
+  for( int j= 0; j < gnF; ++j ) {
+    printf("F[%d] Mean eg: %f std eg: %f Mean er: %f std er: %f Mean t: %f std t: %f \n", j,
+	   means_eg_r[j],std_eg_r[j],
+	   means_er_r[j],std_er_r[j],
+	   means_t_r[j], std_t_r[j]);
+  }
+  
+  printf("HIERARCHICAL \n");
+  for( int j= 0; j < gnF; ++j ) {
+    printf("F[%d] Mean eg: %f std eg: %f Mean er: %f std er: %f Mean t: %f std t: %f \n", j,
+	   means_eg_h[j],std_eg_h[j],
+	   means_er_h[j],std_er_h[j],
+	   means_t_h[j], std_t_h[j]);
+  }
+
+
+////////////////////////////////////////
+
+
 }
 
 
