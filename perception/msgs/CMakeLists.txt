@@ -1,7 +1,8 @@
 # Messages
 project( perception_msgs )
 
-set( CMAKE_CXX_FLAGS "-std=gnu++0x -fPIC" )
+set( CMAKE_CXX_FLAGS  "-fPIC" )
+
 add_library( perception_msgs perception_msgs.cpp )
 target_link_libraries( perception_msgs  ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} lapack blas gfortran )
 set_target_properties( perception_msgs PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib

@@ -1,8 +1,8 @@
 # tabletop_symmetry: From paper by Bohg et al, 2010
 project( refresher_utils )
-set( CMAKE_CXX_FLAGS "-fPIC" )
 
 include_directories( ${PROJECT_SOURCE_DIR} )
+set( CMAKE_CXX_FLAGS "-fPIC -std=c++11" )
 
 # PCL
 find_package( PCL REQUIRED COMPONENTS common surface filters )

@@ -1,5 +1,6 @@
 project( motion_control )
-set( CMAKE_CXX_FLAGS "-fPIC" )
+
+set( CMAKE_CXX_FLAGS "-fPIC -std=gnu++11" )
 
 # Add Tobias' trajectory generation code
 add_subdirectory( trajectories )

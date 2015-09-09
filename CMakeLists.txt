@@ -3,7 +3,6 @@ cmake_minimum_required( VERSION 2.8 )
 set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  ${CMAKE_SOURCE_DIR}/cmake/Modules )
 set( CMAKE_INSTALL_PREFIX $ENV{HOME}/local )
 message("CMAKE INSTALL PREFIX: ${CMAKE_INSTALL_PREFIX}" )
-#set( CMAKE_C_FLAGS "-std=gnu99" )
 
 # Eigen
 find_package( PkgConfig )
@@ -27,7 +26,7 @@ share )
 add_subdirectory( motion_control )
 add_subdirectory( global )
 add_subdirectory( perception )
-#add_subdirectory( projects )
+add_subdirectory( projects )
 #add_subdirectory( communication )
 #add_subdirectory( jsoncpp )
 

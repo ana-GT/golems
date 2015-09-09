@@ -1,4 +1,5 @@
 project( global )
+
 set( CMAKE_CXX_FLAGS "-fPIC" )
 
 # Include
