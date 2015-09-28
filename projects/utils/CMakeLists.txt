@@ -31,6 +31,7 @@ include_directories( ${CMAKE_SOURCE_DIR}/perception )
 include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools )
 include_directories( ${CMAKE_SOURCE_DIR} )
 
+include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools/sq_fitting )
 
 # Apps
 
@@ -38,6 +39,12 @@ include_directories( ${CMAKE_SOURCE_DIR} )
 add_executable( perception_pick perception_pick.cpp )
 target_link_libraries( perception_pick  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
 set_target_properties( perception_pick PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+# Perception Pick Testing Objective functions
+add_executable( perception_fxs_pick perception_fxs_pick.cpp )
+target_link_libraries( perception_fxs_pick  evaluated_eqs perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
+set_target_properties( perception_fxs_pick PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 # Store segmented file

@@ -61,11 +61,7 @@ class mindGapper {
 		       cv::Mat &_markMask,
 		       cv::Mat &_depthMask );
   cv::Mat get2DMask() { return mMarkMask; }
-  int growMask( cv::Mat &_mask,
-		int _numNeighbors,
-		int _setVal,
-		int _emptyVal,
-		int _minNeighborVal );
+
   cv::Mat printDebugMask();
 
   // Debug functions
@@ -73,7 +69,6 @@ class mindGapper {
   void printMirror( int _ind );
   PointCloudPtr getCandidate(int _ind) { return mCandidates[_ind]; }
   bool viewInitialParameters();
-  void generateBorder();
 
  private:
   
@@ -104,7 +99,6 @@ class mindGapper {
   cv::Mat mMarkMask; cv::Mat mDepthMask;
   cv::Mat mDTMask;
   int mWidth; int mHeight;
-  std::vector<double> mBorders[2];
 
   Eigen::Vector3d mC;
   Eigen::Vector3d mEa, mEb;

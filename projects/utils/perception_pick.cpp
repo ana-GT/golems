@@ -448,7 +448,6 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
 void process( int state, 
 	      void* userdata ) {
 
-
   // Get organized pointcloud
   pcl::PointCloud<PointTa>::Ptr cloud( new pcl::PointCloud<PointTa> );
   cv::Vec3i col;
