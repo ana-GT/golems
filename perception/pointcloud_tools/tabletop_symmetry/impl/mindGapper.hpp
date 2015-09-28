@@ -105,7 +105,6 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   
   mDTMask = matDT( mMarkMask );
 
-
   // 1. Project pointcloud to plane
   mProjected = projectToPlane( mCloud );
 
@@ -142,6 +141,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
+  int count = 0;
   for( int i = 0; i < mM; ++i ) {
         
     ang = -mAlpha +i*dang;
@@ -164,6 +164,10 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
+      char name[100];
+      sprintf( name, "candidate_%d.pcd", count );
+      count++;
+      pcl::io::savePCDFile(name, *mCandidates[mCandidates.size()-1], true );
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
