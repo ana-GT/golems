@@ -155,6 +155,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
 
+  int count = 0;
   for( int i = 0; i < mM; ++i ) {
         
     ang = -mAlpha +i*dang;
@@ -178,7 +179,14 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
-            
+      ///////////////
+      /*
+      char namec[100];
+      sprintf( namec, "candidate_%d.pcd", count );
+      pcl::io::savePCDFile(namec, *mCandidates[mCandidates.size()-1], true );
+      count++;
+      */
+      ////////////////
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
@@ -225,7 +233,9 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
     
     // Expected values
     if( mValidity[i] == false ||
-	outOfMask >= mMax_Out_Mask_Ratio*(_cloud->points.size()) ) {
+	(delta_1 / (double) outOfMask) >= mMax_Out_Pixel_Avg ||
+	(delta_2/(double)frontOfMask) >= mMax_Front_Dist_Avg )
+      {
       mDelta1[i] = MAX_VALUE_DELTA; mDelta2[i] = MAX_VALUE_DELTA;
     }
     else {
@@ -233,30 +243,52 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
       else{ mDelta1[i] =  delta_1 / (double) outOfMask; }
 
       if( frontOfMask == 0 ) { mDelta2[i] = MAX_VALUE_DELTA;  } 
-      else { mDelta2[i] =  (double) (delta_2 / (double)frontOfMask); }
-            
+      else { mDelta2[i] = (delta_2 / (double)frontOfMask); }
     } // end else mValidity
+
+      ///////////////
+    /*
+      printf("Candidate [%d] delta 1: %f delta 2: %f num out: %d front: %d \n", i, mDelta1[i], mDelta2[i],
+	     outOfMask, frontOfMask);
+    */
+      /////////////////
+
     
     
   } // for each candidate
 
-    // Select the upper section according to delta_2 (less frontal points)
-  std::vector<unsigned int> delta2_priority;
-  delta2_priority = sortIndices( mDelta2, candidateDists );
 
-  std::vector<double> delta1_selected;
+  // First get the smallest delta1 per each rotation group
+  int d1_ind; double d1_min;
+  std::vector<int> first_pass;
+  
+  for( int i = 0; i < mM; ++i ) {
 
-  for( int i = 0; i < (int)(mUpper_Ratio_Delta*mCandidates.size()); ++i ) {
-      delta1_selected.push_back( mDelta1[ delta2_priority[i] ] );
+    for( int j = 0; j < mN; ++j ) {
+      if( mDelta1[i*mN + j] < 2 ) {
+	first_pass.push_back( i*mN + j );
+      }
+    }
   }
   
-  // Prioritize according to delta_1
-  std::vector<unsigned int> delta1_priority;
-  delta1_priority = sortIndices( delta1_selected, candidateDists );
-  
-  int minIndex = delta2_priority[delta1_priority[0]];
+  // Second, now get the smallest according to delta 2
+  int d2_ind; double d2_min;
+  d2_ind = first_pass[0]; d2_min = mDelta2[d2_ind];
+  for( int i = 1; i < first_pass.size(); ++i ) {
+    if( mDelta2[first_pass[i]] < d2_min ) {
+      d2_ind = first_pass[i];
+      d2_min = mDelta2[d2_ind];
+    }
+  }
+
+  int minIndex = d2_ind;
  
   printf("Min index: %d  \n", minIndex );
+
+  if( mDelta1[minIndex] == MAX_VALUE_DELTA || mDelta2[minIndex] == MAX_VALUE_DELTA ) {
+    printf("Alert! Mirroring MAY not be used here \n");
+    
+  }
   
   // Set symmetry transformation
   symmRt = candidateSymmRts[minIndex];
@@ -365,8 +397,10 @@ mindGapper<PointT>::mindGapper() :
   mCloud( new PointCloud() ),
   mProjected( new PointCloud() ){
 
-  mMax_Out_Mask_Ratio = 0.25;
+  mMax_Out_Mask_Ratio = 0.5;
   mUpper_Ratio_Delta = 0.1;
+  mMax_Front_Dist_Avg = 0.01; // 1 cm
+  mMax_Out_Pixel_Avg = 6; // 8 pixels avg (too big already, usually more than 6 is wrong)
 }
 
 /**
