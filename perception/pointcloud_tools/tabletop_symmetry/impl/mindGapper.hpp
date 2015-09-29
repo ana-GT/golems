@@ -7,9 +7,11 @@
 #include <pcl/common/pca.h>
 #include <pcl/common/centroid.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
 #include "../dt/dt.h"
 
+#define MAX_VALUE_DELTA 1000000
 
 /**
  * @function fillProjection
@@ -113,14 +115,44 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   pca.setInputCloud( mProjected );
   Eigen::Vector3f eval = pca.getEigenValues();
   Eigen::Matrix3f evec = pca.getEigenVectors();
-  
+
+  // Calculate the centroid with the voxelized version of the projected cloud on the table
+  // (otherwise the center is too influenced by the "front points" and might not
+  // use the top information of the cloud, if available
   Eigen::Vector4d c;
-  pcl::compute3DCentroid( *mProjected, c );
+
+  PointCloudPtr projected_voxelized( new PointCloud() );
   
+  pcl::VoxelGrid<PointT> sor;
+  sor.setInputCloud (mProjected);
+  sor.setLeafSize (0.01f, 0.01f, 0.01f);
+  sor.filter (*projected_voxelized);
+
+  pcl::compute3DCentroid( *projected_voxelized, c );
+    
+  pcl::io::savePCDFile("voxelized.pcd", *projected_voxelized, true );
   mC << c(0), c(1), c(2);
   mEa << (double) evec(0,0), (double) evec(1,0), (double) evec(2,0);
   mEb << (double) evec(0,1), (double) evec(1,1), (double) evec(2,1);
 
+  ////////////////
+  pcl::PointCloud<pcl::PointXYZ> pab;
+  Eigen::Vector3d cab_a; Eigen::Vector3d cab_b;
+  for( int m =  0; m <= 10; ++m ) {
+    cab_a = mC + mEa.normalized()*0.01*m;
+    cab_b = mC + mEb.normalized()*0.01*m;
+    pcl::PointXYZ cab_p;
+    cab_p.x = cab_a(0); cab_p.y = cab_a(1); cab_p.z = cab_a(2);
+    pab.points.push_back( cab_p );
+    cab_p.x = cab_b(0); cab_p.y = cab_b(1); cab_p.z = cab_b(2);
+    pab.points.push_back( cab_p );
+  }
+      
+  pab.height = 1; pab.width = pab.points.size();
+  char nameab[100]; sprintf(nameab, "eigenvels.pcd" );
+  pcl::io::savePCDFile(nameab, pab, true );
+  ///////////////
+  
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;
   v = mC; // viewing vector from Kinect origin (0,0,0) to centroid of projected cloud (mC)
@@ -158,16 +190,35 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
       
       if( np.dot(v) > -np.dot(v) ) { dir = np; } else { dir = -np; }
       cp = mC + dir*mDj*j;
+
+      // Store cp and s_sample direction
+      Eigen::Vector3d ss, cia;
+      ss = s_sample.normalized();
+      
+      pcl::PointCloud<pcl::PointXYZ> pt;
+      for( int m =  0; m <= 10; ++m ) {
+	cia = cp + ss*0.01*m;
+	pcl::PointXYZ can; can.x = cia(0); can.y = cia(1); can.z = cia(2);
+	pt.points.push_back( can );
+      }
+      
+      pt.height = 1; pt.width = pt.points.size();
+      char name[100]; sprintf(name, "see_%d_%d.pcd", i, j );
+      pcl::io::savePCDFile(name, pt, true );
+      
+      
       symmRt.translation() = cp;
       //Set symmetry plane coefficients
       sp << np(0), np(1), np(2), -1*np.dot( cp );
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
-      char name[100];
-      sprintf( name, "candidate_%d.pcd", count );
+      
+      char name2[100];
+      sprintf( name2, "candidate_%d.pcd", count );
       count++;
-      pcl::io::savePCDFile(name, *mCandidates[mCandidates.size()-1], true );
+      pcl::io::savePCDFile(name2, *mCandidates[mCandidates.size()-1], true );
+      
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
@@ -203,7 +254,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
       else {
 	double dp = (double)(mDepthMask.at<float>(py,px));
 	if( dp == 0 ) { continue; }
-	double d = P.z - dp;
+	double d = sqrt(P.z*P.z + P.y*P.y + P.x*P.x ) - dp;
 	if( d < 0 ) {
 	  frontOfMask++;  delta_2 += -d;
 	}
@@ -213,41 +264,43 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
     } // end for it
     
     // Expected values
-    if( mValidity[i] == false ) { mDelta1[i] = 1000000; mDelta2[i] = 1000000; printf("[%d] Candidate is NOT valid \n", i);}
+    if( mValidity[i] == false ||
+	outOfMask >= mMax_Out_Mask_Ratio*(_cloud->points.size()) ) {
+      mDelta1[i] = MAX_VALUE_DELTA; mDelta2[i] = MAX_VALUE_DELTA;
+    }
     else {
-      if( outOfMask == 0 ) { mDelta1[i] = 1000000; }
+      if( outOfMask == 0 ) { mDelta1[i] = MAX_VALUE_DELTA; }
       else{ mDelta1[i] =  delta_1 / (double) outOfMask; }
 
-      if( frontOfMask == 0 ) { mDelta2[i] = 1000000;  }
-      else { mDelta2[i] =  (double) frontOfMask; } //(delta_2 / (double)frontOfMask); }
-    
-    } // end else mValidity
+      if( frontOfMask == 0 ) { mDelta2[i] = MAX_VALUE_DELTA;  } 
+      else { mDelta2[i] =  (double) (delta_2 / (double)frontOfMask); }
 
+      printf("Candidate [%d] delta 1: %f delta 2: %f num out: %d front: %d \n", i, mDelta1[i], mDelta2[i],
+	     outOfMask, frontOfMask);
+            
+    } // end else mValidity
+    
+    
   } // for each candidate
 
-  // Select the upper section according to delta_1
-  std::vector<unsigned int> delta1_priority;
-  delta1_priority = sortIndices( mDelta1, candidateDists );
-  std::vector<double> delta2_selected;
-
-  double d1min, d1max;
-  d1min = mDelta1[delta1_priority[0]];
-  for( int i = delta1_priority.size() - 1; i >= 0; --i ) {
-    if( mDelta1[i] == 1000000 ) { continue; }
-    else { d1max = mDelta1[i]; break; }
-  }   
-  double d1cut = d1min + 0.1*(d1max - d1min);
-
-  for( int i = 0; i < (int)(0.1*mCandidates.size()); ++i ) {
-      delta2_selected.push_back( mDelta2[ delta1_priority[i] ] );
-  }
-
-  // Prioritize according to delta_2
+    // Select the upper section according to delta_2 (less frontal points)
   std::vector<unsigned int> delta2_priority;
-  delta2_priority = sortIndices( delta2_selected, candidateDists );
-  
-  int minIndex = delta1_priority[delta2_priority[0]];
+  delta2_priority = sortIndices( mDelta2, candidateDists );
 
+  std::vector<double> delta1_selected;
+
+  for( int i = 0; i < (int)(mUpper_Ratio_Delta*mCandidates.size()); ++i ) {
+      delta1_selected.push_back( mDelta1[ delta2_priority[i] ] );
+  }
+  
+  // Prioritize according to delta_1
+  std::vector<unsigned int> delta1_priority;
+  delta1_priority = sortIndices( delta1_selected, candidateDists );
+  
+  int minIndex = delta2_priority[delta1_priority[0]];
+ 
+  printf("Min index: %d  \n", minIndex );
+  
   // Set symmetry transformation
   symmRt = candidateSymmRts[minIndex];
   // Put in symmetry axis
@@ -335,7 +388,7 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
     if( py < 0 || py >= mHeight ) { return false; }
 
     _markMask.at<uchar>(py,px) = 255;
-    _depthMask.at<float>(py,px) = (float)P.z;
+    _depthMask.at<float>(py,px) = (float)sqrt( P.z*P.z + P.x*P.x + P.y*P.y );
   }
 
   // Fill projection
@@ -355,6 +408,9 @@ template<typename PointT>
 mindGapper<PointT>::mindGapper() :
   mCloud( new PointCloud() ),
   mProjected( new PointCloud() ){
+
+  mMax_Out_Mask_Ratio = 0.25;
+  mUpper_Ratio_Delta = 0.1;
 }
 
 /**

@@ -34,8 +34,8 @@ class mindGapper {
 
 
   /**< Set parameters for symmetry plane search */
-  void setFittingParams( int _n = 6, int _m = 10, 
-			 double _dj = 0.01, double _alpha = 20.0*M_PI / 180.0 );
+  void setFittingParams( int _n = 10, int _m = 18, 
+			 double _dj = 0.01, double _alpha = 90.0*M_PI / 180.0 );
 
   /**< Set Kinect params to calculate mirror errors */
   void setDeviceParams( int _width = 640, int _height = 480, 
@@ -87,6 +87,10 @@ class mindGapper {
   Eigen::Isometry3d mSymmTf;
   Eigen::Vector3d mBBDim;
 
+  /**< Constants for Limits */
+  double mMax_Out_Mask_Ratio;
+  double mUpper_Ratio_Delta;
+  
   /**< Variables */
   Eigen::VectorXd mPlaneCoeffs;
   int mN;
