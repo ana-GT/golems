@@ -130,28 +130,9 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
   pcl::compute3DCentroid( *projected_voxelized, c );
     
-  pcl::io::savePCDFile("voxelized.pcd", *projected_voxelized, true );
   mC << c(0), c(1), c(2);
   mEa << (double) evec(0,0), (double) evec(1,0), (double) evec(2,0);
   mEb << (double) evec(0,1), (double) evec(1,1), (double) evec(2,1);
-
-  ////////////////
-  pcl::PointCloud<pcl::PointXYZ> pab;
-  Eigen::Vector3d cab_a; Eigen::Vector3d cab_b;
-  for( int m =  0; m <= 10; ++m ) {
-    cab_a = mC + mEa.normalized()*0.01*m;
-    cab_b = mC + mEb.normalized()*0.01*m;
-    pcl::PointXYZ cab_p;
-    cab_p.x = cab_a(0); cab_p.y = cab_a(1); cab_p.z = cab_a(2);
-    pab.points.push_back( cab_p );
-    cab_p.x = cab_b(0); cab_p.y = cab_b(1); cab_p.z = cab_b(2);
-    pab.points.push_back( cab_p );
-  }
-      
-  pab.height = 1; pab.width = pab.points.size();
-  char nameab[100]; sprintf(nameab, "eigenvels.pcd" );
-  pcl::io::savePCDFile(nameab, pab, true );
-  ///////////////
   
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;
@@ -173,7 +154,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
-  int count = 0;
+
   for( int i = 0; i < mM; ++i ) {
         
     ang = -mAlpha +i*dang;
@@ -190,22 +171,6 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
       
       if( np.dot(v) > -np.dot(v) ) { dir = np; } else { dir = -np; }
       cp = mC + dir*mDj*j;
-
-      // Store cp and s_sample direction
-      Eigen::Vector3d ss, cia;
-      ss = s_sample.normalized();
-      
-      pcl::PointCloud<pcl::PointXYZ> pt;
-      for( int m =  0; m <= 10; ++m ) {
-	cia = cp + ss*0.01*m;
-	pcl::PointXYZ can; can.x = cia(0); can.y = cia(1); can.z = cia(2);
-	pt.points.push_back( can );
-      }
-      
-      pt.height = 1; pt.width = pt.points.size();
-      char name[100]; sprintf(name, "see_%d_%d.pcd", i, j );
-      pcl::io::savePCDFile(name, pt, true );
-      
       
       symmRt.translation() = cp;
       //Set symmetry plane coefficients
@@ -213,12 +178,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
-      
-      char name2[100];
-      sprintf( name2, "candidate_%d.pcd", count );
-      count++;
-      pcl::io::savePCDFile(name2, *mCandidates[mCandidates.size()-1], true );
-      
+            
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
@@ -274,9 +234,6 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
       if( frontOfMask == 0 ) { mDelta2[i] = MAX_VALUE_DELTA;  } 
       else { mDelta2[i] =  (double) (delta_2 / (double)frontOfMask); }
-
-      printf("Candidate [%d] delta 1: %f delta 2: %f num out: %d front: %d \n", i, mDelta1[i], mDelta2[i],
-	     outOfMask, frontOfMask);
             
     } // end else mValidity
     
@@ -393,7 +350,6 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
 
   // Fill projection
   _markMask = fillProjection( _markMask );
-  cv::imwrite( "mask_filled.png", _markMask );
   
   return true;
 }
