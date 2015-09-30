@@ -4,7 +4,7 @@
  */
 #include "evaluated_eqs.h"
 #include <SQ_utils.h>
-#include <SQ_fitter_evaluated.h>
+#include <SQ_fitter.h>
 #include <tabletop_symmetry/mindGapper.h>
 
 #include <boost/thread/thread.hpp>
@@ -94,7 +94,7 @@ int main( int argc, char*argv[] ) {
   Eigen::Isometry3d Tsymm; Eigen::Vector3d Bb;
 
   // Parameters for the fitting
-  SQ_fitter_evaluated<PointT> sfe;
+  SQ_fitter<PointT> sfe;
   SQ_parameters par, par_h;
   clock_t ts, tf; double dt;  
 

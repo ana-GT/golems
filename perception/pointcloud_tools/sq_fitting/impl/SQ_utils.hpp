@@ -1,4 +1,29 @@
 
+#include <pcl/filters/voxel_grid.h>
+
+/**
+ * @function downsampling
+ * @brief Fit using Levenberg-Marquadt with box constraints
+ */
+template<typename PointT>
+void downsampling( const typename pcl::PointCloud<PointT>::Ptr &_cloud,
+		   const double &_voxelSize,
+		   typename pcl::PointCloud<PointT>::Ptr &_cloud_downsampled ) {
+    
+  // Create the filtering object
+  pcl::VoxelGrid< PointT > downsampler;
+  // Set input cloud
+  downsampler.setInputCloud( _cloud );
+  // Set size of voxel
+  downsampler.setLeafSize( _voxelSize, _voxelSize, _voxelSize );
+  // Set downsample all data to true (i.e. in case pointNormal is also considered)
+  downsampler.setDownsampleAllData( true );
+  // Downsample
+  downsampler.filter( *_cloud_downsampled );
+  
+}
+
+
 /**
  * @file sampleSQ_uniform
  */

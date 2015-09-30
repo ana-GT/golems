@@ -4,7 +4,6 @@
  */
 #pragma once
 
-//#include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/common/centroid.h>
 #include <pcl/common/pca.h>
 #include <pcl/common/common.h>
@@ -14,6 +13,7 @@
 #include "../SQ_utils.h"
 #include "../SQ_structs.h"
 #include "../analytic_equations.h"
+#include "../evaluated_eqs.h"
 
 #include "../levmar/levmar.h"
 
@@ -81,7 +81,8 @@ void SQ_fitter<PointT>::setInitialApprox( const Eigen::Isometry3d &_Tsymm,
  * @brief Fit using Levenberg-Marquadt with box constraints
  */
 template<typename PointT>
-bool SQ_fitter<PointT>::fit( const double &_smax,
+bool SQ_fitter<PointT>::fit( const int &_type,
+			     const double &_smax,
 			     const double &_smin,
 			     const int &_N,
 			     const double &_thresh ) {
@@ -95,9 +96,10 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
   double ds; double error_i; double error_i_1;
   double s_i; bool fitted; 
   SQ_parameters par_i, par_i_1;
-  
-  ds = (smax_ - smin_) / (double) (N_-1);
-  
+
+  if( N_ == 1 ) { ds = 0; }
+  else { ds = (smax_ - smin_) / (double) (N_-1); }
+    
   // 1. Initialize par_in_ with bounding box values
   if( mGotInitApprox ) {
 
@@ -116,29 +118,33 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
   }
    
   // 1.1. Set e1 and e2 to middle value in range
-  par_in_.e[0] = 0.5; par_in_.e[1] = 1.0;
+  par_in_.e[0] = 1.0; par_in_.e[1] = 1.0; // e[0] was 0.5
 
   // Update limits according to this data, up to no more than original guess
   for( int i = 0; i < 3; ++i ) { mUpperLim_dim[i] = par_in_.dim[i]; }
 
   // Run loop
   par_i = par_in_;
-  error_i = error_metric( par_i, cloud_ );
+  double eg, er;
+  error_metric<PointT>( par_i, cloud_, eg, er, error_i );
   fitted = false;
 
-
+  ////////
   for( int i = 0; i < N_; ++i ) {
 
     s_i = smax_ - (i)*ds;
     par_i_1 = par_i;
     error_i_1 = error_i;
 
+    
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
-    downsample( cloud_,
-		s_i,
-		cloud_i );
+    if( N_ == 1 ) { cloud_i = cloud_; }
+    else { downsampling<PointT>( cloud_, s_i, cloud_i ); }
 
-    minimize( cloud_i,
+    if( cloud_i->points.size() < 11 ) { continue; }
+    
+    minimize( _type,
+	      cloud_i,
 	      par_i_1,
 	      par_i,
 	      error_i );
@@ -146,8 +152,8 @@ bool SQ_fitter<PointT>::fit( const double &_smax,
     
     // [CONDITION]
     double de = (error_i_1 - error_i);
-    //std::cout << "\t ** Diff of errors at iter "<<i<<": "<<de << std::endl;
-    if(  de < thresh_ ) {
+
+    if( fabs(de) < thresh_ ) {
       fitted = true;
       break;
     } 
@@ -220,7 +226,7 @@ bool SQ_fitter<PointT>::fit_tampering( const double &_smax,
     error_i_1 = error_i;
 
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
-    downsample( cloud_,
+    downsampling<PointT>( cloud_,
 		s_i,
 		cloud_i );
 
@@ -306,26 +312,6 @@ void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
 
 }
 
-/**
- * @function downsample
- * @brief Fit using Levenberg-Marquadt with box constraints
- */
-template<typename PointT>
-void SQ_fitter<PointT>::downsample( const PointCloudPtr &_cloud,
-				    const double &_voxelSize,
-				    PointCloudPtr &_cloud_downsampled ) {
-    
-  // Create the filtering object
-  pcl::VoxelGrid< PointT > downsampler;
-  // Set input cloud
-  downsampler.setInputCloud( _cloud );
-  // Set size of voxel
-  downsampler.setLeafSize( _voxelSize, _voxelSize, _voxelSize );
-  // Downsample
-  downsampler.filter( *_cloud_downsampled );
-  
-}
-
 
 /**
  * @function minimize
@@ -333,25 +319,12 @@ void SQ_fitter<PointT>::downsample( const PointCloudPtr &_cloud,
  * @output _out
  */
 template<typename PointT>
-bool SQ_fitter<PointT>::minimize( const PointCloudPtr &_cloud, 
+bool SQ_fitter<PointT>::minimize( const int &_type,
+				  const PointCloudPtr &_cloud, 
 				  const SQ_parameters &_in,
 				  SQ_parameters &_out,
 				  double &_error ) {
-  return minimize_levmar( _cloud, _in, _out, _error );
-}
- 
-
-
-
-/**
- * @function minimize_ceres
- */
-template<typename PointT>
-bool SQ_fitter<PointT>::minimize_levmar( const PointCloudPtr &_cloud,
-					 const SQ_parameters &_in,
-					 SQ_parameters &_out,
-					 double &_error ) {
-    
+      
     // Parameters initially _in:
     _out = _in; 
 
@@ -401,24 +374,92 @@ bool SQ_fitter<PointT>::minimize_levmar( const PointCloudPtr &_cloud,
     for( i = 0; i < 3; ++i ) { lb[i+5] = mLowerLim_trans[i]; ub[i+5] = mUpperLim_trans[i]; }
     for( i = 0; i < 3; ++i ) { lb[i+8] = mLowerLim_rot[i]; ub[i+8] = mUpperLim_rot[i]; }
     
-    ret = dlevmar_bc_der( levmar_fx,
-			  levmar_jac,
-			  p, y, m, n,
-			  lb, ub,
-			  NULL,
-			  1000,
-			  opts, info,
-			  NULL, NULL, (void*)&data );
+    switch( _type ) {
+    case SQ_FX_RADIAL: {
+      
+      ret = dlevmar_bc_der( fr_add,
+			    Jr_add,
+			    p, y, m, n,
+			    lb, ub,
+			    NULL,
+			    1000,
+			    opts, info,
+			    NULL, NULL, (void*)&data );
+    } break;
+      
+    case SQ_FX_ICHIM: {
+      
+      ret = dlevmar_bc_der( fi_add,
+			    Ji_add,
+			    p, y, m, n,
+			    lb, ub,
+			    NULL,
+			    1000,
+			    opts, info,
+			    NULL, NULL, (void*)&data );
+    } break;
+      
+    case SQ_FX_SOLINA: {
+      
+      ret = dlevmar_bc_der( fs_add,
+			    Js_add,
+			    p, y, m, n,
+			    lb, ub,
+			    NULL,
+			    1000,
+			    opts, info,
+			    NULL, NULL, (void*)&data );
+    } break;
+      
+    case SQ_FX_CHEVALIER: {
+      
+      ret = dlevmar_bc_der( fc_add,
+			    Jc_add,
+			    p, y, m, n,
+			    lb, ub,
+			    NULL,
+			    1000,
+			    opts, info,
+			    NULL, NULL, (void*)&data );
+    } break;
+      
+    case SQ_FX_5: {
+      
+      ret = dlevmar_bc_der( f5_add,
+			    J5_add,
+			    p, y, m, n,
+			    lb, ub,
+			    NULL,
+			    1000,
+			    opts, info,
+			    NULL, NULL, (void*)&data );
+    } break;
+      
+    case SQ_FX_6: {
+      
+      ret = dlevmar_bc_der( f6_add,
+			    J6_add,
+			    p, y, m, n,
+			    lb, ub,
+			    NULL,
+			    1000,
+			    opts, info,
+			    NULL, NULL, (void*)&data );
+    } break;
 
+    
+  } // end switch
+
+    
     // Fill _out
     for( i = 0; i < 3; ++i ) { _out.dim[i] = p[i]; }
     for( i = 0; i < 2; ++i ) { _out.e[i] = p[i+3]; }
     for( i = 0; i < 3; ++i ) { _out.trans[i] = p[i+5]; }
     for( i = 0; i < 3; ++i ) { _out.rot[i] = p[i+8]; }
     
-
     // Return status and error
-    _error = error_metric( _out, cloud_ );
+    double eg, er;
+    error_metric<PointT>( _out, cloud_, eg, er, _error );
     
     // If stopped by invalid (TODO: Add other reasons)
     if( info[6] == 7 ) {
@@ -530,23 +571,6 @@ bool SQ_fitter<PointT>::minimize_tampering( const PointCloudPtr &_cloud,
  * @brief Calculates the error 
  */
 template<typename PointT>
-double SQ_fitter<PointT>::error_metric( SQ_parameters _par,
-					const PointCloudPtr &_cloud ) {
-
-  double err = 0;
-  typename pcl::PointCloud<PointT>::iterator it;
-  for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
-    err += error_SQ( _par, it->x, it->y, it->z );
-  }
-
-  return err / (double) _cloud->points.size();
-}
-
-/**
- * @function error_metric
- * @brief Calculates the error 
- */
-template<typename PointT>
 double SQ_fitter<PointT>::error_metric_tampering( SQ_parameters _par,
 						  const PointCloudPtr &_cloud ) {
 
@@ -591,9 +615,9 @@ typename SQ_fitter<PointT>::PointCloudPtr SQ_fitter<PointT>::getSampledOutput() 
 
     // Downsample
     PointCloudPtr cloud_out( new pcl::PointCloud<PointT>() );
-    this->downsample( output,
-		      0.01,
-		      cloud_out );
+    downsampling<PointT>( output,
+			  0.01,
+			  cloud_out );
 
     return cloud_out;
 }

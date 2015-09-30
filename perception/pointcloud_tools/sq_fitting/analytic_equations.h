@@ -39,9 +39,6 @@ void jac_SQ( const SQ_parameters &_par,
 	     const double &_x, const double &_y, const double &_z,
 	     double _J[11] );
 
-double error_SQ( const SQ_parameters &_par,  
-		 const double &_x, const double &_y, const double &_z ); 
-
 
 void levmar_fx( double *p, double* x,
 		int m, int n, void *data );

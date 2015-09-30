@@ -7,6 +7,8 @@
 #include "SQ_parameters.h"
 #include <pcl/io/pcd_io.h>
 
+#include "evaluated_eqs.h"
+
 /**
  * @class SQ_fitter
  */
@@ -28,18 +30,17 @@ class SQ_fitter {
 		      double _trans[3],
 		      double _rot[3],
 		      bool _debug = false );
-  bool fit( const double &_smax = 0.05,
+  bool fit( const int &_type = SQ_FX_RADIAL, 
+	    const double &_smax = 0.05,
 	    const double &_smin = 0.01,
 	    const int &_N = 5,
-	    const double &_thresh = 0.1 );
+	    const double &_thresh = 0.005 ); // used to be 0.005
+
+  // UNIQUE TO ORIGINAL FIT
   bool fit_tampering( const double &_smax = 0.05,
 		      const double &_smin = 0.01,
 		      const int &_N = 5,
 		      const double &_thresh = 0.1 );
-  
-  void downsample( const PointCloudPtr &_cloud,
-		   const double &_voxelSize,
-		   PointCloudPtr &_cloud_downsampled );
 
   bool minimize( const PointCloudPtr &_cloud, 
 		 const SQ_parameters &_in,
@@ -56,8 +57,7 @@ class SQ_fitter {
 			SQ_parameters &_out,
 			double &_error );
 
-  double error_metric( SQ_parameters _par,
-		       const PointCloudPtr &_cloud );
+
   double error_metric_tampering( SQ_parameters _par,
 				 const PointCloudPtr &_cloud );
 
@@ -68,6 +68,14 @@ class SQ_fitter {
   void getFinalParams( SQ_parameters &_par ) { 
     _par = par_out_; 
   }
+
+
+    bool minimize( const int &_type,
+		 const PointCloudPtr &_cloud, 
+		 const SQ_parameters &_in,
+		 SQ_parameters &_out,
+		 double &_error );
+  
 
  private:
   SQ_parameters par_in_;

@@ -24,6 +24,12 @@ double dTheta( double K, double e,
 		    double a1, double a2,
 		    double t );
 
+template<typename PointT>
+void downsampling( const typename pcl::PointCloud<PointT>::Ptr &_cloud,
+		   const double &_voxelSize,
+		   typename pcl::PointCloud<PointT>::Ptr &_cloud_downsampled );
+
+
 /**
  * @function DONE
  */

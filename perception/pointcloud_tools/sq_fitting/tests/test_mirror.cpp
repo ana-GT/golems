@@ -151,7 +151,8 @@ int main( int argc, char* argv[] ) {
 		  char cloud_fitted_name[100];
 		  sprintf( cloud_fitted_name, "%s_%d_cloud_fitted.pcd", obj_name.c_str(), i );
 		  pcl::io::savePCDFileASCII ( cloud_fitted_name, *cloud_fitted ); 
-		  cloud_errors[i] = fitter.error_metric( cloud_params, cloud );
+		  double eg, er;
+                  error_metric<PointT>( cloud_params, cloud, eg, er, cloud_errors[i] );
 		  printf("\t [%d] Cloud error: %f \n", i, cloud_errors[i] );
 	  } else {
 		  std::cout << "\t [BAD] NO Fit superquadric CLOUD" << std::endl;
@@ -178,8 +179,9 @@ int main( int argc, char* argv[] ) {
 		  char mirror_fitted_name[100];
 		  sprintf( mirror_fitted_name, "%s_%d_mirror_fitted.pcd", obj_name.c_str(), i );
 
-		  pcl::io::savePCDFileASCII ( mirror_fitted_name, *mirror_fitted ); 
-		  mirror_errors[i] = fitter.error_metric( mirror_params, cloud );
+		  pcl::io::savePCDFileASCII ( mirror_fitted_name, *mirror_fitted );
+                  double eg, er; 
+		  error_metric<PointT>( mirror_params, cloud, eg, er,mirror_errors[i] );
 		  printf("\t [%d] Mirror error: %f \n", i, mirror_errors[i] );
 		  
 	  } else {

@@ -4,7 +4,6 @@
  */
 #include "evaluated_eqs.h"
 #include <SQ_utils.h>
-#include <SQ_fitter_evaluated.h>
 #include <tabletop_symmetry/mindGapper.h>
 
 char* fx_names[6] = { "Radial", "Solina", "Ichim", "Chevalier", "F5", "F6"};

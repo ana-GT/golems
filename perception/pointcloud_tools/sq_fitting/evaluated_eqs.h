@@ -5,7 +5,7 @@
 #pragma once
 
 #include <pcl/io/pcd_io.h>
-#include <SQ_utils.h>
+#include "SQ_utils.h"
 
 enum SQ_FX_TYPES {
   SQ_FX_RADIAL = 0,
