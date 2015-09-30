@@ -125,7 +125,7 @@ int main( int argc, char* argv[] ) {
     char iname[60];
     sprintf( iname, "res/%s_%d.pcd", name, i );
     pcl::PointCloud<PointT>::Ptr sample( new pcl::PointCloud<PointT>() );
-    sample = sampleSQ_uniform( rs[i].par );
+    sample = sampleSQ_uniform<PointT>( rs[i].par );
     pcl::io::savePCDFileASCII ( iname, *sample);
 
   }

@@ -432,7 +432,7 @@ template<typename PointT>
 typename SQ_fitter_evaluated<PointT>::PointCloudPtr SQ_fitter_evaluated<PointT>::getSampledOutput() {
     
     PointCloudPtr output( new pcl::PointCloud<PointT>() );
-    output = sampleSQ_uniform( par_out_ );
+    output = sampleSQ_uniform<PointT>( par_out_ );
 
     // Downsample
     PointCloudPtr cloud_out( new pcl::PointCloud<PointT>() );

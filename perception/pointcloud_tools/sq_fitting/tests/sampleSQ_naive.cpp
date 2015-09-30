@@ -99,10 +99,10 @@ int main( int argc, char* argv[] ) {
 
     // Generate naive
     pcl::PointCloud<pcl::PointXYZ>::Ptr naive( new pcl::PointCloud<pcl::PointXYZ>() );
-    naive = sampleSQ_naive( par );
+    naive = sampleSQ_naive<pcl::PointXYZ>( par );
     // 
     pcl::PointCloud<pcl::PointXYZ>::Ptr uniform( new pcl::PointCloud<pcl::PointXYZ>() );    
-    uniform = sampleSQ_uniform( par );
+    uniform = sampleSQ_uniform<pcl::PointXYZ>( par );
 
     // Save
     char filename_naive[200];

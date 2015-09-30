@@ -187,7 +187,7 @@ std::vector<output_sq> createCase() {
   output.push_back( base );
     
   // 1. Generate clean pointcloud
-  input = sampleSQ_uniform( par );
+  input = sampleSQ_uniform<PointT>( par );
 
   struct timespec ts, tf;
   double elapsed;

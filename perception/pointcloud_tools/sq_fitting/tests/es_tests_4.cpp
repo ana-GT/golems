@@ -128,7 +128,7 @@ int main( int argc, char*argv[] ) {
 	   par.e[0], par.e[1], dt,
 	   er1, er2);
     */
-    approx = sampleSQ_uniform( par );
+    approx = sampleSQ_uniform<pcl::PointXYZ>( par );
     char name[50];
     sprintf( name, "%s_hierarchical_%d.pcd", gOutput.c_str(), i );
     pcl::io::savePCDFileASCII( name, *approx );

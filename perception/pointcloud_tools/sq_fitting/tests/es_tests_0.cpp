@@ -121,7 +121,7 @@ int main( int argc, char*argv[] ) {
 
   std::vector<pcl::PointCloud<PointT>::Ptr> testCloud(4);
   
-  input = sampleSQ_uniform( par );
+  input = sampleSQ_uniform<PointT>( par );
   if( gD == 0 ) { down = input; }
   else { down = downsampling( input, gD ); }
   testCloud[0] = down;    
@@ -156,7 +156,7 @@ int main( int argc, char*argv[] ) {
       er_v = (vc - vr)/vr*100.0;
       
       pcl::PointCloud<PointT>::Ptr output_p( new pcl::PointCloud<PointT>() );
-       output_p = sampleSQ_uniform( par );
+      output_p = sampleSQ_uniform<PointT>( par );
        char outputname[100]; sprintf( outputname, "output_%d.pcd", j );
        pcl::io::savePCDFileASCII (outputname, *output_p);
 

@@ -167,7 +167,7 @@ int main( int argc, char* argv[] ) {
   saveParams( output, base.par, 0, 0, 0, 0, 0, 0 );
   
   // 1. Generate clean pointcloud
-  input = sampleSQ_uniform( par );
+  input = sampleSQ_uniform<PointT>( par );
 
   // Loop
   double xer_e1, xer_e2, vc, vr, xer_v;

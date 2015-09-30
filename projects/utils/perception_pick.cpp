@@ -434,7 +434,7 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr sqp( new pcl::PointCloud<pcl::PointXYZ>() );
     char sqname[75]; sprintf( sqname, "sq_pointcloud_%d.pcd", _index );  
-    sqp = sampleSQ_uniform( p ); 
+    sqp = sampleSQ_uniform<pcl::PointXYZ>( p ); 
     pcl::io::savePCDFile( sqname, *sqp );
 
   }
