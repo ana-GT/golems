@@ -30,6 +30,7 @@
 #include <time.h>
 
 #include <pcl/surface/poisson.h>
+#include <pcl/surface/convex_hull.h>
 #include <pcl/io/ply_io.h>
 
 
@@ -80,6 +81,17 @@ void setSQ( int state, void* userData );
 void send( int state, void* userData );
 void fit_SQ( pcl::PointCloud<PointTa> _cluster, int i,
 	     double dim[3], double trans[3], double rot[3], double e[2] );
+
+void create_mesh( pcl::PolygonMesh &_mesh,
+		  double _dim[3],
+		  double _e[2], int _N,
+		  char* _mesh_name );
+
+void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
+		     std::vector<pcl::Vertices> &_polygons );
+
+void create_table_mesh( pcl::PolygonMesh &_table_mesh,
+			char _table_name_mesh[50] );
 
 void drawSegmented();
 void getPixelClusters();
@@ -302,11 +314,6 @@ static void onMouse( int event, int x, int y, int, void* ) {
  */
 void send( int state, void* userData ) {
   
-  pcl::Poisson<pcl::PointNormal> poisson;
-  pcl::PolygonMesh mesh;
-  size_t i;
-  char tableName[255];
-  double dim[3]; double trans[3]; double rot[3]; double e[2];  
   printf("Clusters size: %d \n", gClusters.size() );
   if( gSelectedSegmentedCloud < 0 || gSelectedSegmentedCloud >= gClusters.size() ) {
     printf("--> ERROR: Did not select a cloud? \n");
@@ -319,6 +326,13 @@ void send( int state, void* userData ) {
   msg->header.n = (uint32_t)gClusters.size();
   msg->n = (uint32_t) gClusters.size();
   msg->i = (uint32_t) gSelectedSegmentedCloud;
+
+  // Variables 
+  pcl::PolygonMesh mesh;
+  pcl::PointCloud<PointTa>::Ptr mirrored_cloud;
+  size_t i;
+  double dim[3]; double trans[3]; double rot[3]; double e[2];  
+  
   
   // 1. Save SQs
   for( i = 0; i < gClusters.size(); ++i ) {  
@@ -328,37 +342,16 @@ void send( int state, void* userData ) {
     for( int j = 0; j < 3; ++j ) { msg->u[i].rot[j] = rot[j]; }
     for( int j = 0; j < 2; ++j ) { msg->u[i].e[j] = e[j]; }
 
-    pcl::PointCloud<pcl::PointNormal>::Ptr pn( new pcl::PointCloud<pcl::PointNormal>() );
-    sampleSQ_uniform_pn( dim[0], dim[1], dim[2], e[0], e[1], 25, pn );
-    poisson.setDepth(5);
-    poisson.setInputCloud(pn);    
-    poisson.reconstruct( mesh );
-    int number = rand() % 1000;
-    char outputName[255];
-    sprintf( outputName, "%s/mesh_%d.ply", gPicturesPath.c_str(), i );
-    printf("Saving mesh %d \n", i);
-    pcl::io::savePLYFile(outputName, mesh);
-    printf("Finished with mesh \n");
+    char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%d.ply", gPicturesPath.c_str(), i );
+    create_mesh( mesh, dim, e, 25, mesh_name );
     msg->u[i].mesh_generated = true;
-    strcpy( msg->u[i].mesh_filename, outputName );    
+    strcpy( msg->u[i].mesh_filename, mesh_name );        
   }
-  
   
   // 2. Get the table
-  pcl::PointCloud<pcl::PointNormal>::Ptr pnt( new pcl::PointCloud<pcl::PointNormal>() );
-  for( int i = 0; i < gTablePoints.points.size(); ++i ) {
-    pcl::PointNormal p;
-    p.x = gTablePoints.points[i].x; p.y = gTablePoints.points[i].y; p.z = gTablePoints.points[i].z;
-    p.normal_x = gTableCoeffs[0]; p.normal_y = gTableCoeffs[1]; p.normal_z = gTableCoeffs[2];	
-    pnt->points.push_back(p);
-  }
-  pnt->width = 1; pnt->height = pnt->points.size();
+  char tableName[50]; sprintf( tableName, "%s/tableMesh.ply", gPicturesPath.c_str() );
+  create_table_mesh( mesh, tableName );
   
-  poisson.setDepth(2);
-  poisson.setInputCloud(pnt);
-  poisson.reconstruct(mesh);
-  
-  sprintf( tableName, "%s/tableMesh.ply", gPicturesPath.c_str() );
   pcl::io::savePLYFile( tableName, mesh ); 
   
   for( i = 0; i < 4; ++i ) { msg->table_coeffs[i] = gTableCoeffs[i]; }
@@ -373,6 +366,107 @@ void send( int state, void* userData ) {
   
   msg = 0;
 }
+
+/**
+ * @function create_table_mesh
+ */
+void create_table_mesh( pcl::PolygonMesh &_table_mesh,
+		   char _table_name_mesh[50] ) {
+
+  pcl::Poisson<pcl::PointNormal> poisson;
+
+  
+  pcl::PointCloud<pcl::PointNormal>::Ptr pnt( new pcl::PointCloud<pcl::PointNormal>() );
+  for( int i = 0; i < gTablePoints.points.size(); ++i ) {
+    pcl::PointNormal p;
+    p.x = gTablePoints.points[i].x; p.y = gTablePoints.points[i].y; p.z = gTablePoints.points[i].z;
+    p.normal_x = gTableCoeffs[0]; p.normal_y = gTableCoeffs[1]; p.normal_z = gTableCoeffs[2];	
+    pnt->points.push_back(p);
+  }
+  pnt->width = 1; pnt->height = pnt->points.size();
+  
+  poisson.setDepth(5);
+  poisson.setInputCloud(pnt);
+  poisson.reconstruct(_table_mesh);
+  
+  pcl::io::savePLYFile( _table_name_mesh, _table_mesh ); 
+}
+
+/**
+ * @function create_mesh
+ */
+void create_mesh( pcl::PolygonMesh &_mesh,
+		  double _dim[3],
+		  double _e[2], int _N,
+		  char* _mesh_name ) {
+
+  pcl::PointCloud<pcl::PointXYZ>::Ptr p( new pcl::PointCloud<pcl::PointXYZ>() );
+  pcl::PointCloud<pcl::PointXYZ>::Ptr p_down( new pcl::PointCloud<pcl::PointXYZ>() );
+
+  p = sampleSQ_uniform<pcl::PointXYZ>( _dim[0], _dim[1], _dim[2], _e[0], _e[1], _N );
+  downsampling<pcl::PointXYZ>( p, 0.0025, p_down );
+
+  // Convex Hull
+  pcl::ConvexHull<pcl::PointXYZ> chull;
+  pcl::PointCloud<pcl::PointXYZ> points;
+  std::vector<pcl::Vertices> polygons;
+  
+  chull.setInputCloud( p_down );
+  chull.reconstruct( points, polygons );
+
+  fix_mesh_faces( points, polygons );
+
+  // Save mesh
+  pcl::PCLPointCloud2 points2;
+  pcl::toPCLPointCloud2<pcl::PointXYZ>( points, points2 );  
+  _mesh.cloud = points2;
+  _mesh.polygons = polygons;
+  pcl::io::savePLYFile( _mesh_name, _mesh);
+  
+}
+
+/**
+ * @function fix_mesh_faces
+ */
+void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
+		     std::vector<pcl::Vertices> &_polygons ) {
+
+  pcl::PointXYZ p1, p2, p3;
+  Eigen::Vector3d b;
+  Eigen::Vector3d p21, p31;
+  Eigen::Vector3d N;
+  int v2, v3;
+  for( std::vector<pcl::Vertices>::iterator it = _polygons.begin();
+       it != _polygons.end(); ++it ) {
+    
+    if( (*it).vertices.size() != 3 ) {
+      continue;
+    }
+
+    p1 = _points[ (*it).vertices[0] ];
+    p2 = _points[ (*it).vertices[1] ];
+    p3 = _points[ (*it).vertices[2] ];
+
+    // Find baricenter
+    b << ( p1.x + p2.x + p3.x )/ 3.0, ( p1.y + p2.y + p3.y )/ 3.0, ( p1.z + p2.z + p3.z )/ 3.0;
+    
+    // Find normal
+    p21 << p2.x - p1.x, p2.y - p1.y, p2.z - p1.z;
+    p31 << p3.x - p1.x, p3.y - p1.y, p3.z - p1.z;
+    N = p21.cross( p31 );
+
+    // If
+    if( b.dot(N) < 0 ) {
+      v2 = (*it).vertices[1];
+      v3 = (*it).vertices[2];
+      (*it).vertices[1] = v3;
+      (*it).vertices[2] = v2;
+    }
+    
+  } // end for
+
+}
+
 
 
 /**
@@ -398,32 +492,10 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
   mg.reset();
   mg.complete( completed );
   mg.getSymmetryApprox( Tsymm, Bb );
-
-  pcl::PointCloud<PointTa> mirror_cloud;
-  PointTa P;
-  for( pcl::PointCloud<PointTa>::iterator it = completed->begin();
-       it != completed->end(); ++it ) {
-    P.x = (*it).x; P.y = (*it).y; P.z = (*it).z;
-    P.r = 255; P.g = 0; P.b = 255; P.a = 255;
-    mirror_cloud.points.push_back( P );
-  }  
-  mirror_cloud.height = 1; mirror_cloud.width = mirror_cloud.points.size();
-
-  pcl::PointCloud<PointTa>::Ptr cloud( new pcl::PointCloud<PointTa>() );  
-  for( pcl::PointCloud<PointTa>::iterator it = _cluster.begin(); it != _cluster.end(); ++it ) {
-	PointTa p;
-        p = (*it);
-        cloud->points.push_back(p);
-  }
-  cloud->width = 1; cloud->height = cloud->points.size();
-  char name[75]; sprintf( name, "original_pointcloud_%d.pcd", _index );
-  pcl::io::savePCDFileASCII( name, *cloud );
-  char nameM[75]; sprintf( nameM, "mirrored_pointcloud_%d.pcd", _index );  
-  pcl::io::savePCDFileASCII( nameM, mirror_cloud );
   
   fitter.setInputCloud( completed );
   fitter.setInitialApprox( Tsymm, Bb );
-  if( fitter.fit( 0.03, 0.005, 5, 0.1 ) ) {
+  if( fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 ) ) {
     
     SQ_parameters p;
     fitter.getFinalParams( p );

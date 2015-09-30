@@ -34,9 +34,6 @@
 #include <pcl/surface/convex_hull.h>
 #include <pcl/io/ply_io.h>
 
-
-
-
 // SQ, BB
 #include "refresher_utils/Refresher_utils.h"
 #include "sq_fitting/SQ_utils.h"
