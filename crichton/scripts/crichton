@@ -50,6 +50,34 @@ fi
 # FUNCTIONS
 #**************
 
+# Load drivers (esdcan for hands)
+crichton_load_drivers() {
+
+  # Load the driver
+  lsmod | grep -q esdcan
+  if [ $? -eq 1 ]
+  then
+     echo "esdcan module was not loaded yet";
+     sudo insmod /lib/modules/3.16.0-4-amd64/kernel/drivers/esdcan/esdcan-pci405.ko
+     echo "Here, just loaded it for you."
+  else 
+     echo "esdcan module is already loaded"
+  fi
+
+  # Create device files can0/1 (one per each hand)
+  cd /dev
+  for i in `seq 0 1`
+  do
+    name="can${i}";
+    if ! [ -e $name ]
+    then
+       sudo mknod --mode=a+rw $name c 53 $i;
+    fi
+  done
+
+  echo "Finished crichton_load_drivers"
+}
+
 # Make channels
 crichton_ach_mk() {
     for c in $CHANNELS; do
@@ -220,6 +248,9 @@ crichton_steal() {
 # SET SCRIPT OPTIONS
 #***************************
 case "$1" in
+    load)
+        crichton_load_drivers
+        ;;
     start)
 	crichton_start
 	;;
