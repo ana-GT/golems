@@ -23,6 +23,13 @@ CHANNELS="$CHANNELS tactile-right"
 # Trajectory channels
 TRAJ_CHANNELS="bimanual_chan bimanual_hand_chan"
 
+# Communication channels
+COMM_CHANNELS="obj_param_chan"
+COMM_CHANNELS="$COMM_CHANNELS module2server_chan"
+COMM_CHANNELS="$COMM_CHANNELS server2module_chan"
+COMM_CHANNELS="$COMM_CHANNELS gatekeeper_msg_chan"
+
+
 # Workstations 
 PLANNING_HOST="powell"
 CONTROL_HOST="calvin" 
@@ -41,6 +48,12 @@ crichton_ach_mk() {
     for c in $TRAJ_CHANNELS; do
         ach mk -m 7 -n 3000 -1 -o 666 $c
     done  
+
+    # For comm
+    for c in $COMM_CHANNELS; do
+        ach mk -m 7 -n 3000 -1 -o 666 $c
+    done  
+
 }
 
 # Remove channels
@@ -52,6 +65,12 @@ crichton_ach_rm() {
     for c in $TRAJ_CHANNELS; do
 	ach rm $c
     done
+
+    # For comm
+    for c in $TRAJ_CHANNELS; do
+       ach rm $c
+    done  
+
 }
 
 #***************************

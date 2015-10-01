@@ -4,7 +4,7 @@
  */
 #include "evaluated_eqs.h"
 #include <SQ_utils.h>
-#include <SQ_fitter_evaluated.h>
+#include <SQ_fitter.h>
 #include <tabletop_symmetry/mindGapper.h>
 
 #include <boost/thread/thread.hpp>
@@ -94,7 +94,7 @@ int main( int argc, char*argv[] ) {
   Eigen::Isometry3d Tsymm; Eigen::Vector3d Bb;
 
   // Parameters for the fitting
-  SQ_fitter_evaluated<PointT> sfe;
+  SQ_fitter<PointT> sfe;
   SQ_parameters par, par_h;
   clock_t ts, tf; double dt;  
 
@@ -140,7 +140,7 @@ int main( int argc, char*argv[] ) {
   error_metric<PointT>( par, cloud, erg, err, erd );
   saveParams( gOutput, par, dt, erg, err, 0, 0, 0 );   
 
-  approx = sampleSQ_uniform( par );
+  approx = sampleSQ_uniform<pcl::PointXYZ>( par );
   char rn[50]; sprintf( rn, "rn/%s_%d_%d.pcd", gGroupName.c_str(), ftype, i );
   pcl::io::savePCDFileASCII( rn, *approx );
 
@@ -154,7 +154,7 @@ int main( int argc, char*argv[] ) {
   dt = (tf-ts) / (double) CLOCKS_PER_SEC;
 
   sfe.getFinalParams( par_h );
-  approx = sampleSQ_uniform( par_h );
+  approx = sampleSQ_uniform<pcl::PointXYZ>( par_h );
   char hn[50]; sprintf( hn, "hn/%s_%d_%d.pcd", gGroupName.c_str(), ftype, i );
   pcl::io::savePCDFileASCII( hn, *approx );
 

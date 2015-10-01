@@ -7,13 +7,45 @@
 #include <pcl/common/pca.h>
 #include <pcl/common/centroid.h>
 #include <pcl/features/moment_of_inertia_estimation.h>
+#include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
 #include "../dt/dt.h"
 
-/** Helpers to improve mask */
-int getNumNeighbors( const cv::Mat &_mat, 
-		     int pi, int pj, 
-		     int minVal );
+#define MAX_VALUE_DELTA 1000000
+
+/**
+ * @function fillProjection
+ * @brief Fill holes in an object mask by a Open-Close operation
+ */
+cv::Mat fillProjection( const cv::Mat &_input ) {
+
+  int morph_size = 0;
+  int morph_elem = cv::MORPH_RECT;
+  
+  cv::Mat output = cv::Mat::zeros( _input.rows, _input.cols, CV_8UC1 );
+  std::vector< std::vector<cv::Point> > contours;
+  std::vector<cv::Vec4i> hierarchy;
+  cv::Scalar color(255);
+
+  cv::findContours( _input, contours, hierarchy,
+		    CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );
+  int idx = 0;
+  for( ; idx >= 0; idx = hierarchy[idx][0] ) {
+    drawContours( output, contours, idx, color, CV_FILLED, 8, hierarchy, 0 );
+  }
+  
+  cv::morphologyEx( output, output, cv::MORPH_OPEN,
+		    cv::getStructuringElement(morph_elem,
+					      cv::Size(2*morph_size+1, 2*morph_size+1),
+					      cv::Point(morph_size,morph_size) ) );
+  cv::morphologyEx( output, output, cv::MORPH_CLOSE,
+		    cv::getStructuringElement(morph_elem,
+					      cv::Size(2*morph_size+1, 2*morph_size+1),
+					      cv::Point(morph_size,morph_size) ) );
+
+  return output;
+}
+
 
 /**
  * @function sortIndices
@@ -69,17 +101,11 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   if( !this->generate2DMask( mCloud,
 			    mMarkMask,
 			    mDepthMask ) ) {
-    printf("Error generating 2D mask \n");
+    printf("[ERROR] Error generating 2D mask \n");
     return 0;
   }
-
+  
   mDTMask = matDT( mMarkMask );
-  generateBorder();
-
-  // Refill mask holes 
-  for( int c = 0; c < 2; ++c ) {
-    growMask( mMarkMask, 4, 125, 0, 125 );
-  }
 
   // 1. Project pointcloud to plane
   mProjected = projectToPlane( mCloud );
@@ -89,14 +115,25 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   pca.setInputCloud( mProjected );
   Eigen::Vector3f eval = pca.getEigenValues();
   Eigen::Matrix3f evec = pca.getEigenVectors();
-  
+
+  // Calculate the centroid with the voxelized version of the projected cloud on the table
+  // (otherwise the center is too influenced by the "front points" and might not
+  // use the top information of the cloud, if available
   Eigen::Vector4d c;
-  pcl::compute3DCentroid( *mProjected, c );
+
+  PointCloudPtr projected_voxelized( new PointCloud() );
   
+  pcl::VoxelGrid<PointT> sor;
+  sor.setInputCloud (mProjected);
+  sor.setLeafSize (0.01f, 0.01f, 0.01f);
+  sor.filter (*projected_voxelized);
+
+  pcl::compute3DCentroid( *projected_voxelized, c );
+    
   mC << c(0), c(1), c(2);
   mEa << (double) evec(0,0), (double) evec(1,0), (double) evec(2,0);
   mEb << (double) evec(0,1), (double) evec(1,1), (double) evec(2,1);
-
+  
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;
   v = mC; // viewing vector from Kinect origin (0,0,0) to centroid of projected cloud (mC)
@@ -117,6 +154,8 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
+
+  int count = 0;
   for( int i = 0; i < mM; ++i ) {
         
     ang = -mAlpha +i*dang;
@@ -133,12 +172,21 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
       
       if( np.dot(v) > -np.dot(v) ) { dir = np; } else { dir = -np; }
       cp = mC + dir*mDj*j;
+      
       symmRt.translation() = cp;
       //Set symmetry plane coefficients
       sp << np(0), np(1), np(2), -1*np.dot( cp );
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
+      ///////////////
+      /*
+      char namec[100];
+      sprintf( namec, "candidate_%d.pcd", count );
+      pcl::io::savePCDFile(namec, *mCandidates[mCandidates.size()-1], true );
+      count++;
+      */
+      ////////////////
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
@@ -150,11 +198,8 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   mDelta1.resize( mCandidates.size() );
   mDelta2.resize( mCandidates.size() );
 
-
-  //cv::Mat mi = printDebugMask();
   for( int i = 0; i < mCandidates.size(); ++i ) {
 
-    cv::Mat mi = printDebugMask();
     // Check inliers and outliers
     int px, py; PointT P;
     int outOfMask = 0; int frontOfMask = 0;
@@ -171,17 +216,15 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
       // MEASURE 1: OUT-OF-MASK PIXELS DISTANCE TO CLOSEST MASK PIXEL
       if( mMarkMask.at<uchar>(py,px) == 0 ) {
 	outOfMask++;  delta_1 += mDTMask.at<float>(py,px);
-	//cv::Vec3b col(0,255,0);  mi.at<cv::Vec3b>(py,px) = col;
       }
       
       // MEASURE 2: IN-MASK PIXELS IN FRONT OF VISIBLE PIXELS
       else {
 	double dp = (double)(mDepthMask.at<float>(py,px));
 	if( dp == 0 ) { continue; }
-	double d = P.z - dp;
+	double d = sqrt(P.z*P.z + P.y*P.y + P.x*P.x ) - dp;
 	if( d < 0 ) {
 	  frontOfMask++;  delta_2 += -d;
-	  //cv::Vec3b col(0,0,255);  mi.at<cv::Vec3b>(py,px) = col;
 	}
 
       }
@@ -189,41 +232,64 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
     } // end for it
     
     // Expected values
-    if( mValidity[i] == false ) { mDelta1[i] = 1000000; mDelta2[i] = 1000000; printf("[%d] Candidate is NOT valid \n", i);}
+    if( mValidity[i] == false ||
+	(delta_1 / (double) outOfMask) >= mMax_Out_Pixel_Avg ||
+	(delta_2/(double)frontOfMask) >= mMax_Front_Dist_Avg )
+      {
+      mDelta1[i] = MAX_VALUE_DELTA; mDelta2[i] = MAX_VALUE_DELTA;
+    }
     else {
-      if( outOfMask == 0 ) { mDelta1[i] = 1000000; }
+      if( outOfMask == 0 ) { mDelta1[i] = MAX_VALUE_DELTA; }
       else{ mDelta1[i] =  delta_1 / (double) outOfMask; }
 
-      if( frontOfMask == 0 ) { mDelta2[i] = 1000000;  }
-      else { mDelta2[i] =  (double) frontOfMask; } //(delta_2 / (double)frontOfMask); }
-    
+      if( frontOfMask == 0 ) { mDelta2[i] = MAX_VALUE_DELTA;  } 
+      else { mDelta2[i] = (delta_2 / (double)frontOfMask); }
     } // end else mValidity
 
+      ///////////////
+    /*
+      printf("Candidate [%d] delta 1: %f delta 2: %f num out: %d front: %d \n", i, mDelta1[i], mDelta2[i],
+	     outOfMask, frontOfMask);
+    */
+      /////////////////
+
+    
+    
   } // for each candidate
 
-  // Select the upper section according to delta_1
-  std::vector<unsigned int> delta1_priority;
-  delta1_priority = sortIndices( mDelta1, candidateDists );
-  std::vector<double> delta2_selected;
 
-  double d1min, d1max;
-  d1min = mDelta1[delta1_priority[0]];
-  for( int i = delta1_priority.size() - 1; i >= 0; --i ) {
-    if( mDelta1[i] == 1000000 ) { continue; }
-    else { d1max = mDelta1[i]; break; }
-  }   
-  double d1cut = d1min + 0.1*(d1max - d1min);
+  // First get the smallest delta1 per each rotation group
+  int d1_ind; double d1_min;
+  std::vector<int> first_pass;
+  
+  for( int i = 0; i < mM; ++i ) {
 
-  for( int i = 0; i < (int)(0.1*mCandidates.size()); ++i ) {
-      delta2_selected.push_back( mDelta2[ delta1_priority[i] ] );
+    for( int j = 0; j < mN; ++j ) {
+      if( mDelta1[i*mN + j] < 2 ) {
+	first_pass.push_back( i*mN + j );
+      }
+    }
+  }
+  
+  // Second, now get the smallest according to delta 2
+  int d2_ind; double d2_min;
+  d2_ind = first_pass[0]; d2_min = mDelta2[d2_ind];
+  for( int i = 1; i < first_pass.size(); ++i ) {
+    if( mDelta2[first_pass[i]] < d2_min ) {
+      d2_ind = first_pass[i];
+      d2_min = mDelta2[d2_ind];
+    }
   }
 
-  // Prioritize according to delta_2
-  std::vector<unsigned int> delta2_priority;
-  delta2_priority = sortIndices( delta2_selected, candidateDists );
-  
-  int minIndex = delta1_priority[delta2_priority[0]];
+  int minIndex = d2_ind;
+ 
+  printf("Min index: %d  \n", minIndex );
 
+  if( mDelta1[minIndex] == MAX_VALUE_DELTA || mDelta2[minIndex] == MAX_VALUE_DELTA ) {
+    printf("Alert! Mirroring MAY not be used here \n");
+    
+  }
+  
   // Set symmetry transformation
   symmRt = candidateSymmRts[minIndex];
   // Put in symmetry axis
@@ -300,7 +366,7 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
   // Segmented pixels: 255, No-segmented: 0
   PointCloudIter it;
   PointT P; int px; int py;
-  int count = 0; int repeated = 0;
+
   for( it = _segmented_cloud->begin(); 
        it != _segmented_cloud->end(); ++it ) {
     P = (*it);
@@ -309,12 +375,14 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
 
     if( px < 0 || px >= mWidth ) { return false; }
     if( py < 0 || py >= mHeight ) { return false; }
-    count++;
-    if( _markMask.at<uchar>(py,px) == 255 ) { repeated++; }
-    _markMask.at<uchar>(py,px) = 255;
 
-    _depthMask.at<float>(py,px) = (float)P.z;
+    _markMask.at<uchar>(py,px) = 255;
+    _depthMask.at<float>(py,px) = (float)sqrt( P.z*P.z + P.x*P.x + P.y*P.y );
   }
+
+  // Fill projection
+  _markMask = fillProjection( _markMask );
+  
   return true;
 }
 
@@ -328,6 +396,11 @@ template<typename PointT>
 mindGapper<PointT>::mindGapper() :
   mCloud( new PointCloud() ),
   mProjected( new PointCloud() ){
+
+  mMax_Out_Mask_Ratio = 0.5;
+  mUpper_Ratio_Delta = 0.1;
+  mMax_Front_Dist_Avg = 0.01; // 1 cm
+  mMax_Out_Pixel_Avg = 6; // 8 pixels avg (too big already, usually more than 6 is wrong)
 }
 
 /**
@@ -396,44 +469,6 @@ void mindGapper<PointT>::reset() {
   mValidity.resize(0);
 }
 
-template<typename PointT>
-void mindGapper<PointT>::generateBorder() {
-  
-  mBorders[0].resize( mMarkMask.rows );
-  mBorders[1].resize( mMarkMask.rows );
-  uchar prev, current; bool found0;
-
-  
-  for( size_t j = 0; j < mMarkMask.rows; ++j ) {
-    
-    uchar* ptr = mMarkMask.ptr<uchar>(j);
-    mBorders[0][j] = -1; mBorders[1][j] = -1;
-    prev = *ptr;
-    found0 = false; 
-    ptr++;
-
-    for( size_t i = 1; i < mMarkMask.cols; ++i ) {
-      current =  *ptr;
-      
-      // Left      
-      if( !found0 ) {
-	if( current  == 255 && prev == 0 ) { 
-	  mBorders[0][j] = i;
-	  found0 = true;
-	} 
-      }
-      
-      // Right
-      if( current == 0 && prev == 255 ) {
-	mBorders[1][j] = i-1;
-      }       
-      prev = current;
-      ptr++;  
-    
-    } // for i    
-  } // for j
-  
-}
 
 
 
@@ -570,84 +605,4 @@ void mindGapper<PointT>::printMirror( int _ind ) {
 
 }
 
-int getNumNeighbors( const cv::Mat &_mat, 
-		     int pi, int pj, 
-		     int minVal ) {  
-  int ei, ej;
-  int n = 0;
-  for( int i = -1; i <=1; ++i ) {
-    for( int j = -1; j <=1; ++j ) {
-      ei = pi + i;
-      ej = pj + j;
-      if( ei < 0 || ei >= _mat.cols ) { continue; }
-      if( ej < 0 || ej >= _mat.rows ) { continue; }
-      if( i == 0 && j == 0 ) { continue; }
-      if( _mat.at<uchar>(ej,ei) >= minVal ) {
-	n++;
-      }
-    }
-  }
-
-  return n;
-} 
-
-template<typename PointT>
-int mindGapper<PointT>::growMask( cv::Mat &_mask,
-				  int _numNeighbors,
-				  int _setVal,
-				  int _emptyVal,
-				  int _minNeighborVal ) {
-  int n;
-  int count = 0;
-
-  // Go only from border to border
-  int is, ig, i;
-
-  for( size_t j = 0; j < _mask.rows; ++j ) {
-    
-    is = 0; ig = _mask.cols;
-    if( mBorders[0][j] > 0 ) { is = mBorders[0][j]; }
-    if( mBorders[1][j] > 0 ) { ig = mBorders[1][j]; }
-
-    uchar* ptr = _mask.ptr<uchar>(j);
-    for( i = is; i < ig; ++i ) {
-
-      if( ptr[i] == _emptyVal ) {
-	
- 	// Check num neighbors
-	n = getNumNeighbors( _mask, i,j, _minNeighborVal );
-	if( n >= _numNeighbors ) {
-	  ptr[i] = _setVal;
-	  count++;
-	}
-      } 
-      //ptr++;
-    } // for 
-  } // for
-
-  return count;
-}
-
-/**
- * @function printDebugMask
- */
-template<typename PointT>
-cv::Mat mindGapper<PointT>::printDebugMask() {
-  
-  cv::Mat mask = cv::Mat::zeros( mHeight, mWidth, CV_8UC3 );
-  int count = 0;
-  uchar* ptr;
-  for( int j = 0; j < mMarkMask.rows; j++ ) {
-    ptr = mMarkMask.ptr(j); 
-    for( int i = 0; i < mMarkMask.cols; i++ ) {
-      if( ptr[i] == 255 ) { cv::Vec3b col(240,240,240); mask.at<cv::Vec3b>(j,i) = col; count++; }
-      else if( ptr[i] == 125 ) {  cv::Vec3b col(240,240,240); mask.at<cv::Vec3b>(j,i) = col; }
-      else { cv::Vec3b col(0,0,0); mask.at<cv::Vec3b>(j,i) = col; }      
-    }
-    
-//    if( mBorders[0][j] > 0 ) { cv::Vec3b col(0,255,0); mask.at<cv::Vec3b>(j,mBorders[0][j]) = col; }
-//    if( mBorders[1][j] > 0 ) { cv::Vec3b col(0,255,0); mask.at<cv::Vec3b>(j,mBorders[1][j]) = col; }
-  }
-  return mask;
-}
 

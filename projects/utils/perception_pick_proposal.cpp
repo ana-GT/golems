@@ -1,6 +1,7 @@
 /**
- * @file perception_pick
- * @brief Captures a snapshot, segments and select the type of primitive you want to use to represent the objects
+ * @file perception_pick_proposal
+ * @brief Captures data of single view, mirrored view and mesh for section I of proposal
+ * presentation
  * @brief It can be controlled by msgs from server
  * @author A. Huaman Q.
  */
@@ -33,7 +34,6 @@
 #include <pcl/surface/convex_hull.h>
 #include <pcl/io/ply_io.h>
 
-
 // SQ, BB
 #include "refresher_utils/Refresher_utils.h"
 #include "sq_fitting/SQ_utils.h"
@@ -41,12 +41,14 @@
 #include "tabletop_symmetry/mindGapper.h"
 
 
+int gSaved_items = 0;
+
 typedef pcl::PointXYZRGBA PointTa;
 
 /**************************/
 /** GLOBAL VARIABLES      */
 /**************************/
-std::string gWindowName = std::string("Perception Pick");
+std::string gWindowName = std::string("Perception Pick Proposal");
 cv::Mat gRgbImg;
 cv::Mat gPclMap;
 
@@ -79,8 +81,11 @@ void process( int state, void* userdata );
 void startComm( int state, void* userdata );
 void setSQ( int state, void* userData );
 void send( int state, void* userData );
-void fit_SQ( pcl::PointCloud<PointTa> _cluster, int i,
-	     double dim[3], double trans[3], double rot[3], double e[2] );
+void save( int state, void* userData );
+void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
+	     double _dim[3], double _trans[3],
+	     double _rot[3], double _e[2],
+	     pcl::PointCloud<PointTa>::Ptr &_mirrored );
 
 void create_mesh( pcl::PolygonMesh &_mesh,
 		  double _dim[3],
@@ -97,6 +102,8 @@ void drawSegmented();
 void getPixelClusters();
 void pollChan(); 
 
+cv::VideoCapture gCapture;
+
 /**
  * @function main
  */
@@ -106,23 +113,16 @@ int main( int argc, char* argv[] ) {
   srand( time(NULL) );
   
   // Open device
-  cv::VideoCapture capture( cv::CAP_OPENNI2 );
+  gCapture.open( cv::CAP_OPENNI2 );
   
-  if( !capture.isOpened() ) {
+  if( !gCapture.isOpened() ) {
     printf( "\t * Could not open the capture object \n" );
     return -1;
   }
-
-  printf("\t * Opened device \n");
   
-  capture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 ); // off
-  capture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 ); // on
-  
-  printf("\t * Common Image dimensions: (%f,%f) \n",
-	 capture.get( cv::CAP_PROP_FRAME_WIDTH ),
-	 capture.get( cv::CAP_PROP_FRAME_HEIGHT ) );
-  
-
+  gCapture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 ); // off
+  gCapture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 ); // on
+    
   // Set control panel
   cv::namedWindow( gWindowName, cv::WINDOW_AUTOSIZE );
   
@@ -138,32 +138,34 @@ int main( int argc, char* argv[] ) {
   cv::createButton( "Send", send, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
+  cv::createButton( "Save", save, 
+		    NULL, cv::QT_PUSH_BUTTON,
+		    false );
 
   
   // Set mouse callback 
   cv::setMouseCallback( gWindowName, onMouse, 0 );
 
   // Loop
-  gF = (float)capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );
+  gF = (float)gCapture.get( cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );
  
   for(;;) {
     
-    if( !capture.grab() ) {
+    if( !gCapture.grab() ) {
       printf( "\t * [ERROR] Could not grab a frame \n" );
       return -1;
     }
     
-    capture.retrieve( gRgbImg, cv::CAP_OPENNI_BGR_IMAGE );
+    gCapture.retrieve( gRgbImg, cv::CAP_OPENNI_BGR_IMAGE );
     if( gIsSegmentedFlag ) {
       drawSegmented();
     }
     cv::imshow( gWindowName, gRgbImg );
     
-    capture.retrieve( gPclMap, cv::CAP_OPENNI_POINT_CLOUD_MAP );
+    gCapture.retrieve( gPclMap, cv::CAP_OPENNI_POINT_CLOUD_MAP );
     
     if( gChanReady ){ pollChan(); }
     
-
     char k = cv::waitKey(30);
     if( k == 'q' ) {
       printf("\t * [PRESSED ESC] Finishing the program \n");
@@ -307,6 +309,80 @@ static void onMouse( int event, int x, int y, int, void* ) {
   } // end if
 }
 
+/**
+ * @function save
+ */
+void save( int state, void* userData ) {
+
+  // 0. Check if a cloud has been selected
+  if( gSelectedSegmentedCloud < 0 || gSelectedSegmentedCloud >= gClusters.size() ) {
+    printf("[save] ERROR: Did not select a cloud? \n");
+    return;
+  }
+  
+  // Save one-view pointcloud
+  char name[50];
+  sprintf( name, "one_view_%d.pcd", gSaved_items );
+  
+  pcl::io::savePCDFile( name, gClusters[gSelectedSegmentedCloud] );
+  
+  // Fit the selected pointcloud
+  pcl::PolygonMesh mesh;
+  pcl::PointCloud<PointTa>::Ptr mirrored_cloud( new pcl::PointCloud<PointTa>() );
+  double dim[3]; double trans[3]; double rot[3]; double e[2];  
+    
+  // 1. Save SQs
+  clock_t ts, tf; double dt;
+  ts = clock();
+  fit_SQ( gClusters[gSelectedSegmentedCloud],
+	  gSelectedSegmentedCloud, dim, trans, rot, e,
+	  mirrored_cloud );
+  tf = clock();
+  dt = (tf-ts)/(double) CLOCKS_PER_SEC;
+
+  // Save mirror
+  sprintf( name, "mirrored_%d.pcd", gSaved_items );  
+  pcl::io::savePCDFileASCII( name, *mirrored_cloud );
+  
+  // Save sq
+  pcl::PointCloud<PointTa>::Ptr sqp( new pcl::PointCloud<PointTa>() );
+  pcl::PointCloud<PointTa>::Ptr sqp_down( new pcl::PointCloud<PointTa>() );
+  sprintf( name, "sq_%d.pcd", gSaved_items );  
+  sqp = sampleSQ_uniform<PointTa>( dim, e, trans, rot );
+  downsampling<PointTa>( sqp, 0.0025, sqp_down );
+  printf("Dim: %f %f %f e: %f %f \n", dim[0], dim[1], dim[2], e[0], e[1]);
+  pcl::io::savePCDFile( name, *sqp_down );
+
+  // Save mesh
+  sprintf( name, "mesh_%d.ply", gSaved_items );
+  create_mesh( mesh, dim, e, 25, name );
+
+  // Save table
+  sprintf( name, "table_coeffs_%d.txt", gSaved_items );
+  std::ofstream ofs( name, std::ofstream::out );
+  ofs << gF << std::endl;
+  ofs << gTableCoeffs[0] << " " << gTableCoeffs[1] << " " << gTableCoeffs[2] << " " << gTableCoeffs[3] << std::endl;
+  ofs << dim[0] << " " << dim[1] << " " << dim[2] << " "
+      << trans[0] << " " << trans[1] << " " << trans[2] <<" "
+      << rot[0] << " " << rot[1] << " " << rot[2] << " "
+      << e[0] << " " << e[1] << std::endl;
+  ofs << dt << std::endl;
+  ofs.close();
+
+  sprintf( name, "table_%d.pcd", gSaved_items );  
+  pcl::io::savePCDFileASCII( name, gTablePoints );
+
+  // Save the image
+  sprintf( name, "rgb_%d.png", gSaved_items );
+  gCapture.retrieve( gRgbImg, cv::CAP_OPENNI_BGR_IMAGE );
+  cv::imwrite( name, gRgbImg );
+  
+  printf("Stored data item %d - fit in %f seconds \n", gSaved_items, dt );
+  
+  // Add counter
+  gSaved_items++;
+  
+}
 
 
 /**
@@ -314,7 +390,7 @@ static void onMouse( int event, int x, int y, int, void* ) {
  */
 void send( int state, void* userData ) {
   
-  printf("Clusters size: %d \n", gClusters.size() );
+  printf("\t * Clusters size: %d \n", gClusters.size() );
   if( gSelectedSegmentedCloud < 0 || gSelectedSegmentedCloud >= gClusters.size() ) {
     printf("--> ERROR: Did not select a cloud? \n");
     return;
@@ -332,11 +408,13 @@ void send( int state, void* userData ) {
   pcl::PointCloud<PointTa>::Ptr mirrored_cloud;
   size_t i;
   double dim[3]; double trans[3]; double rot[3]; double e[2];  
-  
-  
+    
   // 1. Save SQs
-  for( i = 0; i < gClusters.size(); ++i ) {  
-    fit_SQ( gClusters[i], i, dim, trans, rot, e );
+  for( i = 0; i < gClusters.size(); ++i ) {
+
+    fit_SQ( gClusters[i], i, dim, trans, rot, e,
+	    mirrored_cloud );
+    
     for(int j = 0; j < 3; ++j ) { msg->u[i].dim[j] = dim[j]; }
     for( int j = 0; j < 3; ++j ) { msg->u[i].trans[j] = trans[j]; }
     for( int j = 0; j < 3; ++j ) { msg->u[i].rot[j] = rot[j]; }
@@ -348,15 +426,14 @@ void send( int state, void* userData ) {
     strcpy( msg->u[i].mesh_filename, mesh_name );        
   }
   
+  
   // 2. Get the table
   char tableName[50]; sprintf( tableName, "%s/tableMesh.ply", gPicturesPath.c_str() );
   create_table_mesh( mesh, tableName );
   
-  pcl::io::savePLYFile( tableName, mesh ); 
-  
   for( i = 0; i < 4; ++i ) { msg->table_coeffs[i] = gTableCoeffs[i]; }
   sprintf( msg->table_meshfile, tableName );
-
+  
   ach_status_t r = ach_put( &gObj_param_chan, msg, sns_msg_tabletop_sq_size(msg) );
   if( r != ACH_OK ) {
     printf("\t [BAD] Error sending message \n");
@@ -468,13 +545,13 @@ void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
 }
 
 
-
 /**
  * @function fit_SQ
  */
 void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
 	     double _dim[3], double _trans[3],
-	     double _rot[3], double _e[2] ) {
+	     double _rot[3], double _e[2],
+	     pcl::PointCloud<PointTa>::Ptr &_mirrored ) {
 
   // Generate a mirror version of the pointcloud
   mindGapper<PointTa> mg;
@@ -485,15 +562,15 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
   
   // Fit pointcloud to superquadric
   SQ_fitter< PointTa> fitter;
-  pcl::PointCloud<PointTa>::Ptr completed( new pcl::PointCloud<PointTa>() );
   Eigen::Isometry3d Tsymm; Eigen::Vector3d Bb;
   
-  *completed = _cluster;
+  *_mirrored = _cluster;
   mg.reset();
-  mg.complete( completed );
+  mg.complete( _mirrored );
   mg.getSymmetryApprox( Tsymm, Bb );
+
   
-  fitter.setInputCloud( completed );
+  fitter.setInputCloud( _mirrored );
   fitter.setInitialApprox( Tsymm, Bb );
   if( fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 ) ) {
     
@@ -503,11 +580,6 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
     for( int i = 0; i < 3; ++i ) { _trans[i] = p.trans[i]; }
     for( int i = 0; i < 3; ++i ) { _rot[i] = p.rot[i]; }
     for( int i = 0; i < 2; ++i ) { _e[i] = p.e[i]; }
-
-    pcl::PointCloud<pcl::PointXYZ>::Ptr sqp( new pcl::PointCloud<pcl::PointXYZ>() );
-    char sqname[75]; sprintf( sqname, "sq_pointcloud_%d.pcd", _index );  
-    sqp = sampleSQ_uniform<pcl::PointXYZ>( p ); 
-    pcl::io::savePCDFile( sqname, *sqp );
 
   }
   
@@ -558,7 +630,7 @@ void process( int state,
   gTablePoints = tts.getTable();
   int n = tts.getNumClusters();
 
-  // Set segmented variables
+  // Set segmented vriables
   gIsSegmentedFlag = true;
   gClusters.resize(n);
   gColors.resize(n);

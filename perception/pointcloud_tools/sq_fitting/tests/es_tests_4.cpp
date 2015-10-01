@@ -4,7 +4,6 @@
  */
 #include "evaluated_eqs.h"
 #include <SQ_utils.h>
-#include <SQ_fitter_evaluated.h>
 #include <tabletop_symmetry/mindGapper.h>
 
 char* fx_names[6] = { "Radial", "Solina", "Ichim", "Chevalier", "F5", "F6"};
@@ -128,7 +127,7 @@ int main( int argc, char*argv[] ) {
 	   par.e[0], par.e[1], dt,
 	   er1, er2);
     */
-    approx = sampleSQ_uniform( par );
+    approx = sampleSQ_uniform<pcl::PointXYZ>( par );
     char name[50];
     sprintf( name, "%s_hierarchical_%d.pcd", gOutput.c_str(), i );
     pcl::io::savePCDFileASCII( name, *approx );

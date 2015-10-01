@@ -64,50 +64,6 @@ double f_SQ( const SQ_parameters &_par,
 
 }
 
-/**
- * @function error_SQ
- * @brief Eq.(4) from Duncan's paper (F^e1 -1)^2
- */
-double error_SQ( const SQ_parameters &_par,  
-		 const double &x, const double &y, const double &z ) {
-
-  double a = _par.dim[0];
-  double b = _par.dim[1];
-  double c = _par.dim[2];
-  double e1 = _par.e[0];
-  double e2 = _par.dim[1];
-  double px = _par.trans[0];
-  double py = _par.trans[1]; 
-  double pz = _par.trans[2]; 
-  double ra = _par.rot[0]; 
-  double pa = _par.rot[1]; 
-  double ya = _par.rot[2];
-
-  double t2 = cos(ya);
-    double t3 = sin(ra);
-    double t4 = cos(ra);
-    double t5 = sin(pa);
-    double t6 = sin(ya);
-    double t7 = t3*t6;
-    double t8 = t2*t4*t5;
-    double t9 = t7+t8;
-    double t10 = t2*t3;
-    double t11 = t10-t4*t5*t6;
-    double t12 = cos(pa);
-    double t13 = px*t9-py*t11-t9*x+t11*y+pz*t4*t12-t4*t12*z;
-    double t14 = t4*t6;
-    double t15 = t14-t2*t3*t5;
-    double t16 = t2*t4;
-    double t17 = t3*t5*t6;
-    double t18 = t16+t17;
-    double t19 = px*t15-py*t18-t15*x+t18*y-pz*t3*t12+t3*t12*z;
-    double t20 = pz*t5-t5*z-px*t2*t12-py*t6*t12+t2*t12*x+t6*t12*y;
-    double t21 = 1.0/e2;
-    double t22 = 1.0/e1;
-    double t23 = pow(pow(pow(1.0/(a*a)*(t20*t20),t21)+pow(1.0/(b*b)*(t19*t19),t21),e2*t22)+pow(1.0/(c*c)*(t13*t13),t22),e1)-1.0;
-    
-    return t23*t23;
-}
 
 double error_SQ_tampering( const SQ_parameters &_par,  
 			   const double &x, 

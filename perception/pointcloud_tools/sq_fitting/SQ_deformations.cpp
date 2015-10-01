@@ -17,7 +17,7 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr SQ_deformations::linear_tampering( const dou
 
   // 1. Create the superellipsoid
   pcl::PointCloud<pcl::PointXYZ>::Ptr sq( new pcl::PointCloud<pcl::PointXYZ>() );
-  sq = sampleSQ_uniform( _a1, _a2, _a3, _e1, _e2, 50 );
+  sq = sampleSQ_uniform<pcl::PointXYZ>( _a1, _a2, _a3, _e1, _e2, 50 );
 
   // 2. Apply the deformation
   pcl::PointCloud<pcl::PointXYZ>::iterator it;

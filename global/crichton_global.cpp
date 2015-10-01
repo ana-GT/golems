@@ -69,7 +69,7 @@ gTrk[1].translation() << -0.176772, 0.0166431, 0.142114;
   gKnownConfs[LEFT_MSG][RESTING].resize(7);
   gKnownConfs[LEFT_MSG][RESTING] << 0, M_PI*-30.0/180.0, 0, M_PI*-45.0/180.0, 0, 0, M_PI*30.0/180.0;  
   gKnownConfs[RIGHT_MSG][RESTING].resize(7);
-  gKnownConfs[RIGHT_MSG][RESTING] << 0, M_PI*30.0/180.0, 0, M_PI*45.0/180.0, 0, 0, -M_PI*90.0/180.0;;
+  gKnownConfs[RIGHT_MSG][RESTING] << 0, M_PI*30.0/180.0, 0, M_PI*45.0/180.0, 0, 0, -M_PI*90.0/180.0;
 
   // LOOKUP_SKY = 3,
   gKnownConfs[LEFT_MSG][LOOKUP_SKY].resize(7);

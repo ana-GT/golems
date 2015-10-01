@@ -34,8 +34,8 @@ class mindGapper {
 
 
   /**< Set parameters for symmetry plane search */
-  void setFittingParams( int _n = 6, int _m = 10, 
-			 double _dj = 0.01, double _alpha = 20.0*M_PI / 180.0 );
+  void setFittingParams( int _n = 11, int _m = 17, 
+			 double _dj = 0.01, double _alpha = 60.0*M_PI / 180.0 );
 
   /**< Set Kinect params to calculate mirror errors */
   void setDeviceParams( int _width = 640, int _height = 480, 
@@ -61,11 +61,7 @@ class mindGapper {
 		       cv::Mat &_markMask,
 		       cv::Mat &_depthMask );
   cv::Mat get2DMask() { return mMarkMask; }
-  int growMask( cv::Mat &_mask,
-		int _numNeighbors,
-		int _setVal,
-		int _emptyVal,
-		int _minNeighborVal );
+
   cv::Mat printDebugMask();
 
   // Debug functions
@@ -73,7 +69,6 @@ class mindGapper {
   void printMirror( int _ind );
   PointCloudPtr getCandidate(int _ind) { return mCandidates[_ind]; }
   bool viewInitialParameters();
-  void generateBorder();
 
  private:
   
@@ -92,6 +87,12 @@ class mindGapper {
   Eigen::Isometry3d mSymmTf;
   Eigen::Vector3d mBBDim;
 
+  /**< Constants for Limits */
+  double mMax_Out_Mask_Ratio;
+  double mUpper_Ratio_Delta;
+  double mMax_Front_Dist_Avg;
+  double mMax_Out_Pixel_Avg;
+  
   /**< Variables */
   Eigen::VectorXd mPlaneCoeffs;
   int mN;
@@ -104,7 +105,6 @@ class mindGapper {
   cv::Mat mMarkMask; cv::Mat mDepthMask;
   cv::Mat mDTMask;
   int mWidth; int mHeight;
-  std::vector<double> mBorders[2];
 
   Eigen::Vector3d mC;
   Eigen::Vector3d mEa, mEb;

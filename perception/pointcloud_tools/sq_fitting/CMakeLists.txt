@@ -5,6 +5,8 @@ set( CMAKE_CXX_FLAGS "-std=gnu++0x -fPIC" )
 include_directories( ${PROJECT_SOURCE_DIR}/include )
 include_directories( ${PROJECT_SOURCE_DIR} )
 
+include_directories(.)
+
 # levmar
 add_subdirectory( levmar )
 
@@ -21,7 +23,7 @@ set_target_properties( sq_utils PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
 
-add_library( sq_fitting SQ_utils.cpp analytic_equations.cpp SQ_fitter.cpp )
+add_library( sq_fitting SQ_utils.cpp analytic_equations.cpp SQ_fitter.cpp evaluated_eqs.cpp )
 target_link_libraries( sq_fitting levmar  ${PCL_COMMON_LIBRARIES} ${PCL_IO_LIBRARIES}  pthread )
 set_target_properties( sq_fitting PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
