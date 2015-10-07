@@ -108,6 +108,8 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
 
   // Update current state and time
   double tn;
+  Eigen::VectorXd vel_t, pos_t;
+  double Kp = 0.005;  
 
   while( !update() ) {}
 
@@ -132,7 +134,11 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
     tn = current_time - start_time;   
 
     // Build velocity command
-    vel_cmd = trajectory.getVelocity( tn );
+    
+    vel_t = trajectory.getVelocity( tn );
+    pos_t = trajectory.getPosition( tn );
+    vel_cmd = vel_t + Kp*( pos_t - mq );
+
     acc = (vel_cmd - vp)/0.01;
     vp = vel_cmd;
 
