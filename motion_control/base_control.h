@@ -30,6 +30,8 @@ class BaseControl {
 			 const Eigen::VectorXd &_maxAccel,
 			 const Eigen::VectorXd &_maxVel );
   
+  void sendZeroVel();
+
   // Getters
   ach_channel_t* get_refChan() { return mChan_ref; }
   double get_Dq_thresh() { return mDq_thresh; }

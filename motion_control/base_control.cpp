@@ -139,6 +139,8 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
     pos_t = trajectory.getPosition( tn );
     vel_cmd = vel_t + Kp*( pos_t - mq );
 
+    for( int j = 0; j < vel_cmd.size(); ++j ) { if( fabs(vel_cmd(j)) > _maxVel(j) ) { printf("VELOCITY OUT OF LIMITS, STOPPING!!! \n"); sendZeroVel(); break; } }
+
     acc = (vel_cmd - vp)/0.01;
     vp = vel_cmd;
 
@@ -169,10 +171,20 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   output.close();
 
   printf("\t * [trajectoryFollowing] DEBUG: Finish and sending zero vel for good measure \n");
+  sendZeroVel();
+
+  return true;  
+}
+
+/**
+ * @function sendZeroVel
+ * @brief Send zero velocities for emergency stops
+ */
+void BaseControl::sendZeroVel() {
+
   Eigen::VectorXd zeros(mN); for( int i = 0; i < mN; ++i ) { zeros(i) = 0; }
   control_n( mN, zeros, mDt, mChan_ref, SNS_MOTOR_MODE_VEL );
 
-  return true;  
 }
 
 ////////////////////////////////////////////////////
