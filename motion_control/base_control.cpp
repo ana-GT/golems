@@ -142,7 +142,7 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
      Eigen::VectorXd ep; ep = trajectory.getPosition(tn).transpose();
      Eigen::VectorXd cp; cp = mq.transpose();
      Eigen::VectorXd errp; errp = (ep - cp);
-     std::cout << "Error position: "<< errp.norm() << ": "<< errp << std::endl;
+     std::cout << "Error position: "<< errp.norm() << ": "<< errp.transpose() << std::endl;
    }
     output << tn << " " << trajectory.getPosition(tn).transpose() << " " << mq.transpose() << " " <<
 	vel_cmd.transpose() << " " << mdq.transpose() << " " << acc.transpose()  << std::endl; 
