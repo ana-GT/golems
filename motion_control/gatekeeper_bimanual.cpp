@@ -41,8 +41,8 @@ BaseDualControl bdc;
 double mFreq = 100.0;
 double mDt = 1.0 / mFreq;
 
-double mMaxAccel = 0.1;
-double mMaxVel = 0.4;// 23degrees/s
+double mMaxAccel = 0.4;
+double mMaxVel = 0.3; // 0.4  23degrees/s
 
 struct timespec t_now;
 struct timespec t_timeout;

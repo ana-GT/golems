@@ -132,11 +132,12 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
 
     // Build velocity command
     vel_cmd = trajectory.getVelocity( tn );
-
     acc = (vel_cmd - vp)/0.01;
-    
+    vp = vel_cmd;
+
    // std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
    // std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
+   // std::cout << "Current position: " << mq.transpose() << std::endl;
    // std::cout << "Current position: " << mq.transpose() << std::endl;
    // std::cout << "Current velocity: " << mdq.transpose() << std::endl;
    
@@ -287,5 +288,5 @@ bool BaseControl::reset_n( size_t n,
   ach_status_t r;
   r = ach_put( chan, msg, sns_msg_motor_ref_size(msg) );
 
-  return (r == ACH_OK);  
-}
+  return (r == ACH_OK); 
+} 
