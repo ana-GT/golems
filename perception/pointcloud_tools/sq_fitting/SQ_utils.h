@@ -12,7 +12,27 @@
 #include <pcl/common/centroid.h>
 #include <pcl/common/pca.h>
 
+#include <pcl/PolygonMesh.h>
+#include <pcl/surface/convex_hull.h>
+#include <pcl/io/ply_io.h>
+
 #include "SQ_parameters.h"
+
+/** Meshes */
+namespace SQ_utils {
+
+  void create_SQ_mesh( double _a, double _b, double _c,
+		       double _e1, double _e2, int _N,
+		       const char* _mesh_name );
+  
+  void create_SQ_mesh( pcl::PolygonMesh &_mesh,
+		       double _dim[3],
+		       double _e[2], int _N,
+		       const char* _mesh_name );
+  
+  void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
+		       std::vector<pcl::Vertices> &_polygons );
+} // end namespace SQ_utils
 
 void printParamsInfo( const SQ_parameters &_par );
 

@@ -336,6 +336,7 @@ void send( int state, void* userData ) {
   
   // 1. Save SQs
   for( i = 0; i < gClusters.size(); ++i ) {  
+     printf("Saving mesh %d \n", i);
     fit_SQ( gClusters[i], i, dim, trans, rot, e );
     for(int j = 0; j < 3; ++j ) { msg->u[i].dim[j] = dim[j]; }
     for( int j = 0; j < 3; ++j ) { msg->u[i].trans[j] = trans[j]; }
@@ -347,13 +348,13 @@ void send( int state, void* userData ) {
     msg->u[i].mesh_generated = true;
     strcpy( msg->u[i].mesh_filename, mesh_name );        
   }
-  
+  printf("Save table \n");
   // 2. Get the table
   char tableName[50]; sprintf( tableName, "%s/tableMesh.ply", gPicturesPath.c_str() );
   create_table_mesh( mesh, tableName );
-  
+  printf("Created table mesh above \n");
   pcl::io::savePLYFile( tableName, mesh ); 
-  
+  printf("Saved ply file \n");
   for( i = 0; i < 4; ++i ) { msg->table_coeffs[i] = gTableCoeffs[i]; }
   sprintf( msg->table_meshfile, tableName );
 
@@ -375,6 +376,7 @@ void create_table_mesh( pcl::PolygonMesh &_table_mesh,
 
   pcl::Poisson<pcl::PointNormal> poisson;
 
+
   
   pcl::PointCloud<pcl::PointNormal>::Ptr pnt( new pcl::PointCloud<pcl::PointNormal>() );
   for( int i = 0; i < gTablePoints.points.size(); ++i ) {
@@ -384,11 +386,23 @@ void create_table_mesh( pcl::PolygonMesh &_table_mesh,
     pnt->points.push_back(p);
   }
   pnt->width = 1; pnt->height = pnt->points.size();
+
+
+  // Convex Hull
+  pcl::ConvexHull<pcl::PointNormal> chull;
+  pcl::PointCloud<pcl::PointNormal> points;
+  std::vector<pcl::Vertices> polygons;
   
+  chull.setInputCloud( pnt );
+  chull.reconstruct( _table_mesh );
+
+/*
   poisson.setDepth(5);
+printf("Input \n");
   poisson.setInputCloud(pnt);
+printf("Table mesh \n");
   poisson.reconstruct(_table_mesh);
-  
+  */
   pcl::io::savePLYFile( _table_name_mesh, _table_mesh ); 
 }
 
@@ -482,7 +496,7 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
   mg.setFittingParams();
   mg.setDeviceParams();
   mg.setFocalDist(gF);
-  
+  printf("Mirror version \n");
   // Fit pointcloud to superquadric
   SQ_fitter< PointTa> fitter;
   pcl::PointCloud<PointTa>::Ptr completed( new pcl::PointCloud<PointTa>() );
@@ -492,7 +506,7 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
   mg.reset();
   mg.complete( completed );
   mg.getSymmetryApprox( Tsymm, Bb );
-  
+  printf("Fitting \n");
   fitter.setInputCloud( completed );
   fitter.setInitialApprox( Tsymm, Bb );
   if( fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 ) ) {

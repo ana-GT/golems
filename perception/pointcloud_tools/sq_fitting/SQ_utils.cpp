@@ -4,6 +4,99 @@
 #include "SQ_utils.h"
 #include <iostream>
 
+namespace SQ_utils {
+  
+/**
+ * @function create_mesh
+ */
+  void create_SQ_mesh( double _a, double _b, double _c,
+		       double _e1, double _e2, int _N,
+		       const char* _mesh_name ) {
+    pcl::PolygonMesh mesh;
+    double dim[3]; double e[2];
+
+    dim[0] = _a; dim[1] = _b; dim[2] = _c;
+    e[0] = _e1; e[1] = _e2;
+					  
+    SQ_utils::create_SQ_mesh( mesh, dim, e, _N, _mesh_name );
+  }
+  
+  void create_SQ_mesh( pcl::PolygonMesh &_mesh,
+		       double _dim[3],
+		       double _e[2], int _N,
+		       const char* _mesh_name ) {
+    
+    pcl::PointCloud<pcl::PointXYZ>::Ptr p( new pcl::PointCloud<pcl::PointXYZ>() );
+    pcl::PointCloud<pcl::PointXYZ>::Ptr p_down( new pcl::PointCloud<pcl::PointXYZ>() );
+    
+    p = sampleSQ_uniform<pcl::PointXYZ>( _dim[0], _dim[1], _dim[2], _e[0], _e[1], _N );
+    downsampling<pcl::PointXYZ>( p, 0.0025, p_down );
+    
+    // Convex Hull
+    pcl::ConvexHull<pcl::PointXYZ> chull;
+    pcl::PointCloud<pcl::PointXYZ> points;
+    std::vector<pcl::Vertices> polygons;
+    
+    chull.setInputCloud( p_down );
+    chull.reconstruct( points, polygons );
+    
+    fix_mesh_faces( points, polygons );
+    
+    // Save mesh
+    pcl::PCLPointCloud2 points2;
+    pcl::toPCLPointCloud2<pcl::PointXYZ>( points, points2 );  
+    _mesh.cloud = points2;
+    _mesh.polygons = polygons;
+    pcl::io::savePLYFile( _mesh_name, _mesh);
+    
+  }
+  
+  /**
+   * @function fix_mesh_faces
+   */
+  void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
+		       std::vector<pcl::Vertices> &_polygons ) {
+    
+    pcl::PointXYZ p1, p2, p3;
+    Eigen::Vector3d b;
+    Eigen::Vector3d p21, p31;
+    Eigen::Vector3d N;
+    int v2, v3;
+    for( std::vector<pcl::Vertices>::iterator it = _polygons.begin();
+	 it != _polygons.end(); ++it ) {
+      
+      if( (*it).vertices.size() != 3 ) {
+	continue;
+      }
+      
+      p1 = _points[ (*it).vertices[0] ];
+      p2 = _points[ (*it).vertices[1] ];
+      p3 = _points[ (*it).vertices[2] ];
+      
+      // Find baricenter
+      b << ( p1.x + p2.x + p3.x )/ 3.0, ( p1.y + p2.y + p3.y )/ 3.0, ( p1.z + p2.z + p3.z )/ 3.0;
+      
+      // Find normal
+      p21 << p2.x - p1.x, p2.y - p1.y, p2.z - p1.z;
+      p31 << p3.x - p1.x, p3.y - p1.y, p3.z - p1.z;
+      N = p21.cross( p31 );
+      
+      // If
+      if( b.dot(N) < 0 ) {
+	v2 = (*it).vertices[1];
+	v3 = (*it).vertices[2];
+	(*it).vertices[1] = v3;
+	(*it).vertices[2] = v2;
+      }
+      
+    } // end for
+    
+  }
+
+} // namespace
+
+
+
 /**
  * @function printParamsInfo
  * @brief Print in a human-friendly form the parameters info
@@ -65,8 +158,9 @@ void sampleSQ_uniform_pn( const double &_a1,
   // s1 and s2 have angles like these: [-180, -90] [0,-90], [0,90], [180,90]
   // s1: From -PI/2 o PI/2. 
   pcl::PointXYZ p1, p2;
+  int n = se1->points.size()/4;
   
-  for( int i = se1->points.size()/4; i < se1->points.size()*3/4; ++i ) {
+  for( int i = n; i < n*3; ++i ) {
     p1 = se1->points[i];
     // s2: From PI to PI
     for( int j = 0; j < se2->points.size(); ++j ) {

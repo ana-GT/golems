@@ -35,6 +35,13 @@ include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools/sq_fitting 
 
 # Apps
 
+
+# See normals
+add_executable( proposal_see_normals proposal_see_normals.cpp )
+target_link_libraries( proposal_see_normals  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
+set_target_properties( proposal_see_normals PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
 # Perception Pick Proposal
 add_executable( perception_pick_proposal perception_pick_proposal.cpp )
 target_link_libraries( perception_pick_proposal  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
