@@ -123,6 +123,7 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   Eigen::VectorXd vp = Eigen::VectorXd::Zero(7);
   Eigen::VectorXd acc;
 
+  double tn_old = tn;
   while( tn < duration ) {
 
     // Get current time and state
@@ -135,12 +136,14 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
     acc = (vel_cmd - vp)/0.01;
     vp = vel_cmd;
 
-   // std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
-   // std::cout << "Expected position: "<< trajectory.getPosition(tn).transpose() << std::endl;
-   // std::cout << "Current position: " << mq.transpose() << std::endl;
-   // std::cout << "Current position: " << mq.transpose() << std::endl;
-   // std::cout << "Current velocity: " << mdq.transpose() << std::endl;
-   
+     if( tn - tn_old > 0.5 ) {
+     tn_old = tn;
+     std::cout << "["<< tn << "]: "<< vel_cmd.transpose() << std::endl;
+     Eigen::VectorXd ep; ep = trajectory.getPosition(tn).transpose();
+     Eigen::VectorXd cp; cp = mq.transpose();
+     Eigen::VectorXd errp; errp = (ep - cp);
+     std::cout << "Error position: "<< errp.norm() << ": "<< errp << std::endl;
+   }
     output << tn << " " << trajectory.getPosition(tn).transpose() << " " << mq.transpose() << " " <<
 	vel_cmd.transpose() << " " << mdq.transpose() << " " << acc.transpose()  << std::endl; 
 
