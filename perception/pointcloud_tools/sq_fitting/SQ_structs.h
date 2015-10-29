@@ -3,7 +3,6 @@
  */
 #pragma once
 
-#include <ceres/sized_cost_function.h>
 #include "analytic_equations.h"
 
 /**
