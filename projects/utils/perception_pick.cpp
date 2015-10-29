@@ -518,6 +518,8 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
     for( int i = 0; i < 3; ++i ) { _rot[i] = p.rot[i]; }
     for( int i = 0; i < 2; ++i ) { _e[i] = p.e[i]; }
 
+    printf("SQ in pos: %f %f %f rot: %f %f %f \n", p.trans[0], p.trans[1], p.trans[2], p.rot[0], p.rot[1], p.rot[2]);
+
     pcl::PointCloud<pcl::PointXYZ>::Ptr sqp( new pcl::PointCloud<pcl::PointXYZ>() );
     char sqname[75]; sprintf( sqname, "sq_pointcloud_%d.pcd", _index );  
     sqp = sampleSQ_uniform<pcl::PointXYZ>( p ); 
