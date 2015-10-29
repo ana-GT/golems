@@ -93,7 +93,7 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   
 
   // Create trajectory
-  Trajectory trajectory( Path(path, mMaxDev), _maxVel, _maxAccel );
+  Trajectory trajectory( Path(path, mMaxDev), 0.95*_maxVel, 0.95*_maxAccel );
   trajectory.outputPhasePlaneTrajectory();
   if( !trajectory.isValid() ) {
     printf("\t [followTrajectory] ERROR: Trajectory is not valid \n");
@@ -109,7 +109,7 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
   // Update current state and time
   double tn;
   Eigen::VectorXd vel_t, pos_t;
-  double Kp = 0.005;  
+  double Kp = 0.05;  
 
   while( !update() ) {}
 
@@ -139,7 +139,15 @@ bool BaseControl::followTrajectory( const std::list<Eigen::VectorXd> &_path,
     pos_t = trajectory.getPosition( tn );
     vel_cmd = vel_t + Kp*( pos_t - mq );
 
-    for( int j = 0; j < vel_cmd.size(); ++j ) { if( fabs(vel_cmd(j)) > _maxVel(j) ) { printf("VELOCITY OUT OF LIMITS, STOPPING!!! \n"); sendZeroVel(); break; } }
+    for( int j = 0; j < vel_cmd.size(); ++j ) { 
+        if( fabs(vel_cmd(j)) > _maxVel(j) ) { 
+             printf("VELOCITY OUT OF LIMITS, STOPPING!!! \n"); 
+            std::cout << "Vt: "<< vel_t.transpose() << std::endl;
+            std::cout << "Vc: " << vel_cmd.transpose() << std::endl;
+            std::cout << "Mv: " << _maxVel.transpose() << std::endl;         
+            sendZeroVel(); return false; 
+        } 
+    }
 
     acc = (vel_cmd - vp)/0.01;
     vp = vel_cmd;
