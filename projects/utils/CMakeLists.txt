@@ -13,9 +13,9 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # OpenNI2 (for Tracker)
 find_package( OpenNI2 REQUIRED ) 
-find_package( NiTE2 REQUIRED ) 
+#find_package( NiTE2 REQUIRED ) 
 
-include_directories( ${NiTE2_INCLUDE_DIRS} )
+#include_directories( ${NiTE2_INCLUDE_DIRS} )
 include_directories( ${OpenNI2_INCLUDE_DIRS} )
 
 
@@ -36,11 +36,6 @@ include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools/sq_fitting 
 # Apps
 
 
-# See normals
-add_executable( proposal_see_normals proposal_see_normals.cpp )
-target_link_libraries( proposal_see_normals  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
-set_target_properties( proposal_see_normals PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 # Perception Pick Proposal
 add_executable( perception_pick_proposal perception_pick_proposal.cpp )
@@ -93,11 +88,6 @@ set_target_properties( receive_data PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_
 add_executable( see_module_alita see_module_alita.cpp )
 target_link_libraries( see_module_alita  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
 set_target_properties( see_module_alita PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-add_executable( see_duckie see_duckie.cpp )
-target_link_libraries( see_duckie  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
-set_target_properties( see_duckie PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 

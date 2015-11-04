@@ -7,7 +7,8 @@ enum ROBOT_TYPE {
     HUBO_ROBOT = 1,
     ALITA_ROBOT = 2,
     HUMAN_MODEL = 3,
-    TOTAL_ROBOT_TYPES = 4
+    BAXTER_ROBOT = 4,
+    TOTAL_ROBOT_TYPES = 5
 };
 
 enum HAND_TYPE {
@@ -17,5 +18,6 @@ enum HAND_TYPE {
     ALITA_HAND = 3,
     LHUMAN_HAND = 4,
     RHUMAN_HAND = 5,
-    TOTAL_HAND_TYPES = 6
+    BAXTER_HAND = 6,
+    TOTAL_HAND_TYPES = 7
 };
