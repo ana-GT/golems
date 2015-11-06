@@ -240,7 +240,7 @@ typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform_b2( const SQ_parameters &
 
   double x, y, z;
   double r,gamma, beta, R;
-  printf("ALpha: %f \n", _par.alpha);
+
   for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
 
     x = (*it).x; y = (*it).y; z = (*it).z;

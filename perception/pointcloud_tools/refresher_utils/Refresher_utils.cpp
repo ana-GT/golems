@@ -9,15 +9,8 @@
 #include <iostream>
 #include <fstream>
 
-#include <dart/dynamics/Skeleton.h>
-#include <dart/dynamics/BodyNode.h>
-#include <dart/dynamics/MeshShape.h>
-#include <dart/simulation/World.h>
-#include <dart/dynamics/FreeJoint.h>
-
 #include <refresher_utils/Refresher_utils.h>
-#include <sq_fitting/SQ_parameters.h>
-#include <sq_fitting/SQ_fitter.h>
+
 
 void downsample( const pcl::PointCloud<pcl::PointXYZ>::Ptr &_cloud,
 		 const double &_voxelSize,

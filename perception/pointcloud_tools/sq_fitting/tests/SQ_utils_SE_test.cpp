@@ -45,7 +45,7 @@ int main( int argc, char* argv[] ) {
  
   std::cout << "a1: "<< a1 << " a2: "<< a2 << " a3: "<< a3 << " e1: "<< e1<<" e2: "<< e2 << std::endl;
   std::cout << " num points: "<< N << std::endl;
-    cloud = sampleSQ_uniform( a1, a2, a3, e1, e2, N );
+    cloud = sampleSQ_uniform<pcl::PointXYZ>( a1, a2, a3, e1, e2, N );
   
   std::cout << "Cloud size: "<< cloud->points.size() << std::endl;
 

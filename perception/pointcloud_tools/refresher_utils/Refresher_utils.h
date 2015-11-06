@@ -8,8 +8,6 @@
 #include <pcl/Vertices.h>
 #include <pcl/filters/voxel_grid.h>
 
-namespace dart { namespace dynamics { class Skeleton; } }
-
 template<typename T>
 void downsample( const boost::shared_ptr<const pcl::PointCloud<T> > &_cloud,
 		 const double &_voxelSize,

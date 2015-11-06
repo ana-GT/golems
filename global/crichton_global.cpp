@@ -54,16 +54,30 @@ gTrk[1].translation() << -0.176772, 0.0166431, 0.142114;
 
  
  //   ARC_UP = 0
+/*
  gKnownConfs[LEFT_MSG][ARC_UP].resize(7);
  gKnownConfs[LEFT_MSG][ARC_UP] << 90*M_PI/180.0, -30*M_PI/180.0, 0, -60*M_PI/180.0, 0, -40*M_PI/180.0, 0;
  gKnownConfs[RIGHT_MSG][ARC_UP].resize(7);
- gKnownConfs[RIGHT_MSG][ARC_UP] << -90*M_PI/180.0, 30*M_PI/180.0, 0, 60*M_PI/180.0, 0, 40*M_PI/180.0, 0;
+ gKnownConfs[RIGHT_MSG][ARC_UP] << -90*M_PI/180.0, 30*M_PI/180.0, 0, 60*M_PI/180.0, 0, 40*M_PI/180.0, 0;	
+*/
+  // BAXTER
+ gKnownConfs[LEFT_MSG][ARC_UP].resize(7);
+ gKnownConfs[LEFT_MSG][ARC_UP] << 40*M_PI/180.0, -20*M_PI/180.0, -160*M_PI/180.0, 60*M_PI/180.0, -15*M_PI/180.0, 60*M_PI/180.0, 0;
+ gKnownConfs[RIGHT_MSG][ARC_UP].resize(7);
+ gKnownConfs[RIGHT_MSG][ARC_UP] << -40*M_PI/180.0, -20*M_PI/180.0, 160*M_PI/180.0, 60*M_PI/180.0, 15*M_PI/180.0, 60*M_PI/180.0, 0;	
 
  //   FRONTAL_FIST = 1
+/*
   gKnownConfs[LEFT_MSG][FRONTAL_FIST].resize(7);
   gKnownConfs[LEFT_MSG][FRONTAL_FIST] << 0, M_PI*-50.0/180.0, 0, M_PI*-75.0/180.0, 0, 0, M_PI*60.0/180.0;
   gKnownConfs[RIGHT_MSG][FRONTAL_FIST].resize(7);
   gKnownConfs[RIGHT_MSG][FRONTAL_FIST] << 0, M_PI*50.0/180.0, 0, M_PI*75.0/180.0, 0, 0, -M_PI*120.0/180.0;
+*/
+ gKnownConfs[LEFT_MSG][FRONTAL_FIST].resize(7);
+ gKnownConfs[LEFT_MSG][FRONTAL_FIST] << 30*M_PI/180.0, 0*M_PI/180.0, -80*M_PI/180.0, 120*M_PI/180.0, 0*M_PI/180.0, -40*M_PI/180.0, 0;
+ gKnownConfs[RIGHT_MSG][FRONTAL_FIST].resize(7);
+ gKnownConfs[RIGHT_MSG][FRONTAL_FIST] << -30*M_PI/180.0, 0*M_PI/180.0, 80*M_PI/180.0, 120*M_PI/180.0, 0*M_PI/180.0, -40*M_PI/180.0, 0;	
+
 
   //  RESTING = 2
   gKnownConfs[LEFT_MSG][RESTING].resize(7);
@@ -72,10 +86,16 @@ gTrk[1].translation() << -0.176772, 0.0166431, 0.142114;
   gKnownConfs[RIGHT_MSG][RESTING] << 0, M_PI*30.0/180.0, 0, M_PI*45.0/180.0, 0, 0, -M_PI*90.0/180.0;
 
   // LOOKUP_SKY = 3,
+/*
   gKnownConfs[LEFT_MSG][LOOKUP_SKY].resize(7);
   gKnownConfs[LEFT_MSG][LOOKUP_SKY] << M_PI*90.0/180.0, -M_PI*90.0/180.0, 0, 0, 0, 0, 0;
   gKnownConfs[RIGHT_MSG][LOOKUP_SKY].resize(7);
   gKnownConfs[RIGHT_MSG][LOOKUP_SKY] << -M_PI*90.0/180.0, M_PI*90.0/180.0, 0, 0, 0, 0, 0; 
+*/
+  gKnownConfs[LEFT_MSG][LOOKUP_SKY].resize(7);
+  gKnownConfs[LEFT_MSG][LOOKUP_SKY] << M_PI*45.0/180.0, -M_PI*85.0/180.0, 0, 0, 0, 0, 0;
+  gKnownConfs[RIGHT_MSG][LOOKUP_SKY].resize(7);
+  gKnownConfs[RIGHT_MSG][LOOKUP_SKY] << -M_PI*45.0/180.0, -M_PI*85.0/180.0, 0, 0, 0, 0, 0; 
 
   // DEMANDING = 4
   gKnownConfs[LEFT_MSG][DEMANDING].resize(7);

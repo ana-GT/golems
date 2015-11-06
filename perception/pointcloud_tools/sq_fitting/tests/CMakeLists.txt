@@ -7,7 +7,7 @@ link_directories( ${PCL_LIBRARY_DIRS} )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
 
 # PCL
-find_package(PCL 1.7 REQUIRED COMPONENTS common search io features)
+find_package(PCL 1.8 REQUIRED COMPONENTS common search io features visualization)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -16,6 +16,11 @@ add_definitions(${PCL_DEFINITIONS})
 # OpenCV
 #find_package( OpenCV REQUIRED )
 #include_directories( ${OpenCV_INCLUDE_DIRS} )
+
+add_executable ( SQ_utils_SE_test SQ_utils_SE_test.cpp)
+target_link_libraries(SQ_utils_SE_test sq_utils ${PCL_VISUALIZATION_LIBRARIES} )
+set_target_properties( SQ_utils_SE_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable ( get_error_data get_error_data.cpp)
 target_link_libraries(get_error_data sq_fitting ${PCL_LIBRARIES} )
