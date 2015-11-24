@@ -60,6 +60,7 @@ std::vector<pcl::PointCloud<PointTa> > gClusters;
 std::vector<cv::Vec3b> gColors;
 std::vector< std::vector<Eigen::Vector2d> > gPixelClusters;
 std::vector<Eigen::Vector2d> gClusterCentroids;
+std::vector<Eigen::Vector4d> gBoundingBoxes;
 std::vector<double> gTableCoeffs;
 pcl::PointCloud<PointTa> gTablePoints;
 bool gChanReady = false;
@@ -103,22 +104,21 @@ void pollChan();
 int main( int argc, char* argv[] ) {
 
   // Initialization
-  srand( time(NULL) );
-  
-  // Open device
+  srand( time(NULL) );  
   cv::VideoCapture capture( cv::CAP_OPENNI2 );
   
   if( !capture.isOpened() ) {
-    printf( "\t * Could not open the capture object \n" );
+    printf( "\t [ERROR] Could not open the capture object \n" );
     return -1;
   }
 
-  printf("\t * Opened device \n");
+  printf("\t [INFO] Opened device \n");
   
   capture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 ); // off
   capture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 ); // on
+  gF = (float)capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );
   
-  printf("\t * Common Image dimensions: (%f,%f) \n",
+  printf("\t [INFO] Image dimensions: (%f,%f) \n",
 	 capture.get( cv::CAP_PROP_FRAME_WIDTH ),
 	 capture.get( cv::CAP_PROP_FRAME_HEIGHT ) );
   
@@ -128,7 +128,7 @@ int main( int argc, char* argv[] ) {
   
   int value;
   cv::createTrackbar("track1", gWindowName.c_str(), &value, 255, NULL, NULL );
-
+  
   cv::createButton( "Start comm", startComm, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
@@ -138,18 +138,15 @@ int main( int argc, char* argv[] ) {
   cv::createButton( "Send", send, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
-
   
   // Set mouse callback 
   cv::setMouseCallback( gWindowName, onMouse, 0 );
 
   // Loop
-  gF = (float)capture.get( cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );
- 
   for(;;) {
     
     if( !capture.grab() ) {
-      printf( "\t * [ERROR] Could not grab a frame \n" );
+      printf( "\t [ERROR] Could not grab a frame \n" );
       return -1;
     }
     
@@ -314,7 +311,7 @@ static void onMouse( int event, int x, int y, int, void* ) {
  */
 void send( int state, void* userData ) {
   
-  printf("Clusters size: %d \n", gClusters.size() );
+  printf("Clusters size: %ld \n", gClusters.size() );
   if( gSelectedSegmentedCloud < 0 || gSelectedSegmentedCloud >= gClusters.size() ) {
     printf("--> ERROR: Did not select a cloud? \n");
     return;
@@ -336,14 +333,14 @@ void send( int state, void* userData ) {
   
   // 1. Save SQs
   for( i = 0; i < gClusters.size(); ++i ) {  
-     printf("Saving mesh %d \n", i);
+    printf("Saving mesh %ld \n", i);
     fit_SQ( gClusters[i], i, dim, trans, rot, e );
     for(int j = 0; j < 3; ++j ) { msg->u[i].dim[j] = dim[j]; }
     for( int j = 0; j < 3; ++j ) { msg->u[i].trans[j] = trans[j]; }
     for( int j = 0; j < 3; ++j ) { msg->u[i].rot[j] = rot[j]; }
     for( int j = 0; j < 2; ++j ) { msg->u[i].e[j] = e[j]; }
 
-    char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%d.ply", gPicturesPath.c_str(), i );
+    char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%ld.ply", gPicturesPath.c_str(), i );
     create_mesh( mesh, dim, e, 25, mesh_name );
     msg->u[i].mesh_generated = true;
     strcpy( msg->u[i].mesh_filename, mesh_name );        
@@ -356,7 +353,7 @@ void send( int state, void* userData ) {
   pcl::io::savePLYFile( tableName, mesh ); 
   printf("Saved ply file \n");
   for( i = 0; i < 4; ++i ) { msg->table_coeffs[i] = gTableCoeffs[i]; }
-  sprintf( msg->table_meshfile, tableName );
+  sprintf( msg->table_meshfile, "%s", tableName );
 
   ach_status_t r = ach_put( &gObj_param_chan, msg, sns_msg_tabletop_sq_size(msg) );
   if( r != ACH_OK ) {
@@ -563,12 +560,10 @@ void process( int state,
       pi++; ci++;
     }
   }
-  pcl::io::savePCDFile( "debugPcl.pcd", *cloud, true );
-  
-  
+
   // Segment
   TabletopSegmentor<PointTa> tts;
-  tts.set_filter_minMax( -0.75, 0.75, -0.75, 0.75, 0.25, 0.9 );
+  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.0 );
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();
@@ -599,6 +594,10 @@ void drawSegmented() {
     for( int j = 0; j < gPixelClusters[i].size(); ++j ) {
       gRgbImg.at<cv::Vec3b>( gPixelClusters[i][j](1), gPixelClusters[i][j](0) ) = gColors[i];
     }
+    int thickness = 2;
+    cv::rectangle( gRgbImg, cv::Point( gBoundingBoxes[i](0), gBoundingBoxes[i](1) ),
+		   cv::Point( gBoundingBoxes[i](2), gBoundingBoxes[i](3) ),
+		   gColors[i], thickness );
   }
   
 }
@@ -610,7 +609,8 @@ void getPixelClusters() {
 
   gPixelClusters.resize( gClusters.size() );
   gClusterCentroids.resize( gClusters.size() );
-  
+  gBoundingBoxes.resize( gClusters.size() );
+
   for( int i = 0; i < gPixelClusters.size(); ++i ) {
     gPixelClusters[i].resize(0);
   }
@@ -629,6 +629,9 @@ void getPixelClusters() {
     sum_u = 0;
     sum_v = 0;
 
+    int min_u = width; int min_v = height;
+    int max_u = 0; int max_v = 0;
+
     for( pcl::PointCloud<PointTa>::iterator it = gClusters[i].begin();
 	 it != gClusters[i].end(); ++it ) {
 
@@ -640,8 +643,18 @@ void getPixelClusters() {
 
       sum_u += u;
       sum_v += v;
+
+      // Bounding Box
+      if( u < min_u ) { min_u = u; }
+      if( u > max_u ) { max_u = u; }
+      if( v < min_v ) { min_v = v; }
+      if( v > max_v ) { max_v = v; }
+
     }
-    
+
+    Eigen::Vector4d mM; mM << min_u, min_v, max_u, max_v;
+    gBoundingBoxes[i] = mM;
+
     Eigen::Vector2d ct;
     ct << (double)(sum_u)/gClusters[i].points.size(), (double)(sum_v)/gClusters[i].points.size();
     gClusterCentroids[i] = ct;

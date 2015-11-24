@@ -313,7 +313,7 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   PointCloudPtr cloud_objects_downsampled_ptr (new PointCloud);
   grid_objects_.setInputCloud (cloud_objects_ptr);
   grid_objects_.filter (*cloud_objects_downsampled_ptr);
-  printf("Object clouds from %d to %d \n", cloud_objects_ptr->points.size(),
+  printf("Object clouds from %ld to %ld \n", cloud_objects_ptr->points.size(),
 	 cloud_objects_downsampled_ptr->points.size() );
   // Step 6: Split the objects into Euclidean clusters
   std::vector<pcl::PointIndices> clusters2;
@@ -322,7 +322,7 @@ bool TabletopSegmentor<PointT>::processCloud(const PointCloudConstPtr &_cloud ) 
   mClusterInds.resize( clusters2.size() );
   for( int i = 0; i < clusters2.size(); ++i ) {
     mClusterInds[i] = clusters2[i];
-    printf("Cluster %d size: %d \n", i, clusters2[i].indices.size()   );
+    printf("Cluster %d size: %ld \n", i, clusters2[i].indices.size()   );
   }
 
   mClusters.resize( clusters2.size() );

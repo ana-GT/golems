@@ -281,7 +281,7 @@ void storeSnapshot( int state, void* userdata ) {
       mPr[i].push_back( mP[i][j].pr );
       mPd[i].push_back( mP[i][j] );
     }
-    printf("Points stored so far for arm %d : %d \n", i, mPk[i].size() );
+    printf("Points stored so far for arm %d : %ld \n", i, mPk[i].size() );
   }
 }
 
@@ -291,7 +291,7 @@ void storeSnapshot( int state, void* userdata ) {
 void showPoints( int state, void* userdata ) {
 
   for( int i = 0; i < 2; ++i ) {
-    printf("Arm [%d] # validmarkers detected: %d \n", i, mPk[i].size() );
+    printf("Arm [%d] # validmarkers detected: %ld \n", i, mPk[i].size() );
     for( int j = 0; j < mPd[i].size(); ++j ) {
       
       printf("Id: %d - Pk: %f %f %f - Pr: %f %f %f \n", mPd[i][j].id,
