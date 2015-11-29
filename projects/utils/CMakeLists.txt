@@ -50,6 +50,20 @@ target_link_libraries( get_training_data_OR  tabletop_segmentation  ${PCL_SURFAC
 set_target_properties( get_training_data_OR PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+add_executable( get_training_data_OR_single_object get_training_data_OR_single_object.cpp )
+target_link_libraries( get_training_data_OR_single_object  tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( get_training_data_OR_single_object PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+
+# Take picture with joystick
+add_executable( joystick_snapshot joystick_snapshot.cpp )
+target_link_libraries( joystick_snapshot  tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( joystick_snapshot PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
 # Perception Pick
 add_executable( perception_pick perception_pick.cpp )
 target_link_libraries( perception_pick  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
