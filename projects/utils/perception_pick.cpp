@@ -64,6 +64,7 @@ std::vector<Eigen::Vector4d> gBoundingBoxes;
 std::vector<double> gTableCoeffs;
 pcl::PointCloud<PointTa> gTablePoints;
 bool gChanReady = false;
+cv::VideoCapture capture;
 
 // CHANNELS
 ach_channel_t gObj_param_chan; // Channel to send object param to planner
@@ -105,7 +106,7 @@ int main( int argc, char* argv[] ) {
 
   // Initialization
   srand( time(NULL) );  
-  cv::VideoCapture capture( cv::CAP_OPENNI2 );
+  capture.open(-1);
   
   if( !capture.isOpened() ) {
     printf( "\t [ERROR] Could not open the capture object \n" );
@@ -335,6 +336,7 @@ void send( int state, void* userData ) {
   for( i = 0; i < gClusters.size(); ++i ) {  
     printf("Saving mesh %ld \n", i);
     fit_SQ( gClusters[i], i, dim, trans, rot, e );
+    printf("Fitted \n");
     for(int j = 0; j < 3; ++j ) { msg->u[i].dim[j] = dim[j]; }
     for( int j = 0; j < 3; ++j ) { msg->u[i].trans[j] = trans[j]; }
     for( int j = 0; j < 3; ++j ) { msg->u[i].rot[j] = rot[j]; }
@@ -500,12 +502,13 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
   Eigen::Isometry3d Tsymm; Eigen::Vector3d Bb;
   
   *completed = _cluster;
-  mg.reset();
+  printf("Size of cluster: %d \n", completed->points.size() );
+/*  mg.reset();
   mg.complete( completed );
   mg.getSymmetryApprox( Tsymm, Bb );
-  printf("Fitting \n");
+  printf("Fitting \n");*/
   fitter.setInputCloud( completed );
-  fitter.setInitialApprox( Tsymm, Bb );
+  //fitter.setInitialApprox( Tsymm, Bb );
   if( fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 ) ) {
     
     SQ_parameters p;
@@ -532,6 +535,11 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
  */
 void process( int state, 
 	      void* userdata ) {
+
+    // Get a clear image (original color)
+    capture.retrieve( gRgbImg, cv::CAP_OPENNI_BGR_IMAGE );
+    capture.retrieve( gPclMap, cv::CAP_OPENNI_POINT_CLOUD_MAP );
+
 
   // Get organized pointcloud
   pcl::PointCloud<PointTa>::Ptr cloud( new pcl::PointCloud<PointTa> );
@@ -563,7 +571,7 @@ void process( int state,
 
   // Segment
   TabletopSegmentor<PointTa> tts;
-  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.0 );
+  tts.set_filter_minMax( -1.0, 1.0, -1.5,1.5, 0.35, 2.0 );
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();

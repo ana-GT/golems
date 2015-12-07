@@ -73,7 +73,7 @@ int main( int argc, char* argv[] ) {
   srand( time(NULL) );
   
   // Open device
-  cv::VideoCapture capture( cv::CAP_OPENNI );
+  cv::VideoCapture capture( cv::CAP_OPENNI2 );
   
   if( !capture.isOpened() ) {
     std::cout << "/t * Could not open the capture object"<<std::endl;

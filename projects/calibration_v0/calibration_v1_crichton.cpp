@@ -94,21 +94,21 @@ int main( int argc, char* argv[] ) {
   cv::setMouseCallback( mWindowName, onMouse, 0 );
 
   // Set buttons
-  cv::createTrackbar( "**********", NULL, &value, 255, NULL );
+  cv::createTrackbar( "T1_tb", "T1", &value, 255, NULL, NULL );
   cv::createButton( "Grab snapshot", grabSnapshot, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
   cv::createButton( "Show snapshot", showSnapshot, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
-  cv::createTrackbar( "----------", NULL, &value, 255, NULL );
+  cv::createTrackbar( "T2_tb", "T2", &value, 255, NULL, NULL );
   cv::createButton( "Store snapshot", storeSnapshot, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
   cv::createButton( "Discard snapshot", discardSnapshot, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );
-  cv::createTrackbar( "xxxxxxxxx", NULL, &value, 255, NULL );
+  cv::createTrackbar( "T3_tb", "T3", &value, 255, NULL, NULL );
   cv::createButton( "Calibrate", calibrate, 
 		    NULL, cv::QT_PUSH_BUTTON,
 		    false );

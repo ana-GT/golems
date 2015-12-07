@@ -43,7 +43,7 @@ static const std::string gPlan2Server_chan_name("plan2server_chan");
 static const std::string gModule2Server_chan_name("module2server_chan");
 static const std::string gServer2Module_chan_name("server2module_chan");
 
-static const std::string gPicturesPath("/home/ana/Pictures");
+static const std::string gPicturesPath("/home/ahuaman/Pictures");
 
 extern Eigen::Isometry3d gTrk[2];
 extern Eigen::VectorXd gKnownConfs[NUM_SIDES_MSG][TOTAL_CONF];

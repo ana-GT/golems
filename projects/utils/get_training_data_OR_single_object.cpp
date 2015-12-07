@@ -218,7 +218,7 @@ void save( int state, void* userdata ) {
   cv::FileStorage fs( imageName, cv::FileStorage::WRITE );
   fs << "depthMatrix" << img_depth;
   fs.release();
-
+  pcl::io::savePCDFile( "selectedCloud.pcd", gClusters[gSelectedSegmentedCloud], true );  
   printf("Saved %s \n", imageName );
 
   gSaveCalls++;
@@ -228,6 +228,11 @@ void save( int state, void* userdata ) {
  * @function process
  */
 void process( int state, void* userdata ) {
+
+
+    // Get a clear image (original color)
+    gCapture.retrieve( gRgbImg, cv::CAP_OPENNI_BGR_IMAGE );
+    gCapture.retrieve( gPclMap, cv::CAP_OPENNI_POINT_CLOUD_MAP );
 
   // Get organized pointcloud
   pcl::PointCloud<PointTa>::Ptr cloud( new pcl::PointCloud<PointTa> );

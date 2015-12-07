@@ -59,14 +59,12 @@ bool Control_Interface::update() {
  */
 bool Control_Interface::get_state( Eigen::VectorXd &_q,
 				   Eigen::VectorXd &_dq ) {
-  if( this->update() ) { _q = mq; _dq = mdq;  return true; }
-  else { return false; }
-/*
+
   while( !this->update() ) {}
   _q = mq;
   _dq = mdq;
   return true;
-*/
+
 }
 
 
@@ -101,7 +99,7 @@ bool Control_Interface::update_n( size_t n,
       }
       return true;
     } else {
-      SNS_LOG( LOG_ERR, "[update_n] Invalid motor_state message \n" );
+      SNS_LOG( LOG_ERR, "[update_n] Invalid motor_state \n" );
       return false;
     }
     

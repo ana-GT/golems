@@ -22,6 +22,8 @@ gTrk[0].linear() << 0.974359, -0.0227323,  -0.223849,
 
   gTrk[0].translation() << 0.0216599, 0.0576096, 0.0798085;
 */
+
+/*
 // Friday, October 23rd, 2015 - Crichton 
  gTrk[0].linear() <<   0.0248514, 0.833346, 0.552193,   
    0.999686, -0.0188633, -0.0165231,    
@@ -35,7 +37,7 @@ gTrk[1].linear() << -0.0406066,  -0.882481,  -0.468593,
  0.0530394,   0.466415,  -0.882975;   
 
 gTrk[1].translation() << -0.176772, 0.0166431, 0.142114;
-
+*/
 
 // Wednesday, June 10th, 2015
 /*
@@ -51,6 +53,25 @@ gTrk[1].translation() << -0.176772, 0.0166431, 0.142114;
   0.035752   0.472508  -0.880601   0.124434
          0          0          0          1
 */
+
+
+// BAXTER. ONLY LEFT THOUGH
+
+
+
+
+ gTrk[0].linear() <<  0.0359274,   0.443249, 0.895678,  
+ 0.998,  0.0307389,-0.0552437,  
+ -0.0520189,   0.895871, -0.441258;   
+;
+ gTrk[0].translation() <<  0.0239383, 0.0124627, 0.853588;
+
+// Crichton: Monday June 22
+gTrk[1].linear() << -0.0406066,  -0.882481,  -0.468593,  
+ -0.997766,  0.0607085, -0.0278667,  
+ 0.0530394,   0.466415,  -0.882975;   
+
+gTrk[1].translation() << -0.176772, 0.0166431, 0.142114;
 
  
  //   ARC_UP = 0
@@ -80,10 +101,17 @@ gTrk[1].translation() << -0.176772, 0.0166431, 0.142114;
 
 
   //  RESTING = 2
+/*
   gKnownConfs[LEFT_MSG][RESTING].resize(7);
   gKnownConfs[LEFT_MSG][RESTING] << 0, M_PI*-30.0/180.0, 0, M_PI*-45.0/180.0, 0, 0, M_PI*30.0/180.0;  
   gKnownConfs[RIGHT_MSG][RESTING].resize(7);
   gKnownConfs[RIGHT_MSG][RESTING] << 0, M_PI*30.0/180.0, 0, M_PI*45.0/180.0, 0, 0, -M_PI*90.0/180.0;
+*/
+  // Baxter
+  gKnownConfs[LEFT_MSG][RESTING].resize(7);
+  gKnownConfs[LEFT_MSG][RESTING] << -45.0*M_PI/180.0, -45.0*M_PI/180.0, 0, 90.0*M_PI/180.0, 0, 45.0*M_PI/180.0, 0;  
+  gKnownConfs[RIGHT_MSG][RESTING].resize(7);
+  gKnownConfs[RIGHT_MSG][RESTING] << 45.0*M_PI/180.0, -45.0*M_PI/180.0, 0, 90.0*M_PI/180.0, 0, 45.0*M_PI/180.0, 0;
 
   // LOOKUP_SKY = 3,
 /*

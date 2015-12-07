@@ -6,7 +6,7 @@
 # ALVAR_LIBRARIES - The libraries needed to use amino
 # *********************************************************
 
-set( ALVAR_ROOT_DIR /home/ana/local )
+set( ALVAR_ROOT_DIR $ENV{HOME}/local )
 
 find_path( alvar_INCLUDE_DIR Alvar.h PATHS ${ALVAR_ROOT_DIR}/include/alvar ) # NO_DEFAULT_PATH
 find_library( alvar_LIBRARY alvar200 PATHS ${ALVAR_ROOT_DIR}/lib ) # NO_DEFAULT_PATH
