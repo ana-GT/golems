@@ -69,6 +69,8 @@ class SQ_fitter {
     _par = par_out_; 
   }
 
+  double getFinalError() { return final_error_; }
+
 
     bool minimize( const int &_type,
 		 const PointCloudPtr &_cloud, 
@@ -78,8 +80,10 @@ class SQ_fitter {
   
 
  private:
-  SQ_parameters par_in_;
-  SQ_parameters par_out_;
+    
+    double final_error_;
+    SQ_parameters par_in_;
+    SQ_parameters par_out_;
 
   PointCloudPtr cloud_;
 

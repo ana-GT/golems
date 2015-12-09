@@ -264,7 +264,7 @@ void process( int state, void* userdata ) {
 
   // Segment
   TabletopSegmentor<PointTa> tts;
-  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.0 );
+  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.35 );
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();

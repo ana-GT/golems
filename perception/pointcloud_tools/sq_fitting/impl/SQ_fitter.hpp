@@ -152,7 +152,7 @@ bool SQ_fitter<PointT>::fit( const int &_type,
     
     // [CONDITION]
     double de = (error_i_1 - error_i);
-
+    final_error_ = error_i;
     if( fabs(de) < thresh_ ) {
       fitted = true;
       break;

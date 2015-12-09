@@ -9,6 +9,8 @@
 #include <time.h>
 #include <pcl/common/transforms.h>
 
+#include "sq_fitting/SQ_fitter.h"
+
 typedef pcl::PointXYZRGB PointT;
 
 /**
@@ -50,6 +52,8 @@ int main( int argc, char* argv[] ) {
   int N_trials = 20;
   std::vector< pcl::PointCloud<PointT> > Pis;
 
+  std::vector<double> errors;
+
   for( int i = 0; i < N_trials; ++i ) {
     
     // Initialize kmeans
@@ -71,11 +75,15 @@ int main( int argc, char* argv[] ) {
 
     pcl::PointCloud<PointT> Pi;
 
+    std::vector<pcl::PointCloud<PointT> > parts_i;
+    
     for( int k = 0; k < ctp.size(); ++k ) {
       r = (uint8_t)(rand() % 255);
       g = (uint8_t)rand() % 255;
       b = (uint8_t)rand() % 255;
       
+      pcl::PointCloud<PointT> part_i;
+
       for( std::set<unsigned int>::iterator it = ctp[k].begin();
 	   it != ctp[k].end(); ++it ) {
 	PointT p;
@@ -83,18 +91,53 @@ int main( int argc, char* argv[] ) {
         p.y = input->points[*it].y;
         p.z = input->points[*it].z;
 	p.r = r; p.g = g; p.b = b;
-	Pi.points.push_back( p );
+	part_i.points.push_back( p );
       } // end for it
 
-    } // end for k
+      part_i.width = 1; part_i.height = part_i.points.size();
+      parts_i.push_back( part_i );
+
+      Pi.points.insert( Pi.points.end(), part_i.begin(), part_i.end() );
+    } // end for k: number of clusters
+
     Pi.width = 1; Pi.height = Pi.points.size();
     
     char name[50];
     sprintf( name, "kmeans_trial_%d.pcd", i );
     pcl::io::savePCDFile ( name, Pi);
     Pis.push_back( Pi );
- 
+
+    // In each trial, check errors with superquadrics
+    printf("SQ error trial: [%d] ", i );	
+    double err2 = 0;
+    for( int m = 0; m < ctp.size(); ++m ) {
+
+      SQ_fitter< PointT> fitter;
+      pcl::PointCloud<PointT>::Ptr pana( new pcl::PointCloud<PointT> );
+      *pana = parts_i[m];
+      fitter.setInputCloud( pana );
+      //fitter.setInitialApprox( Tsymm, Bb );
+      if( fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 ) ) {
+	printf("E[%d]= %f ", m, fitter.getFinalError() );
+      }
+      err2 += fitter.getFinalError() * fitter.getFinalError(); 
+    } // end m
+    printf("\n");
+    errors.push_back( err2 );
+
+
   } // trials
+
+  // Sort small first biggest last
+  std::vector<double> errors_copy;
+  errors_copy = errors;
+  int ind;
+  std::sort( errors.begin(), errors.end() );
+  for( int i = 0; i < N_trials; ++i ) {
+    if( errors_copy[i] == errors[0] ) { ind = i; break; } 
+  }
+  printf("Supposedly  best index: %d \n", ind);
+
 
   // Save all pointclouds with a translation of x = 0.3 m so we can see them all together
   pcl::PointCloud<PointT> Ptogether;
