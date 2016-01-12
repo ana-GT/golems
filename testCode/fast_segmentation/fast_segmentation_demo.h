@@ -1,6 +1,20 @@
 
 #pragma once
 
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/io/openni2_grabber.h>
+#include <pcl/io/pcd_grabber.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/io/io.h>
+#include <pcl/features/normal_3d.h>
+#include <pcl/features/integral_image_normal.h>
+#include <pcl/segmentation/organized_multi_plane_segmentation.h>
+#include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/visualization/image_viewer.h>
+#include <pcl/console/parse.h>
+
+
 #include "fast_segmentation.h"
 
 

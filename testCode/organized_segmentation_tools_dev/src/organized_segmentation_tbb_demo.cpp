@@ -344,6 +344,7 @@ main (int argc, char** argv)
   if (pcl::console::parse_argument (argc, argv, "-raw", raw_labels) == -1)
     raw_labels = false;
   
+  printf("Raw labels: %d \n", raw_labels);
   // Create our segmentation class
   cogrob::OrganizedSegmentationTBB<PointT> seg;
 
