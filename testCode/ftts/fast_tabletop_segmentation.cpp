@@ -38,7 +38,8 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
 
 
 template<typename PointT>
-void Fast_Tabletop_Segmentation<PointT>::getSegmentedImg( CloudConstPtr _cloud ) {
+void Fast_Tabletop_Segmentation<PointT>::getSegmentedImg( CloudConstPtr _cloud,
+							  bool _showSegmentation ) {
   
   // Store pointcloud in image
   int data_size_ = _cloud->width * _cloud->height*3;
@@ -57,15 +58,22 @@ void Fast_Tabletop_Segmentation<PointT>::getSegmentedImg( CloudConstPtr _cloud )
   typename pcl::PointCloud<PointT>::const_iterator it;
   for( k =0, it = _cloud->begin();
        it != _cloud->end(); ++it, k++ ) {
+
+    if( _showSegmentation ) {
     
-    if( mLabels[k] > 0 ) {
-      float_data_[ind] = (*it).x; data_[ind++] = ( (*it).b + bi[mLabels[k]] ) / 2; 
-      float_data_[ind] = (*it).y; data_[ind++] = ( (*it).g + gi[mLabels[k]] ) / 2; 
-      float_data_[ind] = (*it).z; data_[ind++] = ( (*it).r + ri[mLabels[k]] ) / 2; 
+      if( mLabels[k] > 0 ) {
+	float_data_[ind] = (*it).x; data_[ind++] = ( (*it).b + bi[mLabels[k]] ) / 2; 
+	float_data_[ind] = (*it).y; data_[ind++] = ( (*it).g + gi[mLabels[k]] ) / 2; 
+	float_data_[ind] = (*it).z; data_[ind++] = ( (*it).r + ri[mLabels[k]] ) / 2; 
+      } else {
+	float_data_[ind] = (*it).x; data_[ind++] = (*it).b; 
+	float_data_[ind] = (*it).y; data_[ind++] = (*it).g; 
+	float_data_[ind] = (*it).z; data_[ind++] = (*it).r;     
+      }
     } else {
       float_data_[ind] = (*it).x; data_[ind++] = (*it).b; 
       float_data_[ind] = (*it).y; data_[ind++] = (*it).g; 
-      float_data_[ind] = (*it).z; data_[ind++] = (*it).r;     
+      float_data_[ind] = (*it).z; data_[ind++] = (*it).r;          
     }
     
   } // for
@@ -104,7 +112,8 @@ bool Fast_Tabletop_Segmentation<PointT>::getClusterBB( int _index,
  * @function process
  */
 template<typename PointT>
-void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud ) {
+void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
+						  bool _showSegmentation ) {
   
   // 1. Estimate normals
   mNe.setInputCloud( _cloud );
@@ -226,7 +235,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud ) {
     
   }
 
-  this->getSegmentedImg(_cloud);
+  this->getSegmentedImg(_cloud, _showSegmentation );
 
 }
 

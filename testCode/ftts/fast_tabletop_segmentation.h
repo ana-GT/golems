@@ -22,7 +22,7 @@ class Fast_Tabletop_Segmentation {
 
  public:
   Fast_Tabletop_Segmentation();
-  void process( CloudConstPtr _cloud );
+  void process( CloudConstPtr _cloud, bool _showSegmentation = true );
   cv::Mat getRgbImg() { return mRgbImg; }
   cv::Mat getXyzImg() { return mXyzImg; }
   int getNumClusters() { return mClusters.size(); }
@@ -31,7 +31,7 @@ class Fast_Tabletop_Segmentation {
 
 private:
 
-  void getSegmentedImg( CloudConstPtr _cloud );
+  void getSegmentedImg( CloudConstPtr _cloud, bool _showSegmentation );
   std::vector<CloudPtr> getClusters() { return mClusters; }
   CloudPtr getCluster( int _i ) {
     if( _i >= 0 && _i < mClusters.size() ) {return mClusters[_i]; }

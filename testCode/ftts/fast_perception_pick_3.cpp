@@ -13,6 +13,7 @@
 
 #include "fast_tabletop_segmentation.h"
 
+#include "classifier.h"
 
 typedef pcl::PointXYZRGBA PointT;
 typedef pcl::PointCloud<PointT> Cloud;
@@ -24,9 +25,23 @@ std::string gWindowName = std::string("Fast pick");
 cv::Mat gRgbImg; cv::Mat gXyzImg;
 pcl::io::OpenNI2Grabber* gGrabber = NULL;
 Fast_Tabletop_Segmentation<PointT> gTts;
+bool gShowSegmentation = false;
 
 // Bounding box
 
+// Recognition
+/*
+char* gModel_file ="/home/ana/Software/caffe/models/YCB_svm/deploy.prototxt";
+char* gTrain_file = "/home/ana/Software/caffe/models/YCB_svm/partial_YCB_svm_iter_6000.caffemodel";
+char* gMean_file = "/home/ana/Software/caffe/models/YCB_svm/mean_YCB.binaryproto";
+char* gLabel_file = "/home/ana/Software/caffe/models/YCB_svm/training_labels.txt";
+*/
+char* gModel_file ="/home/ana/Software/caffe/models/YCB_vgg/deploy.prototxt";
+char* gTrain_file = "/home/ana/Software/caffe/models/YCB_vgg/YCB_svm_train_thoughtful_iter_3500.caffemodel";
+char* gMean_file = "/home/ana/Software/caffe/models/YCB_vgg/mean_YCB.binaryproto";
+char* gLabel_file = "/home/ana/Software/caffe/models/YCB_vgg/training_labels.txt";
+
+std::vector<std::string> gLabels;
 
 // Functions
 static void onMouse( int event, int x, int y, int flags, void* userdata );
@@ -52,6 +67,10 @@ int main( int argc, char* argv[] ) {
   //Loop
   gGrabber->start();
 
+  // Classifier
+  printf("Init classifier\n");
+  Classifier gClassifier( gModel_file, gTrain_file, gMean_file, gLabel_file );
+  printf("End init classifier\n");
   for(;;) {
     
     char k = cv::waitKey(30);
@@ -59,7 +78,34 @@ int main( int argc, char* argv[] ) {
       printf("\t * Pressed ESC. Finishing program! \n");
       gGrabber->stop();
       break;
-    }
+    } else if( k == 'r' ) {
+
+      // Get image
+      
+      // Store images
+      int xmin, ymin, xmax, ymax;
+      gLabels.resize( gTts.getNumClusters() );
+      for( int i = 0; i < gTts.getNumClusters(); ++i ) {
+	printf("Get cluster \n");
+	gTts.getClusterBB( i, xmin, ymin, xmax, ymax );
+	cv::Mat img( gRgbImg, cv::Rect(xmin,ymin,xmax-xmin, ymax-ymin) );
+	char name[50];
+	sprintf( name, "image_%d.png", i );
+	printf("Write img\n");
+	cv::imwrite( name, img );
+	// Predict
+	printf("Predict \n");
+	std::vector<Prediction> predictions = gClassifier.classify(img);
+	printf("Predicted \n");
+	printf("Prediction %d: ", i);
+	for( int k = 0; k < predictions.size(); ++k ) {
+	  printf(" %d: %s . ", k, predictions[k].first.c_str() );
+	} printf("\n");
+	gLabels[i] = predictions[0].first;
+	printf("Prediction [%d]: %s \n", i, gLabels[i].c_str());
+      }
+      
+    } // else if
 
   cv::imshow( gWindowName, gRgbImg );
 
@@ -92,7 +138,7 @@ void grabber_callback( const CloudConstPtr& _cloud ) {
 
   double dt; clock_t ts, tf;
   // Segment the new input
-  gTts.process( _cloud );
+  gTts.process( _cloud, gShowSegmentation );
   // Show it
   gRgbImg = gTts.getRgbImg();
   gXyzImg = gTts.getXyzImg();
@@ -107,7 +153,7 @@ void drawBoundingBox() {
   cv::Vec3b colors; colors(0) = 255; colors(1) = 0; colors(2) = 0;
   for( int i = 0; i < gTts.getNumClusters(); ++i ) {
     gTts.getClusterBB( i, xmin, ymin, xmax, ymax );
-    printf(" Min %d: (%d ,%d), max: (%d, %d) \n", i, xmin, ymin, xmax, ymax);
+
     cv::rectangle( gRgbImg, cv::Point( xmin, ymin), cv::Point(xmax, ymax), colors, 2 );
   }
 
