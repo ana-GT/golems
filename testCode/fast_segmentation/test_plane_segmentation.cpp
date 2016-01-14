@@ -54,9 +54,15 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   mNe.setMaxDepthChangeFactor( 0.02f );
   mNe.setNormalSmoothingSize( 20.0f );
 
+  typename pcl::PlaneCoefficientComparator<PointT, pcl::Normal>::Ptr plane_compare (new pcl::PlaneCoefficientComparator<PointT, pcl::Normal>());
+    plane_compare->setAngularThreshold (3.1416/180.0*2.0);//3.0
+    plane_compare->setDistanceThreshold (0.01, true);//0.02, true
+    mMps.setComparator (plane_compare);
+
 
   typename pcl::PlaneRefinementComparator<PointT, pcl::Normal, pcl::Label>::Ptr refinement_compare( new pcl::PlaneRefinementComparator<PointT, pcl::Normal, pcl::Label>() );
-  refinement_compare->setDistanceThreshold( mThreshold, mDepthDependent );
+  refinement_compare->setDistanceThreshold( 0.005, false );
+  mMps.setRefinementComparator( refinement_compare );
   
   mMps.setMinInliers( mMinPlaneInliers );
   mMps.setAngularThreshold(3.1416/180.0*2.0);
@@ -211,9 +217,9 @@ int main( int argc, char* argv[] ) {
     bi = rand() % 255;
     for( int j = 0; j < ftts.mClustersIndices[i].indices.size(); ++j ) { 
       k = ftts.mClustersIndices[i].indices[j];
-      showCloud->points[k].r = ri; //( showCloud->points[k].r + ri ) / 2;
-      showCloud->points[k].g = gi; //( showCloud->points[k].g + gi ) / 2;
-      showCloud->points[k].b = bi; //( showCloud->points[k].b + bi ) / 2;
+      showCloud->points[k].r = (showCloud->points[k].r + ri ) / 2;
+      showCloud->points[k].g = (showCloud->points[k].g + gi ) / 2;
+      showCloud->points[k].b = (showCloud->points[k].b + bi ) / 2;
     }
   }
   
