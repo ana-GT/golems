@@ -1,7 +1,7 @@
 
 project( communication )
 
-include_directories( ${CMAKE_SOURCE_DIR} )
+include_directories( ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/../ )
 include_directories( . ) 
 
 add_subdirectory( msgs )

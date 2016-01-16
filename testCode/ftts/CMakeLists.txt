@@ -17,7 +17,7 @@ include_directories( ${OpenCV_INCLUDE_DIRS} )
 # Caffe ( for Object recognition app = fast_peception_pick_3)
 find_package( Caffe )
 include_directories( ${Caffe_INCLUDE_DIRS} )
-message( STATUS "!!!!!*****!!!! Caffe include dirs: ${Caffe_INCLUDE_DIRS}")
+
 
 add_library( ftts SHARED fast_tabletop_segmentation.cpp fast_tabletop_segmentation.h )
 target_link_libraries( ftts ${PCL_LIBRARIES} ${OpenCV_LIBRARIES} )
@@ -37,3 +37,14 @@ set_target_properties( fast_perception_pick_2 PROPERTIES RUNTIME_OUTPUT_DIRECTOR
 add_executable( fast_perception_pick_3 fast_perception_pick_3.cpp classifier.cpp )
 target_link_libraries( fast_perception_pick_3 ftts ${Caffe_LIBRARIES} )
 set_target_properties( fast_perception_pick_3 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+# Segmentation + bounding box + get training data for OR 
+add_executable( fast_perception_pick_4 fast_perception_pick_4.cpp )
+target_link_libraries( fast_perception_pick_4 ftts )
+set_target_properties( fast_perception_pick_4 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+
+# Segmentation + bounding box + get training data for OR 
+add_executable( test_xyz_img test_xyz_img.cpp )
+target_link_libraries( test_xyz_img ${OpenCV_LIBRARIES} )
+set_target_properties( test_xyz_img PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 

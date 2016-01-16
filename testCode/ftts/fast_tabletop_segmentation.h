@@ -28,16 +28,18 @@ class Fast_Tabletop_Segmentation {
   int getNumClusters() { return mClusters.size(); }
   bool getClusterBB( int _i, int &_xmin, int &_ymin,
 		     int &_xmax, int &_ymax );
-
-private:
-
-  void getSegmentedImg( CloudConstPtr _cloud, bool _showSegmentation );
-  std::vector<CloudPtr> getClusters() { return mClusters; }
   CloudPtr getCluster( int _i ) {
     if( _i >= 0 && _i < mClusters.size() ) {return mClusters[_i]; }
     else { return NULL; }
   }
+  pcl::PointIndices getClusterIndices( int _i ) {
+    return mClustersIndices[_i]; 
+  }
+  
+private:
 
+  void getSegmentedImg( CloudConstPtr _cloud, bool _showSegmentation );
+  std::vector<CloudPtr> getClusters() { return mClusters; }
   
   CloudPtr mCloud;
   float mThreshold;

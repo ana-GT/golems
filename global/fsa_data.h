@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <stdio.h>
+
 enum BENCHMARK_TASK_TYPE {
   TASK_PICK_UP = 0,
   TASK_SIMPLE_JOINT = 1,
