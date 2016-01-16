@@ -116,11 +116,11 @@ template<typename PointT>
 void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
 						  bool _showSegmentation ) {
 
-  printf("Estimate normals \n");
+
   // 1. Estimate normals
   mNe.setInputCloud( _cloud );
   mNe.compute( *mNormalCloud );
-  printf("Estimate planes \n");
+
   // 2. Estimate planes
   std::vector<pcl::PlanarRegion<PointT>,
 	      Eigen::aligned_allocator<pcl::PlanarRegion<PointT>>> regions;
@@ -132,7 +132,9 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   std::vector<pcl::PointIndices> boundary_indices;
 
   mMps.setInputNormals( mNormalCloud );
+
   mMps.setInputCloud( _cloud );
+
   mMps.segmentAndRefine( regions,
 			 model_coefficients,
 			 inlier_indices,
@@ -143,24 +145,25 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   // 3. Get the biggest region and let it be the table plane
   int planeIndex; int planeSize;
 
-  planeIndex = 0; planeSize = inlier_indices[planeIndex].indices.size();
-  printf("Plane indices \n");
-  for( int i = 1; i < inlier_indices.size(); ++i ) {
-    if( inlier_indices[i].indices.size() > planeSize ) {
-      planeIndex = i; planeSize = inlier_indices[planeIndex].indices.size();
-    }
-  } // end for
   
-  mPlaneIndices = inlier_indices[planeIndex];
+  // If table detected
+  if( inlier_indices.size() > 0 ) {
+    planeIndex = 0; planeSize = inlier_indices[planeIndex].indices.size();
+    for( int i = 1; i < inlier_indices.size(); ++i ) {
+      if( inlier_indices[i].indices.size() > planeSize ) {
+	planeIndex = i; planeSize = inlier_indices[planeIndex].indices.size();
+      }
+    } // end for
+    
+    mPlaneIndices = inlier_indices[planeIndex];
 
-  
   ////////////////////////////////////
   float a, b, c, d;
   a = model_coefficients[planeIndex].values[0];
   b = model_coefficients[planeIndex].values[1];
   c = model_coefficients[planeIndex].values[2];
   d = model_coefficients[planeIndex].values[3];
-  printf("Labels \n");
+
   pcl::PointIndices outPoints;
   typename pcl::PointCloud<PointT>::const_iterator it;
   int i = 0;
@@ -178,7 +181,10 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   }
   label_indices.push_back( outPoints );
   ////////////////////////////
-  printf("Compute clusters \n");
+
+    
+  } // end table detected
+  
   // 4. Compute clusters
   LabelCloudPtr output_labels(new LabelCloud ());
 
@@ -200,7 +206,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   mEcc->setLabels (labels);
   mEcc->setExcludeLabels (plane_labels);
   mEcc->setDistanceThreshold (0.01f, false);
-  printf("Cluster euclidean \n");
+
   pcl::PointCloud<pcl::Label> euclidean_labels;
   std::vector<pcl::PointIndices> euclidean_label_indices;
   pcl::OrganizedConnectedComponentSegmentation<pcl::PointXYZRGBA,pcl::Label> euclidean_segmentation (mEcc);
@@ -220,7 +226,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
       mClustersIndices.push_back(euclidean_label_indices[i]);     
     }    
   }
-  printf("Label part \n");
+
   // If segmented should show
   mLabels.clear();
   mLabels.resize(_cloud->points.size(), -1);
@@ -233,9 +239,9 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
     }
     
   }
-  printf("Segmented image \n");
+
   this->getSegmentedImg(_cloud, _showSegmentation );
-  printf("End process \n");
+
 }
 
 
