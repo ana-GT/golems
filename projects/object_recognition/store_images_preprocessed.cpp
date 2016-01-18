@@ -13,11 +13,11 @@
 #include <caffe/caffe.hpp>
 #include <caffe/util/io.hpp>
 
-char* gList_file("/home/ana/Research/dataset_asu/training_images.txt");
-char* gDb_name_train("ASU_train");
-char* gDb_name_val("ASU_val");
+char* gList_file("/home/ana/Desktop/Crichton_data/training_images.txt");
+char* gDb_name_train("Crichton_data_227_brute_resize_train");
+char* gDb_name_val("Crichton_data_227_brute_resize_val");
 
-cv::Size gInputGeometry_size( 224, 224 );
+cv::Size gInputGeometry_size( 227, 227 );
 double val_ratio = 0.1;
 
 

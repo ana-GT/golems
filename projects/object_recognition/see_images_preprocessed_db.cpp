@@ -14,7 +14,8 @@
 #include <opencv2/core/core.hpp>
 
 std::string gWindowName("See_database");
-char* gDatabaseImg("/home/ana/Software/caffe/models/YCB_svm/YCB_train");
+//char* gDatabaseImg("/home/ana/Desktop/Crichton_data_DB");
+char* gDatabaseImg("/home/ana/Research/YCB_train");
 
 /**
  *
@@ -46,9 +47,6 @@ int main(int argc, char** argv) {
 
     caffe::Datum datum;
     datum.ParseFromString(cursor->value());
-    caffe::DecodeDatumNative( &datum );
-    std::cout << "Label of datum ["<<counter<<"]: "<<datum.label() << std::endl;
-
     cv::Mat m = caffe::DecodeDatumToCVMatNative( datum );
     char* label = new char[5];
     sprintf( label, "%d", datum.label() );

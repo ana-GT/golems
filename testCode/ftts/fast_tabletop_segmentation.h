@@ -41,8 +41,11 @@ private:
   void getSegmentedImg( CloudConstPtr _cloud, bool _showSegmentation );
   std::vector<CloudPtr> getClusters() { return mClusters; }
   
+  double mMinZ, mMaxZ;
   CloudPtr mCloud;
   float mThreshold;
+  int mClusterMinSize;
+  float mClusterDistThreshold;
   bool mDepthDependent;
   bool mPolygonRefinement;
   int mMinPlaneInliers;
