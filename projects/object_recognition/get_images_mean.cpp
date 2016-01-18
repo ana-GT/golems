@@ -17,8 +17,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/core/core.hpp>
 
-char* gMeanImageFile("/home/ana/Software/caffe/models/YCB_svm/mean_YCB.binaryproto");
-char* gDatabaseImg("/home/ana/Software/caffe/models/YCB_svm/YCB_train");
+char* gMeanImageFile("/home/ana/Software/caffe/models/ASU_svm/mean_ASU.binaryproto");
+char* gDatabaseImg("/home/ana/Software/caffe/models/ASU_svm/ASU_train");
 
 /**
  *
