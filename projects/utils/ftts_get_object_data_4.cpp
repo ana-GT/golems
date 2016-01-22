@@ -1,6 +1,6 @@
 /**
- * @file fast_perception_pick_4.cpp
- * @brief Get training data
+ * @file ffts_get_object_data_4.cpp
+ * @brief Get training data for object recognition
  * @brief Adding bounding box
  * @date 2016/01/13
  */
@@ -11,7 +11,7 @@
 #include <pcl/point_types.h>
 #include <pcl/io/openni2_grabber.h>
 
-#include "fast_tabletop_segmentation.h"
+#include "perception/ftts/fast_tabletop_segmentation.h"
 #include <mutex>
 
 typedef pcl::PointXYZRGBA PointT;
@@ -157,7 +157,6 @@ static void onMouse( int event, int x, int y, int flags, void* userdata ) {
     return;
   }
   mutex.lock();
-  printf("Mouse pressed \n");
   cv::Point3f p; Eigen::Vector3d currentPoint;
   p = gXyzImg.at<cv::Point3f>(y,x);
   currentPoint << (double)p.x, (double)p.y, (double)p.z;
@@ -179,8 +178,7 @@ static void onMouse( int event, int x, int y, int flags, void* userdata ) {
     gSelectedCluster = minIndex;
 
     saveData();
-    printf("Finished mouse pressed \n");
-  mutex.unlock();
+    mutex.unlock();
 }
 
 /**
@@ -200,7 +198,8 @@ void grabber_callback( const CloudConstPtr& _cloud ) {
 }
 
 /**
- *
+ * @function drawingBoundingBox
+ * @brief BB is a bit larger than it should (10 pixels)
  */
 void drawBoundingBox() {
 
@@ -208,7 +207,7 @@ void drawBoundingBox() {
 
   cv::Vec3b colors; colors(0) = 255; colors(1) = 0; colors(2) = 0;
   gClustersBB.resize(0);
-  printf("Num clusters: %d \n", gTts.getNumClusters());
+
   for( int i = 0; i < gTts.getNumClusters(); ++i ) {
     gTts.getClusterBB( i, xmin, ymin, xmax, ymax );
     // Draw a bit bigger

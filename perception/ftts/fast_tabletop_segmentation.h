@@ -1,4 +1,8 @@
-
+/**
+ * @file fast_tabletop_segmentation.h
+ * @brief Implements segmentation using multiplanar stuff from Alex Trevor
+ * @date January 22nd, 2016
+ */
 #include <pcl/features/integral_image_normal.h>
 #include <pcl/segmentation/organized_multi_plane_segmentation.h>
 #include <pcl/segmentation/organized_connected_component_segmentation.h>
@@ -62,6 +66,6 @@ public:
   pcl::PointIndices mPlaneIndices;
   std::vector<pcl::PointIndices> mClustersIndices;
   std::vector<CloudPtr> mClusters;
-  std::vector<int> mLabels; // 0: table numbers > 0: label (-): Njo label
+  std::vector<int> mLabels; // 0: table numbers > 0: label (-): No label
   
 };

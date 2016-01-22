@@ -3,6 +3,14 @@
 #******************
 project( executables )
 
+# Flag for executables using mutex
+set( CMAKE_CXX_FLAGS_RELEASE "-std=gnu++11" )
+
+# Caffe ( for Object recognition app = fast_peception_pick_3)
+find_package( Caffe )
+include_directories( ${Caffe_INCLUDE_DIRS} )
+
+
 # Qt
 find_package( Qt5Core REQUIRED )
  find_package(Qt5Gui REQUIRED)
@@ -33,7 +41,11 @@ include_directories( ${CMAKE_SOURCE_DIR} )
 
 include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools/sq_fitting )
 
-# Apps
+# Utilities to get data
+add_executable( grab_pointcloud grab_pointcloud.cpp )
+target_link_libraries( grab_pointcloud ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} )
+set_target_properties( grab_pointcloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
 
@@ -42,19 +54,6 @@ add_executable( perception_pick_proposal perception_pick_proposal.cpp )
 target_link_libraries( perception_pick_proposal  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
 set_target_properties( perception_pick_proposal PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-
-# Get Training Data OR
-add_executable( get_training_data_OR get_training_data_OR.cpp )
-target_link_libraries( get_training_data_OR  tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
-set_target_properties( get_training_data_OR PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
-add_executable( get_training_data_OR_single_object get_training_data_OR_single_object.cpp )
-target_link_libraries( get_training_data_OR_single_object  tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
-set_target_properties( get_training_data_OR_single_object PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
-
 
 
 # Take picture with joystick
@@ -148,4 +147,37 @@ target_link_libraries( store_segmented_pointcloud  tabletop_segmentation sq_fitt
 set_target_properties( store_segmented_pointcloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+
+
+# Simple segmentation
+add_executable( ftts_segmentation_demo_1 ftts_segmentation_demo_1.cpp )
+target_link_libraries( ftts_segmentation_demo_1 ftts )
+set_target_properties( ftts_segmentation_demo_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+# Segmentation + bounding box
+#add_executable( fast_perception_pick_2 fast_perception_pick_2.cpp )
+#target_link_libraries( fast_perception_pick_2 ftts )
+#set_target_properties( fast_perception_pick_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+# Segmentation + bounding box + recognition
+#add_executable( fast_perception_pick_3 fast_perception_pick_3.cpp classifier.cpp )
+#target_link_libraries( fast_perception_pick_3 ftts ${Caffe_LIBRARIES} )
+#set_target_properties( fast_perception_pick_3 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+# Segmentation + bounding box + get training data for OR 
+add_executable( ftts_get_object_data_4 ftts_get_object_data_4.cpp )
+target_link_libraries( ftts_get_object_data_4 ftts )
+set_target_properties( ftts_get_object_data_4 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+
+# Segmentation + bounding box + get training data for OR 
+#add_executable( test_xyz_img test_xyz_img.cpp )
+#target_link_libraries( test_xyz_img ${OpenCV_LIBRARIES} )
+#set_target_properties( test_xyz_img PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+ 
+# LCCP 
+#add_executable( example_lccp_segmentation example_lccp_segmentation.cpp )
+#target_link_libraries( example_lccp_segmentation ${PCL_LIBRARIES} )
+#set_target_properties( example_lccp_segmentation  PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 

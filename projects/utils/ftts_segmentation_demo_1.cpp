@@ -1,7 +1,8 @@
 /**
- * @file fast_perception_pick_2.cpp
+ * @file ffts_segmentation_demo_1.cpp
  * @brief Using component-based segmentation for fast performance (~5Hz)
- * @brief Adding bounding box
+ * @brief NOTICE that we are not using mutexes here yet as this is a simple demo with no interrup.
+ * @brief You will need to use them, i.e. in example 4 (ftts_get_object_data_4.cpp)
  * @date 2016/01/13
  */
 #include <opencv2/highgui/highgui.hpp>
@@ -11,7 +12,7 @@
 #include <pcl/point_types.h>
 #include <pcl/io/openni2_grabber.h>
 
-#include "fast_tabletop_segmentation.h"
+#include "perception/ftts/fast_tabletop_segmentation.h"
 
 
 typedef pcl::PointXYZRGBA PointT;
@@ -21,17 +22,14 @@ typedef typename Cloud::ConstPtr CloudConstPtr;
 
 // Global variables
 std::string gWindowName = std::string("Fast pick");
+bool gShowSegmentation = true;
 cv::Mat gRgbImg; cv::Mat gXyzImg;
 pcl::io::OpenNI2Grabber* gGrabber = NULL;
 Fast_Tabletop_Segmentation<PointT> gTts;
 
-// Bounding box
-
-
 // Functions
 static void onMouse( int event, int x, int y, int flags, void* userdata );
 void grabber_callback( const CloudConstPtr& _cloud );
-void drawBoundingBox();
 
 //////////////////////////
 //  @function main
@@ -92,23 +90,8 @@ void grabber_callback( const CloudConstPtr& _cloud ) {
 
   double dt; clock_t ts, tf;
   // Segment the new input
-  gTts.process( _cloud );
+  gTts.process( _cloud, gShowSegmentation );
   // Show it
   gRgbImg = gTts.getRgbImg();
   gXyzImg = gTts.getXyzImg();
-  // Draw bounding box
-  drawBoundingBox();
-}
-
-void drawBoundingBox() {
-
-  int xmin, ymin, xmax, ymax;
-
-  cv::Vec3b colors; colors(0) = 255; colors(1) = 0; colors(2) = 0;
-  for( int i = 0; i < gTts.getNumClusters(); ++i ) {
-    gTts.getClusterBB( i, xmin, ymin, xmax, ymax );
-    printf("[%d] min: %d %d, max: %d %d \n", i, xmin, ymin, xmax, ymax);
-    cv::rectangle( gRgbImg, cv::Point( xmin, ymin), cv::Point(xmax, ymax), colors, 2 );
-  }
-
 }
