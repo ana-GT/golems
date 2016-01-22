@@ -67,7 +67,8 @@ int main( int argc, char* argv[] ) {
     } else if( k == 'i' ) {
       
       // Predict 
-      std::vector<Prediction> predictions = gClassifier.classify( gRgbImg );
+      int idx;
+      std::vector<Prediction> predictions = gClassifier.classify( gRgbImg, idx );
       printf("Predictions: \n");
       for (size_t i = 0; i < predictions.size(); ++i) {
         Prediction p = predictions[i];

@@ -4,7 +4,7 @@
 #include <iostream>
 #include <unistd.h>
 
-#include <sns.h>
+#include <sns.h>  
 #include <ach.h>
 
 std::string gWindowName = std::string("Joystick snapshot");

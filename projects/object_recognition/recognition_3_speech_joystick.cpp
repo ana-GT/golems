@@ -1,17 +1,25 @@
 
-#include <pcl/io/pcd_io.h>
-#include <pcl/point_types.h>
-
 #include <opencv2/videoio/videoio.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
+
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+
+#include <ach.h>
+#include <sns.h>
 
 #include <Eigen/Core>
 #include <stdint.h>  
 #include "tabletop_segmentation/tabletop_segmentation.h"
 
+#include <stdlib.h>
+#include <time.h>
+
 #include <caffe/caffe.hpp>
 #include <sstream>
+
 
 
 #include "classifier.h"
@@ -34,25 +42,78 @@ std::vector<Eigen::Vector4d> gBoundingBoxes;
 std::vector<double> gTableCoeffs;
 pcl::PointCloud<PointTa> gTablePoints;
 std::vector<std::string> gLabels;
-
+std::vector<int> gIndex;
+std::vector<std::string> gHabla;
 
 char* gModel_file ="/home/ana/Desktop/Crichton_data_trained/deploy_alexnet.prototxt";
 char* gTrain_file = "/home/ana/Desktop/Crichton_data_trained/partial_alexnet_iter_1700.caffemodel";
 // Remember AlexNet, referenc_caffenet and RCNN_ilsvrc13: 227, googlenet: 224
 char* gMean_file = "/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto";
 char* gLabel_file = "/home/ana/Desktop/Crichton_data/training_labels.txt";
-
+char* gExplanations= "/home/ana/Desktop/Crichton_data/training_labels_explanatory.txt";
+int gBiggestCluster;
 
 /*** Functions */
 void process();
 void drawSegmented();
 void getPixelClusters();
 
+/// Joystick
+ach_channel_t gJoystick_chan;
+
+/**
+ * @function checkChan
+ */
+bool checkChan() {
+
+  sns_init();
+  sns_start();
+
+  ach_status_t r;
+
+  r = ach_open(&gJoystick_chan, "joy_state", NULL );
+  return ( r == ACH_OK );
+}
+
+/**
+ * @function pollChan
+ */
+bool pollChan() {
+
+  ach_status_t r;
+  size_t frame_size;
+  sns_msg_joystick* msg = 0;
+  
+  r = sns_msg_local_get( &gJoystick_chan, (void**)&msg,
+			 &frame_size, NULL, ACH_O_LAST );
+  
+  double a[2];
+  if( r == ACH_OK && !sns_msg_is_expired( &msg->header, NULL ) ) {
+    
+    a[0] = msg->axis[0];
+    a[1] = msg->axis[1];
+    if( a[0] != 0 || a[1] != 0 ) {
+      return true;
+    } else {
+      return false;
+    }
+  } // end if
+
+  return false;
+
+}
+
 /**
  * @function main
  */
 int main( int argc, char* argv[] ) {
   
+  // Check if joystick is publishing
+  if( !checkChan() ) {
+    printf("Channel not started. Start joystick channel \n");
+    return -1;
+  }
+
   // http://www.robots.ox.ac.uk/~vgg/research/very_deep/  
   int c;
   while( (c=getopt(argc,argv,"n:t:m:l:h")) != -1 ) {
@@ -67,7 +128,24 @@ int main( int argc, char* argv[] ) {
   }
 
   Classifier gClassifier( gModel_file, gTrain_file, gMean_file, gLabel_file );
-  
+
+
+   ////////////////////////////////  
+  // Load explanations
+  printf("Load explanations \n");
+  std::ifstream  explan( gExplanations, std::ifstream::in );
+  std::string line;
+  std::string words;
+  while( std::getline(explan, line) ) {
+    std::size_t pos = line.find("Veo");
+    words = line.substr(pos);
+    printf("Line: %s\n", words.c_str() );
+    gHabla.push_back(words);
+  }
+  explan.close();
+  printf("Finished loading explanations\n");
+  ////////////////////////////////
+
   gCapture.open( cv::CAP_OPENNI2 );
   
   if( !gCapture.isOpened() ) {
@@ -105,16 +183,17 @@ int main( int argc, char* argv[] ) {
       break;
     } 
 
-    /** Recognize */
-    else if( k == 'i' ) {
+    // If axis 0/1 are moved,  RECOGNIZE!
+    if( pollChan() ) {
+      printf("Joystick used!!! \n");
 
       // Process image
       process();
       gLabels.resize(gClusters.size() );
-      
+      gIndex.resize(gClusters.size() );      
       // Store images
       for( int i = 0; i < gClusters.size(); ++i ) {
-	
+
 	int xl = gBoundingBoxes[i](0);
 	int yl = gBoundingBoxes[i](1);
 	int xw = gBoundingBoxes[i](2)-gBoundingBoxes[i](0);
@@ -140,15 +219,20 @@ int main( int argc, char* argv[] ) {
 	// Predict 
 	int idx;
 	std::vector<Prediction> predictions = gClassifier.classify( img, idx );
-	printf("Predictions: \n");
 	gLabels[i] = predictions[0].first;
+        gIndex[i] = idx;
 
+    char texto[150];
+    sprintf(texto, "espeak '%s' -p 80 -s 200 -ves-la ", gHabla[gIndex[i]].c_str() );
+    printf("Texto: %s \n", texto);
+    system(texto); usleep(0.1*1e6);
+     printf("Finished speaking\n");
 	
       }
       
       
       
-    } // else
+    } // chan
     
     
   } // for
@@ -191,6 +275,7 @@ void process() {
   // Segment
   TabletopSegmentor<PointTa> tts;
   tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.0 );
+  tts.set_min_cluster_size(1500);
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();
@@ -217,8 +302,8 @@ void process() {
  * @function drawSegmented
  */
 void drawSegmented() {
+ 
   for( int i = 0; i < gPixelClusters.size(); ++i ) {
-
     int thickness = 2;
     cv::rectangle( gRgbImg, 
 		   cv::Point( gBoundingBoxes[i](0), gBoundingBoxes[i](1) ),
@@ -283,7 +368,7 @@ void getPixelClusters() {
       if( v > max_v ) { max_v = v; }
 
     }
-
+    printf("CLuster %d size: %d \n", i, gPixelClusters[i].size());
     Eigen::Vector4d mM; mM << min_u, min_v, max_u, max_v;
     gBoundingBoxes[i] = mM;
 

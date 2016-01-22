@@ -1,7 +1,8 @@
-cmake_minimum_required( VERSION 2.8 )
-
+#cmake_minimum_required( VERSION 2.8 )
+project( OR )
 #set( CMAKE_MODULE_PATH CMAKE_MODULE_PATH "/home/ana/local/share/Caffe/Caffe" )
-set( CMAKE_CXX_FLAGS   "-std=c++0x" )
+#set( CMAKE_CXX_FLAGS   "-std=c++0x" )
+set( CMAKE_CXX_FLAGS   "-std=gnu++11" )
 find_package( Caffe REQUIRED )
 include_directories( ${Caffe_INCLUDE_DIRS} )
 add_definitions( ${Caffe_DEFINITIONS} )
@@ -23,6 +24,16 @@ include_directories( ${CMAKE_SOURCE_DIR} )
 
 include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools/sq_fitting )
 
+add_executable( recognition_3_speech_joystick recognition_3_speech_joystick.cpp classifier.cpp )
+target_link_libraries( recognition_3_speech_joystick ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( recognition_3_speech_joystick PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( recognition_2_speech recognition_2_speech.cpp classifier.cpp )
+target_link_libraries( recognition_2_speech ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( recognition_2_speech PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable( recognition_1 recognition_1.cpp classifier.cpp )
 target_link_libraries( recognition_1 ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )

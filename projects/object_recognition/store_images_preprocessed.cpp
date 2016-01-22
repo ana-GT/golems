@@ -14,10 +14,11 @@
 #include <caffe/util/io.hpp>
 
 char* gList_file("/home/ana/Desktop/Crichton_data/training_images.txt");
-char* gDb_name_train("Crichton_data_227_brute_resize_train");
-char* gDb_name_val("Crichton_data_227_brute_resize_val");
+char* gDb_name_train("Crichton_data_224_brute_resize_train");
+char* gDb_name_val("Crichton_data_224_brute_resize_val");
 
-cv::Size gInputGeometry_size( 227, 227 );
+// GoogleNet needs 224x224. AlexNet is happy with 227
+cv::Size gInputGeometry_size( 224, 224 );
 double val_ratio = 0.1;
 
 

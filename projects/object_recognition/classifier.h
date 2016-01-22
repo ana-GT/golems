@@ -17,6 +17,7 @@ class Classifier {
 	      const std::string &_label_file );
   
   std::vector<Prediction> classify( const cv::Mat &_img,
+                                    int &_idx,
 				    int N = 5 );
   std::vector<float> ExtractFeatures( const cv::Mat &_img );  
 
