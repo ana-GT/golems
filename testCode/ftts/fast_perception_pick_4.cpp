@@ -30,7 +30,7 @@ std::mutex  mutex;
 std::vector<Eigen::VectorXd> gClustersBB;
 
 // Storing
-bool gShowSegmentation = false;
+bool gShowSegmentation = true;
 std::string gName("default");
 int gCounter = 0;
 int gSelectedCluster = 0;
@@ -208,6 +208,7 @@ void drawBoundingBox() {
 
   cv::Vec3b colors; colors(0) = 255; colors(1) = 0; colors(2) = 0;
   gClustersBB.resize(0);
+  printf("Num clusters: %d \n", gTts.getNumClusters());
   for( int i = 0; i < gTts.getNumClusters(); ++i ) {
     gTts.getClusterBB( i, xmin, ymin, xmax, ymax );
     // Draw a bit bigger

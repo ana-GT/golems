@@ -11,10 +11,10 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   mPolygonRefinement( false ),
   mNormalCloud( new pcl::PointCloud<pcl::Normal>() ),
   mMinPlaneInliers(5000),
-  mClusterMinSize(1000),
+  mClusterMinSize(200),
   mClusterDistThreshold(0.015f),
   mMinZ(0.35),
-  mMaxZ(1.4),
+  mMaxZ(0.9),
   mEcc( new pcl::EuclideanClusterComparator<PointT, pcl::Normal, pcl::Label>() ){  
 
   srand( time(NULL) );
@@ -35,7 +35,7 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   
   mMps.setMinInliers( mMinPlaneInliers );
   mMps.setAngularThreshold(3.1416/180.0*2.0);
-  mMps.setDistanceThreshold(0.02);
+  mMps.setDistanceThreshold(0.01);
   mMps.setProjectPoints(true);
   mMps.setRefinementComparator( refinement_compare );
 }
@@ -78,6 +78,18 @@ void Fast_Tabletop_Segmentation<PointT>::getSegmentedImg( CloudConstPtr _cloud,
       float_data_[ind] = (*it).x; data_[ind++] = (*it).b; 
       float_data_[ind] = (*it).y; data_[ind++] = (*it).g; 
       float_data_[ind] = (*it).z; data_[ind++] = (*it).r;          
+    }
+    
+  } // for
+
+
+  for( k =0; k < mPlaneIndices.indices.size();
+       k++ ) {
+
+    if( _showSegmentation ) {
+       data_[3*mPlaneIndices.indices[k] + 0] = 255;
+       data_[3*mPlaneIndices.indices[k] + 1] = 255;
+       data_[3*mPlaneIndices.indices[k] + 2] = 0;
     }
     
   } // for
@@ -172,6 +184,11 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   b = model_coefficients[planeIndex].values[1];
   c = model_coefficients[planeIndex].values[2];
   d = model_coefficients[planeIndex].values[3];
+
+  // Check if the normal is pointing on the right direction 
+  // (for details, see notes on my logbook on Friday, January 22nd, 2016)
+  PointT p = _cloud->points[mPlaneIndices.indices[0]];
+  if( a*(p.x) + b*(p.y) + c*(p.z) > 0 ) { a = -a; b = -b; c = -c; d = -d; }
 
   pcl::PointIndices outPoints;
   typename pcl::PointCloud<PointT>::const_iterator it;
