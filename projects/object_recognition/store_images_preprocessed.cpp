@@ -12,6 +12,7 @@
 
 #include <caffe/caffe.hpp>
 #include <caffe/util/io.hpp>
+#include <caffe/util/db.hpp>
 
 char* gList_file("/home/ana/Desktop/Crichton_data/training_images.txt");
 char* gDb_name_train("Crichton_data_224_brute_resize_train");

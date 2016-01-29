@@ -5,7 +5,6 @@
 #include <caffe/net.hpp>
 #include <caffe/util/db.hpp>
 #include <caffe/util/io.hpp>
-#include <caffe/vision_layers.hpp>
 
 #include <unistd.h> // getopt
 
