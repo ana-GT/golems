@@ -14,7 +14,7 @@
 
 #include <Eigen/Core>
 #include <stdint.h>
-#include "tabletop_segmentation/tabletop_segmentation.h"
+#include "perception/tabletop_segmentation/tabletop_segmentation.h"
 
 // SQ, BB, REV, EXT
 #include <aoi/refresher/Refresher_utils.h>

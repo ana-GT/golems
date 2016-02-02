@@ -4,7 +4,7 @@
 
 #include "server_pick.h"
 #include "ui_server_pick.h"
-#include "msgs/server_msgs.h"
+#include "communication/msgs/server_msgs.h"
 #include <sns.h>
 
 #include <QListWidget>

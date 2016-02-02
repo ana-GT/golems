@@ -6,8 +6,8 @@
 #include <unistd.h>
 #include <ach.h>
 
-#include "msgs/bimanual_msgs.h"
-#include "base_dual_control.h"
+#include "motion_control/msgs/bimanual_msgs.h"
+#include "motion_control/base_dual_control.h"
 
 ach_channel_t bimanual_chan;
 ach_channel_t bimanual_hand_chan;

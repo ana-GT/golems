@@ -1,9 +1,6 @@
 # Project: Perception
 project( perception )
 
-# CMake Path
-set( CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules" )
-
 # Eigen
 include_directories( /usr/include/eigen3 )
 
@@ -20,7 +17,7 @@ find_package( sns REQUIRED )
 include_directories( ${SNS_INCLUDE_DIRS} )
 
 # PCL
-find_package(PCL 1.8 REQUIRED COMPONENTS common search visualization)
+find_package(PCL REQUIRED COMPONENTS common search visualization)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
@@ -34,7 +31,6 @@ add_subdirectory( marker_detection )
 add_subdirectory( tabletop_segmentation )
 add_subdirectory( pointcloud_tools )
 add_subdirectory( ftts )
-#add_subdirectory( obj_recog )
 #add_subdirectory( getKinectTran )
 #add_subdirectory( box_detector )
 
@@ -43,4 +39,3 @@ install( DIRECTORY msgs DESTINATION include/golems/perception/ FILES_MATCHING PA
 install( DIRECTORY calibration DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" )
 install( DIRECTORY marker_detection DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" )
 install( DIRECTORY tabletop_segmentation DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )
-install( DIRECTORY pointcloud_tools/tabletop_symmetry DESTINATION include/golems/perception/ FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )

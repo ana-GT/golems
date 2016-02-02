@@ -5,11 +5,6 @@ set(CMAKE_INSTALL_PREFIX /usr/local )
 set( CMAKE_BUILD_TYPE Release )
 set( CMAKE_CXX_FLAGS "-std=gnu++11 -fPIC" )
 
-
-include_directories( ${PROJECT_SOURCE_DIR}/include )
-include_directories( ${PROJECT_SOURCE_DIR} )
-include_directories(.)
-
 # levmar
 add_subdirectory( levmar )
 
@@ -45,7 +40,7 @@ set_target_properties( evaluated_eqs PROPERTIES LIBRARY_OUTPUT_DIRECTORY
 
 
 # INSTALL
-install( DIRECTORY ./ DESTINATION include/golems/sq_fitting FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )
+install( DIRECTORY ./ DESTINATION include/golems/perception/pointcloud_tools/sq_fitting FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" )
 install( TARGETS sq_utils DESTINATION lib )
 install( TARGETS sq_fitting DESTINATION lib )
 

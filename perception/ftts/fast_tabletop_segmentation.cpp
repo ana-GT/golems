@@ -12,7 +12,7 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   mPolygonRefinement( false ),
   mNormalCloud( new pcl::PointCloud<pcl::Normal>() ),
   mMinPlaneInliers(5000),
-  mClusterMinSize(200),
+  mClusterMinSize(1000),
   mClusterDistThreshold(0.015f),
   mMinZ(0.35),
   mMaxZ(1.4),
@@ -26,18 +26,18 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
 
   typename pcl::PlaneCoefficientComparator<PointT, pcl::Normal>::Ptr plane_compare (new pcl::PlaneCoefficientComparator<PointT, pcl::Normal>());
   plane_compare->setAngularThreshold (3.1416/180.0*2.0);
-  plane_compare->setDistanceThreshold (0.01, true);
+  plane_compare->setDistanceThreshold (0.005, true);
   mMps.setComparator (plane_compare);
 
 
   typename pcl::PlaneRefinementComparator<PointT, pcl::Normal, pcl::Label>::Ptr refinement_compare( new pcl::PlaneRefinementComparator<PointT, pcl::Normal, pcl::Label>() );
-  refinement_compare->setDistanceThreshold( 0.01, false );
+  refinement_compare->setDistanceThreshold( 0.01, true );
   mMps.setRefinementComparator( refinement_compare );
   
   mMps.setMinInliers( mMinPlaneInliers );
   mMps.setAngularThreshold(3.1416/180.0*2.0);
   mMps.setDistanceThreshold(0.01);
-  mMps.setProjectPoints(true);
+  mMps.setProjectPoints(false);
   mMps.setRefinementComparator( refinement_compare );
 }
 
@@ -163,17 +163,19 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   bool tableDetected = false;
 
   // If table detected
+    planeIndex = -1; planeSize = 0;
   if( inlier_indices.size() > 0 ) {
-    tableDetected = true;
-  }
-
-  if( tableDetected ) {
-    planeIndex = 0; planeSize = inlier_indices[planeIndex].indices.size();
-    for( int i = 1; i < inlier_indices.size(); ++i ) {
+    for( int i = 0; i < inlier_indices.size(); ++i ) {
+      if( regions[i].getCentroid()(2) > mMaxZ ) { continue; }
       if( inlier_indices[i].indices.size() > planeSize ) {
 	planeIndex = i; planeSize = inlier_indices[planeIndex].indices.size();
       }
     } // end for
+  }
+
+  if( planeIndex >= 0 ) { tableDetected = true; }
+
+  if( tableDetected ) {
     
     mPlaneIndices = inlier_indices[planeIndex];
     
@@ -207,7 +209,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
       }    
     }
     label_indices.push_back( outPoints );
-
+/*
   // Get clean pointcloud
     pcl::PointIndices::Ptr pc(new pcl::PointIndices() ); 
     pc->indices = outPoints.indices;
@@ -222,9 +224,8 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
     extract.setNegative( true );
     extract.filter( *output );
     pcl::io::savePCDFileASCII("output.pcd", *output );
+*/
   } // end table detected
-
-
 
   // 4. Compute clusters
   LabelCloudPtr output_labels(new LabelCloud ());
@@ -232,7 +233,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   std::vector<bool> plane_labels;
   plane_labels.resize ( label_indices.size (), false);  
 
-  if( regions.size () > 0) {
+  if( tableDetected ) {
     
     // Plane labels: Exlucde table:
     plane_labels[table_label] = true;
@@ -240,7 +241,6 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
     plane_labels[label_indices.size() -1] = true;
 
   }
-
   mEcc->setInputCloud (_cloud);
   mEcc->setLabels (labels);
   mEcc->setExcludeLabels (plane_labels);

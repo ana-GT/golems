@@ -29,6 +29,9 @@ class Fast_Tabletop_Segmentation {
   void process( CloudConstPtr _cloud, bool _showSegmentation = true );
   cv::Mat getRgbImg() { return mRgbImg; }
   cv::Mat getXyzImg() { return mXyzImg; }
+
+  void setMinClusterSize( int _size ) { mClusterMinSize = _size; }
+  void setZfilters( double _minZ, double _maxZ ) { mMinZ = _minZ; mMaxZ = _maxZ; }
   int getNumClusters() { return mClusters.size(); }
   bool getClusterBB( int _i, int &_xmin, int &_ymin,
 		     int &_xmax, int &_ymax );

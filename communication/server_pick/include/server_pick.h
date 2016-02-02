@@ -15,7 +15,7 @@
 #include <ach.h>
 
 #include "server_unit.h"
-#include <msgs/server_msgs.h>
+#include <communication/msgs/server_msgs.h>
 
 #include "fsm_header.h"
 #include "fsm_msg.h"

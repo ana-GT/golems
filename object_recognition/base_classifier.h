@@ -1,6 +1,7 @@
 
 #include <caffe/caffe.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
+#include <iostream>
 #include <memory>
 
 typedef std::pair<std::string, float> Prediction;

@@ -17,16 +17,16 @@
 
 #include <Eigen/Core>
 #include <stdint.h>
-#include "tabletop_segmentation/tabletop_segmentation.h"
-#include "msgs/perception_msgs.h"
+#include "perception/tabletop_segmentation/tabletop_segmentation.h"
+#include "perception/msgs/perception_msgs.h"
 
 #include <global/crichton_global.h>
 
 // SQ, BB
-#include "refresher_utils/Refresher_utils.h"
-#include "sq_fitting/SQ_utils.h"
-#include "sq_fitting/SQ_fitter.h"
-#include "tabletop_symmetry/mindGapper.h"
+#include "perception/pointcloud_tools/refresher_utils/Refresher_utils.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper.h"
 
 
 /**************************/

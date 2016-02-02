@@ -52,6 +52,7 @@ class mindGapper {
 
   /**< Get the symmetry Tf: Z is the table plane and the rest comes from the symmetry plane */
   void getSymmetryApprox( Eigen::Isometry3d &_Tf,
+
 			  Eigen::Vector3d &_dim );
 
   void calculateSymmTf( const Eigen::Isometry3d &_Rt,
@@ -115,4 +116,4 @@ class mindGapper {
 };
 
 
-#include "impl/mindGapper.hpp"
+#include "perception/pointcloud_tools/tabletop_symmetry/impl/mindGapper.hpp"

@@ -4,20 +4,19 @@ set( CMAKE_CXX_FLAGS "-fPIC -std=gnu++11" )
 
 # Add Tobias' trajectory generation code
 add_subdirectory( trajectories )
-include_directories( ${CMAKE_SOURCE_DIR} )
 
 # Add bimanual msgs
 add_subdirectory( msgs )
 
 # Add my motionControl code
-add_library( motionControl base_control.cpp base_control.h
+add_library( motionControl SHARED base_control.cpp base_control.h
   base_dual_control.cpp base_dual_control.h
   Control_Interface.cpp Control_Interface.h
   Arm_Interface.cpp Arm_Interface.h
   Hand_Interface.cpp Hand_Interface.h
   Limb_Interface.cpp Limb_Interface.h
   DualLimb_Interface.cpp DualLimb_Interface.cpp )
-target_link_libraries( motionControl tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} )
+target_link_libraries( motionControl bimanual_msgs tkunz ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${AMINO_LIBRARIES} )
 set_target_properties( motionControl PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
 # Install

@@ -2,8 +2,8 @@
  * @file es_tests_0.cpp
  * @brief Test an individual case, values entered by user (a,b,c,e1,e2,px,py,pz,ra,pa,ya)
  */
-#include "evaluated_eqs.h"
-#include <SQ_utils.h>
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
 #include <pcl/common/centroid.h>
 #include <pcl/filters/voxel_grid.h>
 

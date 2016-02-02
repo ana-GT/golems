@@ -4,7 +4,7 @@
 
 #include "test2_server.h"
 #include "ui_test2_server.h"
-#include "msgs/server_msgs.h"
+#include "communication/msgs/server_msgs.h"
 #include <sns.h>
 
 #include <QListWidget>

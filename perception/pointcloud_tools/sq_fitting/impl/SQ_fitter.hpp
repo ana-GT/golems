@@ -9,13 +9,12 @@
 #include <pcl/common/common.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include "../SQ_fitter.h"
-#include "../SQ_utils.h"
-#include "../SQ_structs.h"
-#include "../analytic_equations.h"
-#include "../evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
+#include "perception/pointcloud_tools/sq_fitting/analytic_equations.h"
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
 
-#include "../levmar/levmar.h"
+#include "perception/pointcloud_tools/sq_fitting/levmar/levmar.h"
 
 /**
  * @function SQ_fitter

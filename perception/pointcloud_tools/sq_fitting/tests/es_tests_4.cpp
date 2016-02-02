@@ -2,9 +2,9 @@
  * @file es_tests_2.cpp
  * @brief Test an individual case, pointcloud is a real one entered from terminal
  */
-#include "evaluated_eqs.h"
-#include <SQ_utils.h>
-#include <tabletop_symmetry/mindGapper.h>
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper.h"
 
 char* fx_names[6] = { "Radial", "Solina", "Ichim", "Chevalier", "F5", "F6"};
 int fx_sq[6] = {SQ_FX_RADIAL, SQ_FX_SOLINA, SQ_FX_ICHIM, SQ_FX_CHEVALIER, SQ_FX_5, SQ_FX_6 };

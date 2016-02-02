@@ -22,10 +22,14 @@ configure_file( cmake/golemsConfig.cmake.in "${CMAKE_BINARY_DIR}/cmake/golemsCon
 install( FILES ${CMAKE_BINARY_DIR}/cmake/golemsConfig.cmake DESTINATION
 share )
 
+# Include base directory
+include_directories( ${CMAKE_SOURCE_DIR} )
+
 # Subdirectories
 add_subdirectory( motion_control )
 add_subdirectory( global )
 add_subdirectory( perception )
+add_subdirectory( object_recognition )
 add_subdirectory( projects )
 add_subdirectory( communication )
 #add_subdirectory( jsoncpp )

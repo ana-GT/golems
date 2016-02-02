@@ -1,7 +1,6 @@
 # tabletop_symmetry: From paper by Bohg et al, 2010
 project( refresher_utils )
 
-include_directories( ${PROJECT_SOURCE_DIR} )
 set(CMAKE_INSTALL_PREFIX /usr/local )
 set( CMAKE_BUILD_TYPE Release )
 set( CMAKE_CXX_FLAGS "-fPIC -std=c++11" )
@@ -18,5 +17,5 @@ set_target_properties( refresher_utils PROPERTIES
 		       RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
 # INSTALL
-install( DIRECTORY ./ DESTINATION include/golems/refresher_utils FILES_MATCHING PATTERN "*.h" )
+install( DIRECTORY ./ DESTINATION include/golems/perception/pointcloud_tools/refresher_utils FILES_MATCHING PATTERN "*.h" )
 install( TARGETS refresher_utils DESTINATION lib )

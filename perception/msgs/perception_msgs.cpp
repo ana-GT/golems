@@ -59,8 +59,8 @@ void sns_msg_segmented_cloud_dump( FILE* _out,
   for( i = 0; i < _msg->header.n; ++i ) {
     fprintf( _out, "\t %f %f %f - cluster: %d \n", _msg->u[i].x, 
 	     _msg->u[i].y,
-	     _msg->u[i].z ); //,
-	     //_msg->u[i].cluster );
+	     _msg->u[i].z,
+	     _msg->u[i].cluster );
   }
   fprintf( _out, "\n" );
 }

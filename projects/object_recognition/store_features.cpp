@@ -4,7 +4,7 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "classifier.h"
+#include "object_recognition/base_classifier.h"
 #include <fstream>
 
 cv::Mat gRgbImg;

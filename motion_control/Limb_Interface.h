@@ -39,8 +39,8 @@
 
 #pragma once
 
-#include "Arm_Interface.h"
-#include "Hand_Interface.h"
+#include "motion_control/Arm_Interface.h"
+#include "motion_control/Hand_Interface.h"
 
 class Limb_Interface  {
 

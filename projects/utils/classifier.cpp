@@ -84,7 +84,7 @@ static std::vector<int> Argmax(const std::vector<float>& v, int N) {
  *
  */
 std::vector<Prediction> Classifier::classify( const cv::Mat &_img,
-					      int &_idx, int N ) {
+					      int N ) {
 
   std::vector<float> output = this->Predict( _img );
   N = std::min<int>( labels_.size(), N );
@@ -92,11 +92,11 @@ std::vector<Prediction> Classifier::classify( const cv::Mat &_img,
 
   std::vector<Prediction> predictions;
   for( int i = 0; i < N; ++i ) {
-    predictions.push_back( std::make_pair( labels_[maxN[i]],
-					   output[maxN[i]] ) );
+    int idx = maxN[i];
+    predictions.push_back( std::make_pair( labels_[idx],
+					   output[idx] ) );
   }
-    _idx = maxN[0];  
-
+  
   return predictions;
 
 }

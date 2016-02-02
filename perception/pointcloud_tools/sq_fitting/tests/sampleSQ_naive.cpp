@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <stdlib.h> 
 
-#include "SQ_utils.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
 
 void printHelp();
 

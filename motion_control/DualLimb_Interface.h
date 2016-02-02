@@ -3,10 +3,10 @@
  */
 #pragma once
 
-#include "Limb_Interface.h"
-#include "Arm_Interface.h"
-#include "Hand_Interface.h"
-#include "msgs/bimanual_msgs.h"
+#include "motion_control/Limb_Interface.h"
+#include "motion_control/Arm_Interface.h"
+#include "motion_control/Hand_Interface.h"
+#include "motion_control/msgs/bimanual_msgs.h"
 
 class DualLimb_Interface  {
   

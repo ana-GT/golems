@@ -3,7 +3,7 @@
  */
 #pragma once
 
-#include <golems/global/fsa_data.h>
+#include <global/fsa_data.h>
 
 /**
  * @class Test2_FSA

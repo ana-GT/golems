@@ -4,10 +4,10 @@
 #pragma once
 
 
-#include "SQ_parameters.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_parameters.h"
 #include <pcl/io/pcd_io.h>
 
-#include "evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
 
 /**
  * @class SQ_fitter
@@ -101,4 +101,4 @@ class SQ_fitter {
 };
 
 
-#include "impl/SQ_fitter.hpp"
+#include "perception/pointcloud_tools/sq_fitting/impl/SQ_fitter.hpp"

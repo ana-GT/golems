@@ -6,8 +6,8 @@
 #include <string>
 #include <unistd.h>
 
-#include <SQ_fitter.h>
-#include <tabletop_symmetry/mindGapper.h>
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper.h"
 
 typedef typename  pcl::PointXYZ PointT;
 

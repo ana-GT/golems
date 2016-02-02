@@ -17,7 +17,7 @@
 #include <ach.h>
 #include <sns.h>
 
-#include <global/crichton_global.h>
+#include "global/crichton_global.h"
 
 cv::Mat rgbImg;
 cv::Mat pclMap;

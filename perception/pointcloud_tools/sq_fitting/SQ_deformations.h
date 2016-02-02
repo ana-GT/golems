@@ -4,7 +4,7 @@
 #pragma once
 
 #include <pcl/io/pcd_io.h>
-#include <SQ_utils.h>
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
 
 class SQ_deformations {
 public:

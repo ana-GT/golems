@@ -30,7 +30,7 @@ std::mutex  mutex;
 std::vector<Eigen::VectorXd> gClustersBB;
 
 // Storing
-bool gShowSegmentation = true;
+bool gShowSegmentation = false;
 std::string gName("default");
 int gCounter = 0;
 int gSelectedCluster = 0;
@@ -55,7 +55,9 @@ int main( int argc, char* argv[] ) {
   }
 
   gRgbImg = cv::Mat( 480, 640, CV_8UC3 );
-  
+  gTts.setMinClusterSize(300);  
+  gTts.setZfilters( 0.35, 1.0 );
+
   // Set capture
   gGrabber = new pcl::io::OpenNI2Grabber("", pcl::io::OpenNI2Grabber::OpenNI_Default_Mode, 
 					 pcl::io::OpenNI2Grabber::OpenNI_Default_Mode );
@@ -216,7 +218,7 @@ void drawBoundingBox() {
     if( xmax + dx < 640 - 1 ) { xmax = xmax + dx; }
     if( ymin -dy > 0 ) { ymin = ymin - dy; }
     if( ymax + dy < 480 - 1 ) { ymax = ymax + dy; }
-    cv::rectangle( gRgbImg, cv::Point( xmin, ymin), cv::Point(xmax, ymax), colors, 1 );    
+    cv::rectangle( gRgbImg, cv::Point( xmin, ymin), cv::Point(xmax, ymax), colors, 2 );    
     gClustersBB.push_back( Eigen::Vector4d(xmin+1,ymin+1,xmax-1,ymax-1) );
   }
 

@@ -4,7 +4,7 @@
 #include <pcl/filters/voxel_grid.h>
 
 
-#include <SQ_utils.h>
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
 #include <iostream>
 #include <fstream>
 #include <stdio.h>

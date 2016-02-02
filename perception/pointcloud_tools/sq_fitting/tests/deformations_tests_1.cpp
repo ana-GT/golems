@@ -2,9 +2,9 @@
  * @file deformations_tests_1.cpp
  * @brief Testing bending
  */
-#include "evaluated_eqs.h"
-#include <SQ_utils.h>
-#include <SQ_deformations.h>
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_deformations.h"
 
 /**
  * @function main

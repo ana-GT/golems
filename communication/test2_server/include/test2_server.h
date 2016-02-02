@@ -15,7 +15,7 @@
 #include <ach.h>
 
 #include "server_unit.h"
-#include <msgs/server_msgs.h>
+#include <communication/msgs/server_msgs.h>
 
 #include "test2_fsa.h"
 

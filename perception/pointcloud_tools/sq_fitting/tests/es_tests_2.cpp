@@ -2,8 +2,8 @@
  * @file es_tests_2.cpp
  * @brief Test a set of random cases for noise and partiality using threads
  */
-#include "evaluated_eqs.h"
-#include <SQ_utils.h>
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
 #include <pcl/common/centroid.h>
 #include <pcl/filters/voxel_grid.h>
 

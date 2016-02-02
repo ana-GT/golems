@@ -13,7 +13,7 @@ extern "C" {
 #include "levmar/levmar.h"
 }
 #include <math.h>
-#include <SQ_fitter.h>
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
 
 
 

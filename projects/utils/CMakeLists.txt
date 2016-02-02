@@ -34,12 +34,6 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-# Include
-include_directories( ${CMAKE_SOURCE_DIR}/perception )
-include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools )
-include_directories( ${CMAKE_SOURCE_DIR} )
-
-include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools/sq_fitting )
 
 # Utilities to get data
 add_executable( grab_pointcloud grab_pointcloud.cpp )
@@ -47,13 +41,6 @@ target_link_libraries( grab_pointcloud ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIE
 set_target_properties( grab_pointcloud PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-
-
-# Perception Pick Proposal
-add_executable( perception_pick_proposal perception_pick_proposal.cpp )
-target_link_libraries( perception_pick_proposal  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
-set_target_properties( perception_pick_proposal PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
 # Take picture with joystick
@@ -148,21 +135,23 @@ set_target_properties( store_segmented_pointcloud PROPERTIES RUNTIME_OUTPUT_DIRE
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
-
+###########################################################
+## FFTS
+###########################################################
 # Simple segmentation
 add_executable( ftts_segmentation_demo_1 ftts_segmentation_demo_1.cpp )
 target_link_libraries( ftts_segmentation_demo_1 ftts )
 set_target_properties( ftts_segmentation_demo_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
 # Segmentation + bounding box
-#add_executable( fast_perception_pick_2 fast_perception_pick_2.cpp )
-#target_link_libraries( fast_perception_pick_2 ftts )
-#set_target_properties( fast_perception_pick_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+add_executable( ftts_segmentation_demo_2 ftts_segmentation_demo_2.cpp )
+target_link_libraries( ftts_segmentation_demo_2 ftts )
+set_target_properties( ftts_segmentation_demo_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
 # Segmentation + bounding box + recognition
-#add_executable( fast_perception_pick_3 fast_perception_pick_3.cpp classifier.cpp )
-#target_link_libraries( fast_perception_pick_3 ftts ${Caffe_LIBRARIES} )
-#set_target_properties( fast_perception_pick_3 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+add_executable( fast_perception_pick_3 fast_perception_pick_3.cpp classifier.cpp )
+target_link_libraries( fast_perception_pick_3 ftts ${Caffe_LIBRARIES} )
+set_target_properties( fast_perception_pick_3 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
 # Segmentation + bounding box + get training data for OR 
 add_executable( ftts_get_object_data_4 ftts_get_object_data_4.cpp )

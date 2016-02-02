@@ -1,11 +1,13 @@
-#cmake_minimum_required( VERSION 2.8 )
-project( OR )
-#set( CMAKE_MODULE_PATH CMAKE_MODULE_PATH "/home/ana/local/share/Caffe/Caffe" )
-#set( CMAKE_CXX_FLAGS   "-std=c++0x" )
+
+project( object_recognition_utilities_demos )
+
 set( CMAKE_CXX_FLAGS   "-std=gnu++11" )
+
+# Caffe
 find_package( Caffe REQUIRED )
 include_directories( ${Caffe_INCLUDE_DIRS} )
 add_definitions( ${Caffe_DEFINITIONS} )
+
 
 find_package( OpenCV )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
@@ -17,42 +19,40 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-# Include
-include_directories( ${CMAKE_SOURCE_DIR}/perception )
-include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools )
-include_directories( ${CMAKE_SOURCE_DIR} )
 
 include_directories( ${CMAKE_SOURCE_DIR}/perception/pointcloud_tools/sq_fitting )
 
-add_executable( recognition_3_speech_joystick recognition_3_speech_joystick.cpp classifier.cpp )
-target_link_libraries( recognition_3_speech_joystick ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+add_executable( recognition_4_comparison recognition_4_comparison.cpp  )
+target_link_libraries( recognition_4_comparison base_classifier ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( recognition_4_comparison PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
+add_executable( recognition_3_speech_joystick recognition_3_speech_joystick.cpp  )
+target_link_libraries( recognition_3_speech_joystick base_classifier ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
 set_target_properties( recognition_3_speech_joystick PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
-add_executable( recognition_2_speech recognition_2_speech.cpp classifier.cpp )
-target_link_libraries( recognition_2_speech ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+add_executable( recognition_2_speech recognition_2_speech.cpp )
+target_link_libraries( recognition_2_speech  base_classifier  ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
 set_target_properties( recognition_2_speech PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-add_executable( recognition_1 recognition_1.cpp classifier.cpp )
-target_link_libraries( recognition_1 ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+add_executable( recognition_1 recognition_1.cpp  )
+target_link_libraries( recognition_1  base_classifier  ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} tabletop_segmentation  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
 set_target_properties( recognition_1 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 
-add_executable( recognition_0 recognition_0.cpp classifier.cpp )
-target_link_libraries( recognition_0 ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
+add_executable( recognition_0 recognition_0.cpp )
+target_link_libraries( recognition_0 base_classifier ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
 set_target_properties( recognition_0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-add_executable( features_0 features_0.cpp feature_extractor.cpp )
-target_link_libraries( features_0 ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
-set_target_properties( features_0 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
-  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
-add_executable( store_features store_features.cpp classifier.cpp )
-target_link_libraries( store_features ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
+add_executable( store_features store_features.cpp  )
+target_link_libraries( store_features base_classifier ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
 set_target_properties( store_features PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 

@@ -14,7 +14,7 @@
 #include <unistd.h>
 #include <ach.h>
 
-#include "msgs/perception_msgs.h"
+#include "perception/msgs/perception_msgs.h"
 
 #include <Eigen/Core>
 

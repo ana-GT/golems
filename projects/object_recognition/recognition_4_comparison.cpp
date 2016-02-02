@@ -25,6 +25,7 @@ cv::Mat gPclMap;
 Eigen::Vector3d gCurrentPoint;
 bool gIsSegmentedFlag = false;
 double gF; 
+int gPad = 10;
 
 std::vector<pcl::PointCloud<PointTa> > gClusters;
 std::vector<cv::Vec3b> gColors;
@@ -34,16 +35,16 @@ std::vector<Eigen::Vector4d> gBoundingBoxes;
 std::vector<double> gTableCoeffs;
 pcl::PointCloud<PointTa> gTablePoints;
 std::vector<std::string> gLabels;
-std::vector<int> gIndex;
-std::vector<std::string> gHabla;
 
-char* gModel_file ="/home/ana/Desktop/Crichton_data_trained/deploy_alexnet.prototxt";
-char* gTrain_file = "/home/ana/Desktop/Crichton_data_trained/partial_alexnet_iter_1700.caffemodel";
+const int gN = 4;
+char* gCandidates[gN] = {"AlexNet", "Reference", "RCNN", "GoogleNet"};
+char* gModel_file[gN] ={"/home/ana/Desktop/Crichton_data_trained/deploy_alexnet.prototxt","/home/ana/Desktop/Crichton_data_trained/deploy_reference_caffenet.prototxt", "/home/ana/Desktop/Crichton_data_trained/deploy_reference_rcnn_ilsvrc13.prototxt", "/home/ana/Desktop/Crichton_data_trained/deploy_googlenet2.prototxt" };
+char* gTrain_file[gN] = {"/home/ana/Desktop/Crichton_data_trained/partial_alexnet_iter_2000.caffemodel","/home/ana/Desktop/Crichton_data_trained/partial_reference_caffenet_iter_2000.caffemodel","/home/ana/Desktop/Crichton_data_trained/partial_reference_rcnn_ilsvrc13_iter_2000.caffemodel","/home/ana/Desktop/Crichton_data_trained/partial_googlenet2_iter_2000.caffemodel"};
 // Remember AlexNet, referenc_caffenet and RCNN_ilsvrc13: 227, googlenet: 224
-char* gMean_file = "/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto";
-char* gLabel_file = "/home/ana/Desktop/Crichton_data/training_labels.txt";
-char* gExplanations= "/home/ana/Desktop/Crichton_data/training_labels_explanatory.txt";
-int gBiggestCluster;
+char* gMean_file[gN] = {"/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto","/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto","/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto","/home/ana/Desktop/Crichton_data_processed/Crichton_data_224_brute_resize_train.binaryproto"};
+char* gLabel_file[gN] = {"/home/ana/Desktop/Crichton_data/training_labels.txt", "/home/ana/Desktop/Crichton_data/training_labels.txt", "/home/ana/Desktop/Crichton_data/training_labels.txt", "/home/ana/Desktop/Crichton_data/training_labels.txt"};
+
+Classifier* gClassifier[gN];
 
 /*** Functions */
 void process();
@@ -56,6 +57,7 @@ void getPixelClusters();
 int main( int argc, char* argv[] ) {
   
   // http://www.robots.ox.ac.uk/~vgg/research/very_deep/  
+/*
   int c;
   while( (c=getopt(argc,argv,"n:t:m:l:h")) != -1 ) {
     switch(c) {
@@ -67,24 +69,10 @@ int main( int argc, char* argv[] ) {
 		       argv[0] ); return 1; } break;
     }
   }
-
-  Classifier gClassifier( gModel_file, gTrain_file, gMean_file, gLabel_file );
-
-   ////////////////////////////////  
-  // Load explanations
-  printf("Load explanations \n");
-  std::ifstream  explan( gExplanations, std::ifstream::in );
-  std::string line;
-  std::string words;
-  while( std::getline(explan, line) ) {
-    std::size_t pos = line.find("Veo");
-    words = line.substr(pos);
-    printf("Line: %s\n", words.c_str() );
-    gHabla.push_back(words);
+*/
+  for( int i = 0; i < gN; ++i ) {
+    gClassifier[i] = new Classifier( gModel_file[i], gTrain_file[i], gMean_file[i], gLabel_file[i] );
   }
-  explan.close();
-  printf("Finished loading explanations\n");
-  ////////////////////////////////
 
   gCapture.open( cv::CAP_OPENNI2 );
   
@@ -126,18 +114,20 @@ int main( int argc, char* argv[] ) {
     /** Recognize */
     else if( k == 'i' ) {
 
+    clock_t ts, tf; double dt;
+
       // Process image
       process();
       gLabels.resize(gClusters.size() );
-      gIndex.resize(gClusters.size() );      
+      
       // Store images
       for( int i = 0; i < gClusters.size(); ++i ) {
-
+	printf("OBJECT %d \n", i);
 	int xl = gBoundingBoxes[i](0);
 	int yl = gBoundingBoxes[i](1);
 	int xw = gBoundingBoxes[i](2)-gBoundingBoxes[i](0);
 	int yw = gBoundingBoxes[i](3)-gBoundingBoxes[i](1);
-	/*
+	
 	  int mWidth = gRgbImg.cols;
 	  int mHeight = gRgbImg.rows;
 	  
@@ -148,31 +138,23 @@ int main( int argc, char* argv[] ) {
 	  if( yl - gPad >= 0 ) { yl -= gPad; }
 	  if( yl + yw + 2*gPad < mHeight ) { yw += 2*gPad; }
 	  else if( yl + yw + gPad < mHeight ) { yw += gPad; }
-	*/
+	
 	
 	cv::Mat img( gRgbImg, cv::Rect( xl, yl,
 					xw, yw ) );
 	
-	printf("xl: %d yl: %d xw: %d zw: %d \n", xl, yl, xw, yw);
-	printf("Segmented image [%d] size: %d, %d \n", i, img.rows, img.cols );
+	//printf("xl: %d yl: %d xw: %d zw: %d \n", xl, yl, xw, yw);
+	//printf("Segmented image [%d] size: %d, %d \n", i, img.rows, img.cols );
 	// Predict 
 	int idx;
-	std::vector<Prediction> predictions = gClassifier.classify( img, idx );
-	gLabels[i] = predictions[0].first;
-        gIndex[i] = idx;
 
-    cv::putText( gRgbImg,
-		 gLabels[i], cv::Point(gBoundingBoxes[i](0), gBoundingBoxes[i](1) ),
-		 cv::FONT_HERSHEY_SIMPLEX, 1, 
-		 gColors[i],
-		 2 );
-
-
-    char texto[150];
-    sprintf(texto, "espeak '%s' -p 80 -s 200 -ves-la ", gHabla[gIndex[i]].c_str() );
-    printf("Texto: %s \n", texto);
-    system(texto); usleep(0.1*1e6);
-     printf("Finished speaking\n");
+        for( int j = 0; j < gN; ++j ) {
+          ts = clock();
+  	  std::vector<Prediction> predictions = gClassifier[j]->classify( img, idx );
+          tf = clock(); dt = (tf-ts)/(double)CLOCKS_PER_SEC;
+          printf("Prediction %s: Label: %s  . Prob: %f Time: %f \n", gCandidates[j], predictions[0].first.c_str(), predictions[0].second, dt );
+	  gLabels[i] = predictions[0].first;
+        }
 	
       }
       
@@ -220,8 +202,7 @@ void process() {
 
   // Segment
   TabletopSegmentor<PointTa> tts;
-  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.0 );
-  tts.set_min_cluster_size(1500);
+  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.1 );
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();
@@ -248,16 +229,18 @@ void process() {
  * @function drawSegmented
  */
 void drawSegmented() {
- 
   for( int i = 0; i < gPixelClusters.size(); ++i ) {
+
     int thickness = 2;
     cv::rectangle( gRgbImg, 
 		   cv::Point( gBoundingBoxes[i](0), gBoundingBoxes[i](1) ),
 		   cv::Point( gBoundingBoxes[i](2), gBoundingBoxes[i](3) ),
 		   gColors[i], thickness );
 
+    char number[10];
+    sprintf(number,"%d", i );
     cv::putText( gRgbImg,
-		 gLabels[i], cv::Point(gBoundingBoxes[i](0), gBoundingBoxes[i](1) ),
+		 number, cv::Point(gBoundingBoxes[i](0), gBoundingBoxes[i](1) ),
 		 cv::FONT_HERSHEY_SIMPLEX, 1, 
 		 gColors[i],
 		 2 );
@@ -314,7 +297,7 @@ void getPixelClusters() {
       if( v > max_v ) { max_v = v; }
 
     }
-    printf("CLuster %d size: %d \n", i, gPixelClusters[i].size());
+
     Eigen::Vector4d mM; mM << min_u, min_v, max_u, max_v;
     gBoundingBoxes[i] = mM;
 

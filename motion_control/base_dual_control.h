@@ -9,7 +9,7 @@
 #include <sns.h>
 #include <ach.h>
 #include <Eigen/Dense>
-#include "base_control.h"
+#include "motion_control/base_control.h"
 
 /**
  * @class BaseDualControl

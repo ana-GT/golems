@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <ach.h>
 
-#include "msgs/bimanual_msgs.h"
-#include "msgs/control_msgs.h"
-#include "base_dual_control.h"
+#include "motion_control/msgs/bimanual_msgs.h"
+#include "motion_control/msgs/control_msgs.h"
+#include "motion_control/base_dual_control.h"
 #include "global/crichton_global.h"
 
 ach_channel_t bimanual_chan;

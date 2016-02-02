@@ -16,8 +16,8 @@
 
 #include <Eigen/Core>
 #include <stdint.h>
-#include "tabletop_segmentation/tabletop_segmentation.h"
-#include "msgs/perception_msgs.h"
+#include "perception/tabletop_segmentation/tabletop_segmentation.h"
+#include "perception/msgs/perception_msgs.h"
 
 
 /**************************/

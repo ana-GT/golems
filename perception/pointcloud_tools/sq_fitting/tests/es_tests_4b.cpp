@@ -2,10 +2,10 @@
  * @file es_tests_4b.cpp
  * @brief Test mirror results from groups in visualization
  */
-#include "evaluated_eqs.h"
-#include <SQ_utils.h>
-#include <SQ_fitter.h>
-#include <tabletop_symmetry/mindGapper.h>
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper.h"
 
 #include <boost/thread/thread.hpp>
 #include <pcl/common/common_headers.h>

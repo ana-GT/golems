@@ -3,10 +3,9 @@ project( marker_detection )
 set(CMAKE_INSTALL_PREFIX /usr/local )
 set( CMAKE_BUILD_TYPE Release )
 set( CMAKE_CXX_FLAGS "-std=gnu++11 -fPIC" )
-include_directories( ${CMAKE_SOURCE_DIR}/perception )
 
 # Alvar
-find_package( alvar )
+find_package( alvar REQUIRED )
 include_directories( ${ALVAR_INCLUDE_DIRS} )
 
 

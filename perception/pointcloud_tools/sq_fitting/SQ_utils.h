@@ -16,7 +16,7 @@
 #include <pcl/surface/convex_hull.h>
 #include <pcl/io/ply_io.h>
 
-#include "SQ_parameters.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_parameters.h"
 
 /** Meshes */
 namespace SQ_utils {
@@ -129,4 +129,4 @@ typename pcl::PointCloud<PointT>::Ptr sampleSQ_naive( const SQ_parameters &_par 
 
 
 /////////////////////////////////////////////////////
-#include "impl/SQ_utils.hpp"
+#include "perception/pointcloud_tools/sq_fitting/impl/SQ_utils.hpp"

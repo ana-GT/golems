@@ -4,7 +4,7 @@
  */
 #pragma once
 
-#include "SQ_parameters.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_parameters.h"
 
 /**
  * @structure levmar_data

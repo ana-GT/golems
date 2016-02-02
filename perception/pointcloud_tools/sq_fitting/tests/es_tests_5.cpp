@@ -13,8 +13,8 @@
 #include <unistd.h>
 #include <string>
 
-#include <SQ_utils.h>
-#include <evaluated_eqs.h>
+#include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
 
 #include <future>
 #include <thread>

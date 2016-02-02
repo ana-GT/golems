@@ -8,13 +8,13 @@
 
 #include <Eigen/Core>
 #include <stdint.h>  
-#include "tabletop_segmentation/tabletop_segmentation.h"
+#include "perception/tabletop_segmentation/tabletop_segmentation.h"
 
 #include <caffe/caffe.hpp>
 #include <sstream>
 
 
-#include "classifier.h"
+#include "object_recognition/base_classifier.h"
 
 typedef pcl::PointXYZRGBA PointTa;
 
@@ -37,7 +37,7 @@ std::vector<std::string> gLabels;
 
 
 char* gModel_file ="/home/ana/Desktop/Crichton_data_trained/deploy_alexnet.prototxt";
-char* gTrain_file = "/home/ana/Desktop/Crichton_data_trained/partial_alexnet_iter_1700.caffemodel";
+char* gTrain_file = "/home/ana/Desktop/Crichton_data_trained/partial_alexnet_iter_2200.caffemodel";
 // Remember AlexNet, referenc_caffenet and RCNN_ilsvrc13: 227, googlenet: 224
 char* gMean_file = "/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto";
 char* gLabel_file = "/home/ana/Desktop/Crichton_data/training_labels.txt";

@@ -12,7 +12,7 @@
 
 #include <Eigen/Core>
 #include <stdint.h>  
-#include "tabletop_segmentation/tabletop_segmentation.h"
+#include "perception/tabletop_segmentation/tabletop_segmentation.h"
 
 #include <stdlib.h>
 #include <time.h>
@@ -22,7 +22,7 @@
 
 
 
-#include "classifier.h"
+#include "object_recognition/base_classifier.h"
 
 typedef pcl::PointXYZRGBA PointTa;
 

@@ -3,7 +3,7 @@
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "classifier.h"
+#include "object_recognition/base_classifier.h"
 
 cv::VideoCapture gCapture;
 cv::Mat gRgbImg;

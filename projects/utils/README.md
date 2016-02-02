@@ -11,6 +11,11 @@ Description of the projects here included:
   - Added on January 22nd, 2016.	
   - Segments objects in a tabletop and show them colored.
 
+* ftts_segmentation_demo_2
+  ------------------------
+  - Added on January 22nd, 2016
+  - Same as demo_1 but with bounding boxes
+
 * ftts_get_object_data_4
   -----------------------
   - Added on January 22nd, 2016.

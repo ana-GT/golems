@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <ach.h>
 
-#include "base_control.h"
+#include "motion_control/base_control.h"
 
 /** Left arm */
 ach_channel_t la_state_chan;

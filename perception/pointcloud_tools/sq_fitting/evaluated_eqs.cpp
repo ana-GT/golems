@@ -5,13 +5,13 @@
 #include <pcl/common/common.h>
 #include <pcl/filters/voxel_grid.h>
 
-#include "analytic_equations.h"
-#include "evaluated_eqs.h"
+#include "perception/pointcloud_tools/sq_fitting/analytic_equations.h"
+#include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
 extern "C" {
 #include "levmar/levmar.h"
 }
 #include <math.h>
-#include <SQ_fitter.h>
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
 
 
 
