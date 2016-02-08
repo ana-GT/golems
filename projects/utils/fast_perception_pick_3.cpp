@@ -36,10 +36,10 @@ char* gTrain_file = "/home/ana/Software/caffe/models/YCB_svm/partial_YCB_svm_ite
 char* gMean_file = "/home/ana/Software/caffe/models/YCB_svm/mean_YCB.binaryproto";
 char* gLabel_file = "/home/ana/Software/caffe/models/YCB_svm/training_labels.txt";
 */
-char* gModel_file ="/home/ana/Software/caffe/models/YCB_vgg/deploy.prototxt";
-char* gTrain_file = "/home/ana/Software/caffe/models/YCB_vgg/YCB_svm_train_thoughtful_iter_3500.caffemodel";
-char* gMean_file = "/home/ana/Software/caffe/models/YCB_vgg/mean_YCB.binaryproto";
-char* gLabel_file = "/home/ana/Software/caffe/models/YCB_vgg/training_labels.txt";
+const char* gModel_file ="/home/ana/Software/caffe/models/YCB_vgg/deploy.prototxt";
+const char* gTrain_file = "/home/ana/Software/caffe/models/YCB_vgg/YCB_svm_train_thoughtful_iter_3500.caffemodel";
+const char* gMean_file = "/home/ana/Software/caffe/models/YCB_vgg/mean_YCB.binaryproto";
+const char* gLabel_file = "/home/ana/Software/caffe/models/YCB_vgg/training_labels.txt";
 
 std::vector<std::string> gLabels;
 

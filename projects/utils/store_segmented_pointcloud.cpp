@@ -171,7 +171,7 @@ static void onMouse( int event, int x, int y, int, void* ) {
 void save( int state, void* userData ) {
 
    if( selectedSegmentedCloud < 0 || selectedSegmentedCloud >= clusters.size() ) {
-     printf("ERROR: Index: %d but I only have %d clusters \n", selectedSegmentedCloud, clusters.size() );
+     printf("ERROR: Index: %d but I only have %ld clusters \n", selectedSegmentedCloud, clusters.size() );
    }
 
    printf("Saving segmented cloud %d \n", selectedSegmentedCloud );
