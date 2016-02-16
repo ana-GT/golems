@@ -4,6 +4,8 @@ set( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}  ${CMAKE_SOURCE_DIR}/cmake/Modules )
 set( CMAKE_INSTALL_PREFIX $ENV{HOME}/local )
 message("CMAKE INSTALL PREFIX: ${CMAKE_INSTALL_PREFIX}" )
 
+
+link_directories( /usr/lib/bullet_2.82 )
 # Eigen
 find_package( PkgConfig )
 pkg_check_modules( EIGEN REQUIRED eigen3 )

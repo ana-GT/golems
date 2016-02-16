@@ -35,6 +35,7 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 
+
 # Utilities to get data
 add_executable( grab_pointcloud grab_pointcloud.cpp )
 target_link_libraries( grab_pointcloud ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_VISUALIZATION_LIBRARIES} )
