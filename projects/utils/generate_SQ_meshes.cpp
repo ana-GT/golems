@@ -28,8 +28,8 @@ int main( int argc, char* argv[] ) {
   // Generate meshes 
   int num_shapes = 16;
   
-  std::vector<Eigen::Vector2d> e;
-  std::vector<Eigen::Vector3d> dim; 
+  std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > e;
+  std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > dim; 
   std::vector<std::string> names;
   //----------- EQUANT -------------------
   // 1. Cubic

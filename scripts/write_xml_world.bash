@@ -23,7 +23,7 @@ printf '\t <robot>\n' >> ${FILENAME}
 printf '\t\t <filename>%s</filename> \n' ${HAND_FILENAME} >> ${FILENAME}
 printf '\t\t <dofValues>0 0 0 0 0 0 0 0</dofValues> \n' >> ${FILENAME}
 printf '\t\t <transform> \n' >> ${FILENAME}
-printf '\t\t\t<fullTransform>(+1 0 0 0)[0 0 0]</fullTransform> \n' >> ${FILENAME}
+printf '\t\t\t<fullTransform>(+1 0 0 0)[0 0 400]</fullTransform> \n' >> ${FILENAME}
 printf '\t\t </transform> \n' >> ${FILENAME}
 printf '\t </robot>\n' >> ${FILENAME}
 printf '\t <camera>\n' >> ${FILENAME}

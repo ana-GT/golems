@@ -6,21 +6,30 @@
 link_directories( ${PCL_LIBRARY_DIRS} )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}" )
 
+ find_package(Qt5Gui REQUIRED)
+find_package(Qt5Core REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Xml REQUIRED)
+find_package(Qt5Widgets REQUIRED )
+add_definitions(${QT_DEFINITIONS})
+
+
 # PCL
 find_package(PCL REQUIRED COMPONENTS common search io features visualization)
 include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-
+message( STATUS "LIBRARY DIARS: ${PCL_LIBRARY_DIRS}" )
+message( STATUS "LIBRARIES THEMSELVES: ${PCL_LIBRARIES} " )
 # OpenCV
 #find_package( OpenCV REQUIRED )
 #include_directories( ${OpenCV_INCLUDE_DIRS} )
 
-add_executable ( SQ_utils_SE_test SQ_utils_SE_test.cpp)
-target_link_libraries(SQ_utils_SE_test sq_utils ${PCL_VISUALIZATION_LIBRARIES} )
-set_target_properties( SQ_utils_SE_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY
-  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+#add_executable ( SQ_utils_SE_test SQ_utils_SE_test.cpp)
+#target_link_libraries(SQ_utils_SE_test sq_utils ${PCL_LIBRARIES} )
+#set_target_properties( SQ_utils_SE_test PROPERTIES RUNTIME_OUTPUT_DIRECTORY
+#  ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable ( get_error_data get_error_data.cpp)
 target_link_libraries(get_error_data sq_fitting ${PCL_LIBRARIES} )
@@ -33,7 +42,7 @@ set_target_properties( get_prioritized_error_data PROPERTIES RUNTIME_OUTPUT_DIRE
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
 add_executable ( draw_comparative_data draw_comparative_data.cpp)
-target_link_libraries(draw_comparative_data sq_fitting ${PCL_LIBRARIES} )
+target_link_libraries(draw_comparative_data sq_fitting ${PCL_LIBRARIES} Qt5::Widgets )
 set_target_properties( draw_comparative_data PROPERTIES RUNTIME_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 

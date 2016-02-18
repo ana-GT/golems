@@ -111,5 +111,5 @@ ADD_DEPENDENCIES(lmdemo levmar)
 ENDIF(BUILD_DEMO)
 
 # INSTALL
-INSTALL( DIRECTORY ./ DESTINATION include/golems/sq_fitting/levmar FILES_MATCHING PATTERN "*.h" )
+INSTALL( DIRECTORY ./ DESTINATION include/golems/perception/pointcloud_tools/sq_fitting/levmar FILES_MATCHING PATTERN "*.h" )
 INSTALL( TARGETS levmar DESTINATION lib )

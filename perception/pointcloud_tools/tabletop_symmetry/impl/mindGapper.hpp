@@ -3,7 +3,6 @@
  */
 #pragma once
 
-//#include <pcl/visualization/cloud_viewer.h>
 #include <pcl/common/pca.h>
 #include <pcl/common/centroid.h>
 #include <pcl/features/moment_of_inertia_estimation.h>

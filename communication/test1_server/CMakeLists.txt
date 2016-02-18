@@ -19,7 +19,6 @@ find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Xml REQUIRED)
 find_package(Qt5Widgets REQUIRED )
 find_package(Qt5Bluetooth REQUIRED ) 
-
 add_definitions(${QT_DEFINITIONS})
 ADD_DEFINITIONS(-DQT_PLUGIN)
 ADD_DEFINITIONS(-DQT_NO_DEBUG)

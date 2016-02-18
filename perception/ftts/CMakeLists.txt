@@ -5,6 +5,8 @@ SET(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, options a
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -std=c++11")
 SET(CMAKE_C_FLAGS_RELEASE "-O3 -std=c++11")
 
+find_package(  Qt5 REQUIRED Widgets )
+
 # PCL
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})

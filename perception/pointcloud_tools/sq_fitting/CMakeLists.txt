@@ -5,6 +5,8 @@ set(CMAKE_INSTALL_PREFIX /usr/local )
 set( CMAKE_BUILD_TYPE Release )
 set( CMAKE_CXX_FLAGS "-std=gnu++11 -fPIC" )
 
+find_package( Qt5Widgets REQUIRED )
+
 # levmar
 add_subdirectory( levmar )
 
@@ -46,6 +48,6 @@ install( TARGETS sq_fitting DESTINATION lib )
 
 
 # Add tests
-add_subdirectory( tests )
+#add_subdirectory( tests )
 
 
