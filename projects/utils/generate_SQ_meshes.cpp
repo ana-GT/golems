@@ -26,11 +26,80 @@ void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
 int main( int argc, char* argv[] ) {
   
   // Generate meshes 
-  int num_shapes = 16;
+  int num_shapes = 13;
   
   std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > e;
   std::vector<Eigen::Vector3d, Eigen::aligned_allocator<Eigen::Vector3d> > dim; 
   std::vector<std::string> names;
+
+  // Cubic 666
+  e.push_back( Eigen::Vector2d(0.1, 0.1 ) );
+  dim.push_back( Eigen::Vector3d( 0.03, 0.03, 0.03 ) );
+  names.push_back( std::string("cubic_6_6_6") );
+
+  // Cubic 999
+  e.push_back( Eigen::Vector2d(0.1, 0.1 ) );
+  dim.push_back( Eigen::Vector3d( 0.045, 0.045, 0.045 ) );
+  names.push_back( std::string("cubic_9_9_9") );
+  
+  // Cubic cylinder 7710
+  e.push_back( Eigen::Vector2d(0.1, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.035, 0.035, 0.05 ) );
+  names.push_back( std::string("cubic_cylinder_7_7_10") );
+
+  // Cubic cylinder 10x10x14
+  e.push_back( Eigen::Vector2d(0.1, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.05, 0.05, 0.07 ) );
+  names.push_back( std::string("cubic_cylinder_10_10_14") );
+
+  // Sphere 7x7x7
+  e.push_back( Eigen::Vector2d(1.0, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.035, 0.035, 0.035 ) );
+  names.push_back( std::string("sphere_7_7_7") );
+
+  // Sphere 9x9x9
+  e.push_back( Eigen::Vector2d(1.0, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.045, 0.045, 0.045 ) );
+  names.push_back( std::string("sphere_9_9_9") );
+
+  // Sphere 11x11x11
+  e.push_back( Eigen::Vector2d(1.0, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.055, 0.055, 0.055 ) );
+  names.push_back( std::string("sphere_11_11_11") );
+
+  // Cylinder 5x5x12
+  e.push_back( Eigen::Vector2d(0.1, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.025, 0.025, 0.06 ) );
+  names.push_back( std::string("cylinder_5_5_12") );
+
+  // Cylinder 8x8x24
+  e.push_back( Eigen::Vector2d(0.1, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.04, 0.04, 0.12 ) );
+  names.push_back( std::string("cylinder_8_8_24") );
+
+  // Ellipsoid 
+  e.push_back( Eigen::Vector2d(1.0, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.025, 0.025, 0.03 ) );
+  names.push_back( std::string("ellipsoid_5_5_6") );
+
+  // Ellipsoid 
+  e.push_back( Eigen::Vector2d(0.5, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.035, 0.035, 0.04 ) );
+  names.push_back( std::string("ellipsoid_7_7_8") );
+
+  // Ellipsoid 
+  e.push_back( Eigen::Vector2d(0.75, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.045, 0.045, 0.06 ) );
+  names.push_back( std::string("ellipsoid_9_9_12_a") );
+
+  // Ellipsoid - 2
+  e.push_back( Eigen::Vector2d(1.0, 1.0 ) );
+  dim.push_back( Eigen::Vector3d( 0.045, 0.045, 0.06 ) );
+  names.push_back( std::string("ellipsoid_9_9_12_b") );
+
+
+
+  /*
   //----------- EQUANT -------------------
   // 1. Cubic
   e.push_back( Eigen::Vector2d(0.1, 0.1 ) );
@@ -103,7 +172,7 @@ int main( int argc, char* argv[] ) {
   e.push_back( Eigen::Vector2d(0.1, 1.0 ) );
   dim.push_back( Eigen::Vector3d( 0.05, 0.05, 0.02 ) );
   names.push_back( std::string("ellipsoid") );
-
+  */
   
   // Create meshes
   for( unsigned int i = 0; i < num_shapes; ++i ) {
