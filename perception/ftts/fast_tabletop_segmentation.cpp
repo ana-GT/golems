@@ -54,7 +54,7 @@ void Fast_Tabletop_Segmentation<PointT>::getSegmentedImg( CloudConstPtr _cloud,
   float* float_data_ = new float[data_size_];
   int ind = 0; int k;
   
-  int n = mClusters.size();
+  int n = 1; if( mClusters.size() > n ) { n = mClusters.size(); }
   uchar ri[n],gi[n],bi[n];
   for( int i = 0; i <= n; ++i ) {
     ri[i] = rand() % 255;
@@ -259,6 +259,13 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
 
   mClustersIndices.clear();
 
+  pcl::MomentOfInertiaEstimation<PointT> feature_extractor;
+  PointT min_OBB, max_OBB, pos_OBB; Eigen::Matrix3f rot_OBB;
+  double dx, dy, dz; 
+  double smallestBBdim;
+  Eigen::Vector3f mc;
+  float dist2table;
+
   for (size_t i = 0; i < euclidean_label_indices.size (); i++) {
     if (euclidean_label_indices[i].indices.size () > mClusterMinSize) {
       CloudPtr cluster (new Cloud ());
@@ -267,26 +274,23 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
 			    *cluster );
 
       // Check the bounding boxes of these clusters. If one looks too flat, then it is likely spurious points from the table so leave them out
-      pcl::MomentOfInertiaEstimation<PointT> feature_extractor;
       feature_extractor.setInputCloud(cluster);
       feature_extractor.compute();
-      PointT min_OBB, max_OBB, pos_OBB; Eigen::Matrix3f rot_OBB;
-      double dx, dy, dz; 
       feature_extractor.getOBB( min_OBB, max_OBB, pos_OBB, rot_OBB );
       dx = fabs(max_OBB.x - min_OBB.x);
       dy = fabs(max_OBB.y - min_OBB.y);
       dz = fabs(max_OBB.z - min_OBB.z);
-      double smallestBBdim;
       if( dx <= dy && dx <= dz ) { smallestBBdim = dx; }
       else if( dy <= dx && dy <= dz ) { smallestBBdim = dy; }
       else if( dz <= dx && dz <= dy ) { smallestBBdim = dz; }
-      Eigen::Vector3f mc;
       feature_extractor.getMassCenter(mc);
       // Distance to table
-      float dist2table = fabs(a*mc(0) + b*mc(1) + c*mc(2) + d);
-      if( dist2table < mThresh_dist2Table || smallestBBdim < mThresh_smallestBBdim ) { continue; } 
-      mClusters.push_back (cluster);
-      mClustersIndices.push_back(euclidean_label_indices[i]);     
+      dist2table = fabs(a*mc(0) + b*mc(1) + c*mc(2) + d);
+      if( dist2table < mThresh_dist2Table || smallestBBdim < mThresh_smallestBBdim ) { }
+      else { 
+        mClusters.push_back (cluster);
+        mClustersIndices.push_back(euclidean_label_indices[i]);     
+      }
     }    
   }
 
