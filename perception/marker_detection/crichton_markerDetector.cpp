@@ -53,7 +53,7 @@ bool crichton_markerDetector::detect( cv::Mat &_img ) {
     p.GetMatrixGL( transf, false);
 
     calib_marker cm;
-    cm.id = id;
+    cm.id = id; 
     cm.found = true;
     cm.xc = transf[12]; cm.yc = transf[13]; cm.zc = transf[14];
     cm.px = sum_x; cm.py = sum_y;

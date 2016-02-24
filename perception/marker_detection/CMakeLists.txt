@@ -7,7 +7,8 @@ set( CMAKE_CXX_FLAGS "-std=gnu++11 -fPIC" )
 # Alvar
 find_package( alvar REQUIRED )
 include_directories( ${ALVAR_INCLUDE_DIRS} )
-
+message( STATUS "Let's see: OpenCV LIBRARIES: ${OpenCV_LIBRARIES}" )
+message( STATUS "Let's see 2: ALVAR LIBRARIES: ${ALVAR_LIBRARIES} ")
 
 # crichton_markerDetector
 add_library( crichton_markerDetector SHARED crichton_markerDetector.cpp )

@@ -169,7 +169,7 @@ void update_robotInfo() {
   struct sns_msg_marker_robot* msg = 0;
   size_t frame_size;
   ach_status r;
-  
+
   r = sns_msg_local_get( &mMarker_robot_chan,
 			 (void**)&msg,
 			 &frame_size,
@@ -178,7 +178,7 @@ void update_robotInfo() {
   if( ACH_OK == r || ACH_MISSED_FRAME == r ) {
     for( int i = 0; i < 2; ++i ) {
       mPam[i].resize( msg->header.n );
-      mId[i].resize( msg->header.n );
+      mId[i].resize( msg->header.n );  	
     }
 
     for( int i = 0; i < 2; ++i ) {
@@ -238,6 +238,8 @@ void grabSnapshot( int state, void* userdata ) {
   
   std::vector<calib_marker> markers;
   markers = mMd.getCalibMarkers();
+  printf("Markers size: %d \n", markers.size());
+  for( int i = 0; i < markers.size(); ++i ) { printf("id: %d \n", markers[i].id ); }
   int ind;
   
   for( int i = 0; i < 2; ++i ) {
@@ -246,9 +248,9 @@ void grabSnapshot( int state, void* userdata ) {
       // Check if id was found
       ind = -1;
       for( int k = 0; k < markers.size(); ++k ) {
-	if( mId[i][j] == markers[k].id ) {
+	if( mId[i][j] == markers[k].id ) { printf("Id: %d \n", markers[k].id);
 	  ind = k; break;
-	}
+	} 
       }
 
       if( ind != -1 ) {

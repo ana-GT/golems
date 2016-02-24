@@ -1,6 +1,7 @@
 
 #include "fast_tabletop_segmentation.h"
 #include <pcl/filters/extract_indices.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 /**
  * @function constructor
@@ -16,8 +17,9 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   mClusterDistThreshold(0.015f),
   mMinZ(0.35),
   mMaxZ(1.4),
+  mThresh_dist2Table(0.015),
+  mThresh_smallestBBdim(0.015),
   mEcc( new pcl::EuclideanClusterComparator<PointT, pcl::Normal, pcl::Label>() ){  
-
   srand( time(NULL) );
   
   mNe.setNormalEstimationMethod( mNe.COVARIANCE_MATRIX );
@@ -175,6 +177,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
 
   if( planeIndex >= 0 ) { tableDetected = true; }
 
+    float a, b, c, d;
   if( tableDetected ) {
     
     mPlaneIndices = inlier_indices[planeIndex];
@@ -182,7 +185,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
     table_label = labels->points[inlier_indices[planeIndex].indices[0]].label;
 
     // Take points below the table and too far out of consideration
-    float a, b, c, d;
+
     a = model_coefficients[planeIndex].values[0];
     b = model_coefficients[planeIndex].values[1];
     c = model_coefficients[planeIndex].values[2];
@@ -263,6 +266,25 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
 			    euclidean_label_indices[i].indices,
 			    *cluster );
 
+      // Check the bounding boxes of these clusters. If one looks too flat, then it is likely spurious points from the table so leave them out
+      pcl::MomentOfInertiaEstimation<PointT> feature_extractor;
+      feature_extractor.setInputCloud(cluster);
+      feature_extractor.compute();
+      PointT min_OBB, max_OBB, pos_OBB; Eigen::Matrix3f rot_OBB;
+      double dx, dy, dz; 
+      feature_extractor.getOBB( min_OBB, max_OBB, pos_OBB, rot_OBB );
+      dx = fabs(max_OBB.x - min_OBB.x);
+      dy = fabs(max_OBB.y - min_OBB.y);
+      dz = fabs(max_OBB.z - min_OBB.z);
+      double smallestBBdim;
+      if( dx <= dy && dx <= dz ) { smallestBBdim = dx; }
+      else if( dy <= dx && dy <= dz ) { smallestBBdim = dy; }
+      else if( dz <= dx && dz <= dy ) { smallestBBdim = dz; }
+      Eigen::Vector3f mc;
+      feature_extractor.getMassCenter(mc);
+      // Distance to table
+      float dist2table = fabs(a*mc(0) + b*mc(1) + c*mc(2) + d);
+      if( dist2table < mThresh_dist2Table || smallestBBdim < mThresh_smallestBBdim ) { continue; } 
       mClusters.push_back (cluster);
       mClustersIndices.push_back(euclidean_label_indices[i]);     
     }    

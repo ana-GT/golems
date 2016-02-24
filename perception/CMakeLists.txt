@@ -5,7 +5,7 @@ project( perception )
 include_directories( /usr/include/eigen3 )
 
 # OpenCV
-find_package( OpenCV  REQUIRED )
+find_package( OpenCV 3.0  REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # amino, ach and SNS
@@ -30,7 +30,7 @@ add_subdirectory( calibration )
 add_subdirectory( marker_detection )
 add_subdirectory( tabletop_segmentation )
 add_subdirectory( pointcloud_tools )
-#add_subdirectory( ftts )
+add_subdirectory( ftts )
 #add_subdirectory( getKinectTran )
 #add_subdirectory( box_detector )
 

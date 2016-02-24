@@ -51,6 +51,8 @@ private:
   double mMinZ, mMaxZ;
   CloudPtr mCloud;
   float mThreshold;
+  float mThresh_dist2Table;
+  double mThresh_smallestBBdim;
   int mClusterMinSize;
   float mClusterDistThreshold;
   bool mDepthDependent;

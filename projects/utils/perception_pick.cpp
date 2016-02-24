@@ -374,8 +374,6 @@ void create_table_mesh( pcl::PolygonMesh &_table_mesh,
 		   char _table_name_mesh[50] ) {
 
   pcl::Poisson<pcl::PointNormal> poisson;
-
-
   
   pcl::PointCloud<pcl::PointNormal>::Ptr pnt( new pcl::PointCloud<pcl::PointNormal>() );
   for( int i = 0; i < gTablePoints.points.size(); ++i ) {
@@ -384,7 +382,7 @@ void create_table_mesh( pcl::PolygonMesh &_table_mesh,
     p.normal_x = gTableCoeffs[0]; p.normal_y = gTableCoeffs[1]; p.normal_z = gTableCoeffs[2];	
     pnt->points.push_back(p);
   }
-  pnt->width = 1; pnt->height = pnt->points.size();
+  pnt->height = 1; pnt->width = pnt->points.size();
 
 
   // Convex Hull
