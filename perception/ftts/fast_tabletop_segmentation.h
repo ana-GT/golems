@@ -43,6 +43,9 @@ class Fast_Tabletop_Segmentation {
     return mClustersIndices[_i]; 
   }
   
+  CloudPtr getTable() { return mTable; }
+
+
 private:
 
   void getSegmentedImg( CloudConstPtr _cloud, bool _showSegmentation );
@@ -71,6 +74,8 @@ public:
   pcl::PointIndices mPlaneIndices;
   std::vector<pcl::PointIndices> mClustersIndices;
   std::vector<CloudPtr> mClusters;
+  CloudPtr mTable;
+  float mTableCoeffs[4];
   std::vector<int> mLabels; // 0: table numbers > 0: label (-): No label
   
 };

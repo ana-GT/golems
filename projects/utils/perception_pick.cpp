@@ -342,6 +342,9 @@ void send( int state, void* userData ) {
     for( int j = 0; j < 3; ++j ) { msg->u[i].rot[j] = rot[j]; }
     for( int j = 0; j < 2; ++j ) { msg->u[i].e[j] = e[j]; }
 
+    std::cout << "E: "<< msg->u[i].e[0] << ", "<< msg->u[i].e[1] << std::endl;
+    std::cout << " Dim: " << msg->u[i].dim[0] << ", "<< msg->u[i].dim[1] << ", "<< msg->u[i].dim[2] << std::endl;
+
     char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%ld.ply", gPicturesPath.c_str(), i );
     create_mesh( mesh, dim, e, 25, mesh_name );
     msg->u[i].mesh_generated = true;
@@ -508,7 +511,6 @@ void fit_SQ( pcl::PointCloud<PointTa> _cluster, int _index,
   fitter.setInputCloud( completed );
   //fitter.setInitialApprox( Tsymm, Bb );
   if( fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 ) ) {
-    
     SQ_parameters p;
     fitter.getFinalParams( p );
     for( int i = 0; i < 3; ++i ) { _dim[i] = p.dim[i]; }

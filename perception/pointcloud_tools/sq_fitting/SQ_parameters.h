@@ -3,6 +3,12 @@
  */
 #pragma once
 
+enum SQ_GEOMETRY_TYPES {
+  REGULAR = 0,
+  TAMPERED = 1,
+  BENT = 2
+};
+
 /**
  * @struct SQ_parameters
  */
@@ -23,14 +29,8 @@ struct SQ_parameters {
   /** Bending */
   double R;
   double k; double alpha;
+
+  /** Type */
+  int type;
 };
 
-/**
- * @struct SQ_parameters msg
- */
-struct SQ_parameters_msg {
-
-  SQ_parameters param;
-  char mesh_filename[255];
-  bool mesh_generated;
-};

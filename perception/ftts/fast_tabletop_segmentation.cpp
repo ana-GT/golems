@@ -12,6 +12,7 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   mDepthDependent( true ),
   mPolygonRefinement( false ),
   mNormalCloud( new pcl::PointCloud<pcl::Normal>() ),
+  mTable (new Cloud ()),
   mMinPlaneInliers(5000),
   mClusterMinSize(1000),
   mClusterDistThreshold(0.015f),
@@ -177,7 +178,6 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
 
   if( planeIndex >= 0 ) { tableDetected = true; }
 
-    float a, b, c, d;
   if( tableDetected ) {
     
     mPlaneIndices = inlier_indices[planeIndex];
@@ -185,16 +185,16 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
     table_label = labels->points[inlier_indices[planeIndex].indices[0]].label;
 
     // Take points below the table and too far out of consideration
-
-    a = model_coefficients[planeIndex].values[0];
-    b = model_coefficients[planeIndex].values[1];
-    c = model_coefficients[planeIndex].values[2];
-    d = model_coefficients[planeIndex].values[3];
+    for( int i = 0; i < 4; ++i ) {
+      mTableCoeffs[i] = model_coefficients[planeIndex].values[i];
+    }
     
     // Check if the normal is pointing on the right direction 
     // (for details, see notes on my logbook on Friday, January 22nd, 2016)
     PointT p = _cloud->points[mPlaneIndices.indices[0]];
-    if( a*(p.x) + b*(p.y) + c*(p.z) > 0 ) { a = -a; b = -b; c = -c; d = -d; }
+    if( mTableCoeffs[0]*(p.x) + mTableCoeffs[1]*(p.y) + mTableCoeffs[2]*(p.z) > 0 ) { 
+      for( int i = 0; i < 4; ++i ) { mTableCoeffs[i] = -mTableCoeffs[i]; }
+    }
     
     pcl::PointIndices outPoints;
     typename pcl::PointCloud<PointT>::const_iterator it;
@@ -206,28 +206,13 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
 	labels->points[i].label = label_indices.size();
       }
       // Points below the table
-      else if( a*((*it).x) + b*((*it).y) + c*((*it).z) + d < -0.005 ) {
+      else if( mTableCoeffs[0]*((*it).x) + mTableCoeffs[1]*((*it).y) + mTableCoeffs[2]*((*it).z) + mTableCoeffs[3] < -0.005 ) {
 	outPoints.indices.push_back(i);
 	labels->points[i].label = label_indices.size();
       }    
     }
     label_indices.push_back( outPoints );
-/*
-  // Get clean pointcloud
-    pcl::PointIndices::Ptr pc(new pcl::PointIndices() ); 
-    pc->indices = outPoints.indices;
-    pc->indices.insert( pc->indices.end(), 
-			mPlaneIndices.indices.begin(), 
-			mPlaneIndices.indices.end() );
-    // Get in points
-    pcl::ExtractIndices<PointT> extract;
-    CloudPtr output( new Cloud() );
-    extract.setInputCloud( _cloud );
-    extract.setIndices( pc );
-    extract.setNegative( true );
-    extract.filter( *output );
-    pcl::io::savePCDFileASCII("output.pcd", *output );
-*/
+
   } // end table detected
 
   // 4. Compute clusters
@@ -285,7 +270,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
       else if( dz <= dx && dz <= dy ) { smallestBBdim = dz; }
       feature_extractor.getMassCenter(mc);
       // Distance to table
-      dist2table = fabs(a*mc(0) + b*mc(1) + c*mc(2) + d);
+      dist2table = fabs(mTableCoeffs[0]*mc(0) + mTableCoeffs[1]*mc(1) + mTableCoeffs[2]*mc(2) + mTableCoeffs[3]);
       if( dist2table < mThresh_dist2Table || smallestBBdim < mThresh_smallestBBdim ) { }
       else { 
         mClusters.push_back (cluster);
@@ -306,6 +291,12 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
     }
     
   }
+
+  // Save the table if you need it
+  pcl::copyPointCloud( *_cloud,
+		       mPlaneIndices,
+		       *mTable );
+
 
   this->getSegmentedImg(_cloud, _showSegmentation );
 
