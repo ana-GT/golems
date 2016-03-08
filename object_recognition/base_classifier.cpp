@@ -7,10 +7,14 @@
  * @function Classifier
  * @brief Constructor
  */
-Classifier::Classifier( const std::string &_model_file,
-			const std::string &_trained_file,
-			const std::string &_mean_file,
-			const std::string &_label_file ) {
+Classifier::Classifier() {
+  mInitFlag = false;
+}
+
+void Classifier::init( const std::string &_model_file,
+		       const std::string &_trained_file,
+		       const std::string &_mean_file,
+		       const std::string &_label_file ) {
   
   // In case you compiled with CPU, which I did
   caffe::Caffe::set_mode( caffe::Caffe::CPU );
@@ -58,6 +62,8 @@ Classifier::Classifier( const std::string &_model_file,
     std::cout << "Blob "<<i<<": "<< bn[i] << std::endl;
   }
 
+  mInitFlag = true;
+
 }
 
 static bool PairCompare(const std::pair<float, int>& lhs,
@@ -86,11 +92,14 @@ static std::vector<int> Argmax(const std::vector<float>& v, int N) {
 std::vector<Prediction> Classifier::classify( const cv::Mat &_img,
 					      int &_idx, int N ) {
 
+  std::vector<Prediction> predictions;
+  if( !mInitFlag ) { printf("INIT CLASSIFIER FIRST! \n"); return predictions; }
+  
   std::vector<float> output = this->Predict( _img );
   N = std::min<int>( labels_.size(), N );
   std::vector<int> maxN = Argmax( output, N );
 
-  std::vector<Prediction> predictions;
+
   for( int i = 0; i < N; ++i ) {
     predictions.push_back( std::make_pair( labels_[maxN[i]],
 					   output[maxN[i]] ) );

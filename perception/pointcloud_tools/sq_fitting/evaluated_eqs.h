@@ -6,15 +6,8 @@
 
 #include <pcl/io/pcd_io.h>
 #include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
+#include <perception/pointcloud_tools/sq_fitting/SQ_parameters.h>
 
-enum SQ_FX_TYPES {
-  SQ_FX_RADIAL = 0,
-  SQ_FX_ICHIM = 1,
-  SQ_FX_SOLINA = 2,
-  SQ_FX_CHEVALIER = 3,
-  SQ_FX_5 = 4,
-  SQ_FX_6 = 5
-};
 
 template<typename PointT> 
 void error_metric( const SQ_parameters &_par,
@@ -30,21 +23,6 @@ template<typename PointT>
 double error_metric_g( const SQ_parameters &_par,
 		       const typename pcl::PointCloud<PointT>::Ptr &_cloud ); 
 
-/**
- * @class evaluated_sqs
- */
-class evaluated_sqs {
-
- public:
-  void getBoundingBox( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
-		      double _dim[3],
-		      double _trans[3],
-		      double _rot[3] );
-  bool minimize( pcl::PointCloud<pcl::PointXYZ>::Ptr _input,
-		 SQ_parameters &_par, double &_e1, double &_e2, double &_e4,
-		 int _type = SQ_FX_RADIAL );  
-
-};
 
 
 // Radial Error

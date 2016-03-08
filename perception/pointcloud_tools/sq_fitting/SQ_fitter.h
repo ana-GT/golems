@@ -48,8 +48,9 @@ class SQ_fitter {
 			  const PointCloudPtr &_cloud,
 			  double &_errA, double &_errorB, double &_errorC );
 
-  void printResults();
   PointCloudPtr getSampledOutput();
+
+  void printResults();
   
   void getFinalParams( SQ_parameters &_par ) { 
     _par = par_out_; 
@@ -60,7 +61,7 @@ class SQ_fitter {
 
   
 
- private:
+ protected:
     
     double final_error_;
     SQ_parameters par_in_;

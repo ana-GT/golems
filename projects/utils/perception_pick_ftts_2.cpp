@@ -1,6 +1,6 @@
 /**
- * @file ffts_get_object_data_4.cpp
- * @brief Get training data for object recognition
+ * @file perception_pick_ftts_2.cpp
+ * @brief Recognizes objects in bounding boxes and uses it to select what fitting to do
  * @brief Adding bounding box
  * @date 2016/01/13
  */
@@ -19,7 +19,7 @@
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter_t.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter_b.h"
-
+#include "object_recognition/ObjectsDatabase.h"
 
 #include <mutex>
 
@@ -32,7 +32,7 @@ typedef typename Cloud::Ptr CloudPtr;
 typedef typename Cloud::ConstPtr CloudConstPtr;
 
 // Global variables
-std::string gWindowName = std::string("Perception Pick 4");
+std::string gWindowName = std::string("Perception Pick and Recognition");
 cv::Mat gRgbImg, gPclMap;
 double gF;
 
@@ -54,7 +54,8 @@ void startComm( int state, void* userdata );
 void send( int state, void* userData );
 
 void fit_SQ( pcl::PointCloud<PointT> _cluster, int _index,
-	     SQ_parameters &_p );
+	     SQ_parameters &_p,
+	     int _type );
 void create_table_mesh( pcl::PolygonMesh &_table_mesh,
 			char _table_name_mesh[50] );
 
@@ -64,6 +65,7 @@ ach_channel_t gObj_param_chan; // Channel to send object param to planner
 ach_channel_t gServer2Module_chan; // Channel to receive commands from server
 ach_channel_t gModule2Server_chan; // Channel to send responses to server
 
+ObjectsDatabase gOd;
 
 //////////////////////////
 //  @function main
@@ -74,7 +76,7 @@ int main( int argc, char* argv[] ) {
   gRgbImg = cv::Mat( 480, 640, CV_8UC3 );
   gTts.setMinClusterSize(300);  
   gTts.setZfilters( 0.35, 1.0 );
-printf("THIS ONE! \n");
+  
   // Set capture
   gGrabber = new pcl::io::OpenNI2Grabber("", pcl::io::OpenNI2Grabber::OpenNI_Default_Mode, 
 					 pcl::io::OpenNI2Grabber::OpenNI_Default_Mode );
@@ -84,10 +86,14 @@ printf("THIS ONE! \n");
   cv::namedWindow( gWindowName, cv::WINDOW_AUTOSIZE );
   cv::setMouseCallback( gWindowName, onMouse, 0 );
   cv::createButton( "Start comm", startComm, NULL, cv::QT_PUSH_BUTTON, false );
-cv::createButton( "Send", send, NULL, cv::QT_PUSH_BUTTON, false );
+  cv::createButton( "Send", send, NULL, cv::QT_PUSH_BUTTON, false );
 
-boost::shared_ptr<pcl::io::openni2::OpenNI2Device> device = gGrabber->getDevice();
-gF = device->getDepthFocalLength(); // Same as color length, by the way
+  boost::shared_ptr<pcl::io::openni2::OpenNI2Device> device = gGrabber->getDevice();
+  gF = device->getDepthFocalLength(); // Same as color length, by the way
+
+// Object database
+gOd.init_classifier();
+gOd.load_dataset();
 
   //Loop
   gGrabber->start();
@@ -159,10 +165,20 @@ void send( int state, void* userData ) {
   
   // 1. Save SQs
   for( i = 0; i < gTts.getNumClusters(); ++i ) {  
-    fit_SQ( *gTts.getCluster(i), i, p );
-    
+
+    // Recognize 
+    int xmin, ymin, xmax, ymax; int index; std::string label;
+    gTts.getClusterBB( i, xmin, ymin, xmax, ymax );
+    gOd.classify( cv::Mat( gRgbImg, cv::Rect(xmin,ymin, xmax-xmin, ymax-ymin) ),
+		  index, label );
+    // Send this info for fitting
+    fit_SQ( *gTts.getCluster(i), i, p, gOd.getSQtype(index) );
+    printf("Label: %s \n", label.c_str() );
     copy_SQparam_msg( p, msg->u[i] );    
 
+    // Save original pointclouds
+    char name[100]; sprintf( name, "original_%d.pcd" );
+    pcl::io::savePCDFileASCII( name, *gTts.getCluster(i) );
     char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%ld.ply", gPicturesPath.c_str(), i );
     SQ_utils::create_SQ_mesh( mesh, p, 25, mesh_name );
     msg->u[i].mesh_generated = true;
@@ -174,7 +190,7 @@ void send( int state, void* userData ) {
   create_table_mesh( mesh, tableName );
 
   pcl::io::savePLYFile( tableName, mesh ); 
-  printf("Saved table ply file \n");
+
   for( i = 0; i < 4; ++i ) { msg->table_coeffs[i] = gTts.mTableCoeffs[i]; }
   sprintf( msg->table_meshfile, "%s", tableName );
 
@@ -226,7 +242,7 @@ void create_table_mesh( pcl::PolygonMesh &_table_mesh,
  * @function fit_SQ
  */
 void fit_SQ( pcl::PointCloud<PointT> _cluster, int _index,
-	     SQ_parameters &_p ) {
+	     SQ_parameters &_p, int _type ) {
   /*
   // Generate a mirror version of the pointcloud
   mindGapper<PointTa> mg;
@@ -237,32 +253,54 @@ void fit_SQ( pcl::PointCloud<PointT> _cluster, int _index,
   printf("Mirror version \n");
   */
   // Fit pointcloud to superquadric
-  SQ_fitter< PointT> fitter;
   pcl::PointCloud<PointT>::Ptr completed( new pcl::PointCloud<PointT>() );
   Eigen::Isometry3d Tsymm; Eigen::Vector3d Bb;
   
   *completed = _cluster;
-  printf("Size of cluster: %lu \n", completed->points.size() );
+ 
 /*  mg.reset();
     mg.complete( completed );
 
   mg.getSymmetryApprox( Tsymm, Bb );
-  printf("Fitting \n");*/
-  fitter.setInputCloud( completed );
-  //fitter.setInitialApprox( Tsymm, Bb );  
-  //if( fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 1, 0.001 ) ) {
-  fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.001 );
+*/
+
+  switch( _type ) {
+  case REGULAR: {
+    printf("Type: regular \n");
+    SQ_fitter<PointT> fitter;
+    fitter.setInputCloud( completed );
+    fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
     fitter.getFinalParams( _p );
+    break;
+  }
+  case TAMPERED: {
+    printf("Type: tampered \n");
+    SQ_fitter_t<PointT> fitter;
+    fitter.setInputCloud( completed );
+    fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
+    fitter.getFinalParams( _p );
+    break;
+  }
+  case BENT: {
+    printf("Type: bent \n");
+    SQ_fitter_b<PointT> fitter;
+    fitter.setInputCloud( completed );
+    fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
+    fitter.getFinalParams( _p );
+    break;
+  }
+  }
+
+    //fitter.setInitialApprox( Tsymm, Bb );  
     printParamsInfo(_p);
-    printf("SHOULD BE SAVING \n");
-    pcl::PointCloud<PointT>::Ptr sqp( new pcl::PointCloud<PointT>() );
+    
+    pcl::PointCloud<pcl::PointXYZ>::Ptr sqp( new pcl::PointCloud<pcl::PointXYZ>() );
     char sqname[75]; sprintf( sqname, "sq_pointcloud_%d.pcd", _index ); 
     char oname[75]; sprintf( oname, "original_%d.pcd", _index );
-    sqp = fitter.getSampledOutput(); 
+    sqp = sampleSQ_uniform<pcl::PointXYZ>( _p ); 
     pcl::io::savePCDFile( sqname, *sqp );
     pcl::io::savePCDFile( oname, *completed );
     
-    // }
   
 }
 

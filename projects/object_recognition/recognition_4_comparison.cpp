@@ -71,7 +71,8 @@ int main( int argc, char* argv[] ) {
   }
 */
   for( int i = 0; i < gN; ++i ) {
-    gClassifier[i] = new Classifier( gModel_file[i], gTrain_file[i], gMean_file[i], gLabel_file[i] );
+    gClassifier[i] = new Classifier();
+    gClassifier[i]->init( gModel_file[i], gTrain_file[i], gMean_file[i], gLabel_file[i] );
   }
 
   gCapture.open( cv::CAP_OPENNI2 );

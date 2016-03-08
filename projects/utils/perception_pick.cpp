@@ -106,7 +106,7 @@ int main( int argc, char* argv[] ) {
 
   // Initialization
   srand( time(NULL) );  
-  capture.open(-1);
+  capture.open(cv::CAP_OPENNI2);
   
   if( !capture.isOpened() ) {
     printf( "\t [ERROR] Could not open the capture object \n" );
@@ -345,6 +345,8 @@ void send( int state, void* userData ) {
     std::cout << "E: "<< msg->u[i].e[0] << ", "<< msg->u[i].e[1] << std::endl;
     std::cout << " Dim: " << msg->u[i].dim[0] << ", "<< msg->u[i].dim[1] << ", "<< msg->u[i].dim[2] << std::endl;
 
+    char orig_name[50]; sprintf( orig_name, "original_pp_%d.pcd", i );
+    pcl::io::savePCDFileASCII( orig_name, gClusters[i] );
     char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%ld.ply", gPicturesPath.c_str(), i );
     create_mesh( mesh, dim, e, 25, mesh_name );
     msg->u[i].mesh_generated = true;

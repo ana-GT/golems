@@ -11,7 +11,6 @@
 
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
-#include "perception/pointcloud_tools/sq_fitting/analytic_equations.h"
 #include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
 
 #include "perception/pointcloud_tools/sq_fitting/levmar/levmar.h"
@@ -180,11 +179,11 @@ void SQ_fitter<PointT>::get_error( SQ_parameters _par,
  * @brief Set segmented cloud to be fitted
  */
 template<typename PointT>
-void SQ_fitter<PointT>::getBoundingBox(const PointCloudPtr &_cloud,
-				       double _dim[3],
-				       double _trans[3],
-				       double _rot[3],
-				       bool _debug ) {
+void SQ_fitter<PointT>::getBoundingBox( const PointCloudPtr &_cloud,
+					double _dim[3],
+					double _trans[3],
+					double _rot[3],
+					bool _debug ) {
 
   // 1. Compute the bounding box center
   Eigen::Vector4d centroid;
@@ -388,7 +387,7 @@ bool SQ_fitter<PointT>::minimize( const int &_type,
     
     // Return status and error
     double eg, er;
-    error_metric<PointT>( _out, cloud_, eg, er, _error );
+    get_error( _out, cloud_, eg, er, _error );
     
     // If stopped by invalid (TODO: Add other reasons)
     if( info[6] == 7 ) {

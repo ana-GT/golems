@@ -12,10 +12,11 @@ typedef std::pair<std::string, float> Prediction;
 class Classifier {
 
  public:
-  Classifier( const std::string &_model_file,
-	      const std::string &_trained_file,
-	      const std::string &_mean_file,
-	      const std::string &_label_file );
+  Classifier();
+  void init( const std::string &_model_file,
+	     const std::string &_trained_file,
+	     const std::string &_mean_file,
+	     const std::string &_label_file );
   
   std::vector<Prediction> classify( const cv::Mat &_img,
                                     int &_idx,
@@ -35,5 +36,5 @@ class Classifier {
   int num_channels_;
   cv::Mat mean_;
   std::vector<std::string> labels_;
-
+  bool mInitFlag;
 };

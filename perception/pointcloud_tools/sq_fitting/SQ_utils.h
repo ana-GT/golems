@@ -21,13 +21,11 @@
 /** Meshes */
 namespace SQ_utils {
 
-  void create_SQ_mesh( double _a, double _b, double _c,
-		       double _e1, double _e2, int _N,
+  void create_SQ_mesh( SQ_parameters _p, int _N,
 		       const char* _mesh_name );
   
   void create_SQ_mesh( pcl::PolygonMesh &_mesh,
-		       double _dim[3],
-		       double _e[2], int _N,
+		       SQ_parameters _p, int _N,
 		       const char* _mesh_name );
   
   void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
@@ -74,7 +72,8 @@ typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( double _dim[3],
  * @function DONE
  */
 template<typename PointT>
-typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( const SQ_parameters &_par );
+typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( const SQ_parameters &_par,
+							bool _applyRigidTransform = true );
 
 
 /**
@@ -88,10 +87,6 @@ void sampleSQ_uniform_pn( const double &_a1,
 			  const int &_N,
 			  pcl::PointCloud<pcl::PointNormal>::Ptr &_pn );
 
-
-
-template<typename PointT>
-typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform_t( const SQ_parameters &_par );
 
 template<typename PointT>
 typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform_b( const SQ_parameters &_par );

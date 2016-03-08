@@ -22,7 +22,7 @@
 
 
 
-#include "object_recognition/base_classifier.h"
+#include "object_recognition/ObjectsDatabase.h"
 
 typedef pcl::PointXYZRGBA PointTa;
 
@@ -43,14 +43,8 @@ std::vector<double> gTableCoeffs;
 pcl::PointCloud<PointTa> gTablePoints;
 std::vector<std::string> gLabels;
 std::vector<int> gIndex;
-std::vector<std::string> gHabla;
 
-char* gModel_file ="/home/ana/Desktop/Crichton_data_trained/deploy_alexnet.prototxt";
-char* gTrain_file = "/home/ana/Desktop/Crichton_data_trained/partial_alexnet_iter_1700.caffemodel";
-// Remember AlexNet, referenc_caffenet and RCNN_ilsvrc13: 227, googlenet: 224
-char* gMean_file = "/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto";
-char* gLabel_file = "/home/ana/Desktop/Crichton_data/training_labels.txt";
-char* gExplanations= "/home/ana/Desktop/Crichton_data/training_labels_explanatory.txt";
+
 int gBiggestCluster;
 
 /*** Functions */
@@ -114,37 +108,6 @@ int main( int argc, char* argv[] ) {
     return -1;
   }
 
-  // http://www.robots.ox.ac.uk/~vgg/research/very_deep/  
-  int c;
-  while( (c=getopt(argc,argv,"n:t:m:l:h")) != -1 ) {
-    switch(c) {
-    case 'n': { gModel_file = optarg; } break;
-    case 't': { gTrain_file = optarg; } break;
-    case 'm': { gMean_file = optarg; } break;
-    case 'l': { gLabel_file = optarg; } break;
-    case 'h': { printf("Syntax: %s -n deploy.txt -t trained.caffemodel -m mean.binaryproto -l labels.txt \n",
-		       argv[0] ); return 1; } break;
-    }
-  }
-
-  Classifier gClassifier( gModel_file, gTrain_file, gMean_file, gLabel_file );
-
-
-   ////////////////////////////////  
-  // Load explanations
-  printf("Load explanations \n");
-  std::ifstream  explan( gExplanations, std::ifstream::in );
-  std::string line;
-  std::string words;
-  while( std::getline(explan, line) ) {
-    std::size_t pos = line.find("Veo");
-    words = line.substr(pos);
-    printf("Line: %s\n", words.c_str() );
-    gHabla.push_back(words);
-  }
-  explan.close();
-  printf("Finished loading explanations\n");
-  ////////////////////////////////
 
   gCapture.open( cv::CAP_OPENNI2 );
   
@@ -152,7 +115,10 @@ int main( int argc, char* argv[] ) {
     printf("\t [ERROR] Could not open the capture object \n");
     return -1;
   }
-
+  printf("Starting object database \n");
+  ObjectsDatabase mOd;
+  printf("Finishing object database \n");
+  mOd.init_classifier();
   gCapture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 );
   gCapture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 );
   gF = (float)gCapture.get( cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );
@@ -185,7 +151,6 @@ int main( int argc, char* argv[] ) {
 
     // If axis 0/1 are moved,  RECOGNIZE!
     if( pollChan() ) {
-      printf("Joystick used!!! \n");
 
       // Process image
       process();
@@ -198,35 +163,14 @@ int main( int argc, char* argv[] ) {
 	int yl = gBoundingBoxes[i](1);
 	int xw = gBoundingBoxes[i](2)-gBoundingBoxes[i](0);
 	int yw = gBoundingBoxes[i](3)-gBoundingBoxes[i](1);
-	/*
-	  int mWidth = gRgbImg.cols;
-	  int mHeight = gRgbImg.rows;
-	  
-	  if( xl - gPad >= 0 ) { xl -= gPad; }
-	  if( xl + xw + 2*gPad < mWidth ) { xw += 2*gPad; }
-	  else if( xl + xw + gPad < mWidth ) { xw += gPad; }
-	  
-	  if( yl - gPad >= 0 ) { yl -= gPad; }
-	  if( yl + yw + 2*gPad < mHeight ) { yw += 2*gPad; }
-	  else if( yl + yw + gPad < mHeight ) { yw += gPad; }
-	*/
 	
 	cv::Mat img( gRgbImg, cv::Rect( xl, yl,
 					xw, yw ) );
 	
-	printf("xl: %d yl: %d xw: %d zw: %d \n", xl, yl, xw, yw);
-	printf("Segmented image [%d] size: %d, %d \n", i, img.rows, img.cols );
 	// Predict 
-	int idx;
-	std::vector<Prediction> predictions = gClassifier.classify( img, idx );
-	gLabels[i] = predictions[0].first;
-        gIndex[i] = idx;
-
-    char texto[150];
-    sprintf(texto, "espeak '%s' -p 80 -s 200 -ves-la ", gHabla[gIndex[i]].c_str() );
-    printf("Texto: %s \n", texto);
-    system(texto); usleep(0.1*1e6);
-     printf("Finished speaking\n");
+	mOd.classify( img, gIndex[i], gLabels[i] );
+	// Sing it out, honey
+	mOd.sayIt(gIndex[i]);
 	
       }
       

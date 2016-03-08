@@ -1,5 +1,5 @@
 /**
- * @brief Fitter for tampering deformation
+ * @brief Fitter for bending deformation
  */
 
 #pragma once
@@ -7,11 +7,11 @@
 #include <perception/pointcloud_tools/sq_fitting/SQ_fitter.h>
 
 template <typename PointT>
-class SQ_fitter_t : public SQ_fitter<PointT> {
+class SQ_fitter_b : public SQ_fitter<PointT> {
 
  public:
-  SQ_fitter_t();
-  ~SQ_fitter_t();
+  SQ_fitter_b();
+  ~SQ_fitter_b();
 
   typedef typename pcl::PointCloud<PointT>::Ptr PointCloudPtr;
 
@@ -34,10 +34,10 @@ class SQ_fitter_t : public SQ_fitter<PointT> {
 
 
  protected:
-  double mLowerLim_tamp; double mUpperLim_tamp;
-
+  double mLowerLim_k; double mUpperLim_k; // inverse of curvature radius
+  double mLowerLim_alpha; double mUpperLim_alpha;
 };
 
 
 
-#include "perception/pointcloud_tools/sq_fitting/impl/SQ_fitter_t.hpp"
+#include "perception/pointcloud_tools/sq_fitting/impl/SQ_fitter_b.hpp"

@@ -31,7 +31,8 @@ int main( int argc, char* argv[] ) {
   sprintf( gTraining_images, "/home/ana/Research/golems/YCB_data/training_images.txt" );
   sprintf( gFeature_file, "/home/ana/Research/golems/YCB_data/feature_files.yml" );
 
-  Classifier gClassifier( gModel_file, gTrain_file, gMean_file, gLabel_file );
+  Classifier gClassifier;
+  gClassifier.init( gModel_file, gTrain_file, gMean_file, gLabel_file );
     
   cv::namedWindow( gWindowName, cv::WINDOW_AUTOSIZE );
  

@@ -3,38 +3,19 @@
 
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include "object_recognition/base_classifier.h"
+#include "object_recognition/ObjectsDatabase.h"
 
 cv::VideoCapture gCapture;
 cv::Mat gRgbImg;
 std::string gWindowName("recognition_0");
-char* gModelRoot = "/home/ana/Software/caffe/models";
-char* gModel_file ="/home/ana/Software/caffe/models/VGG_ILSVRC_19_layers/VGG_ILSVRC_19_layers_deploy.prototxt";
-char* gTrain_file = "/home/ana/Software/caffe/models/VGG_ILSVRC_19_layers/VGG_ILSVRC_19_layers.caffemodel";
-char* gMean_file = "/home/ana/Software/caffe/data/ilsvrc12/imagenet_mean.binaryproto";
-char* gLabel_file = "/home/ana/Software/caffe/data/ilsvrc12/synset_words.txt";
 
 /**
  * @function main
  */
 int main( int argc, char* argv[] ) {
   
-  // http://www.robots.ox.ac.uk/~vgg/research/very_deep/  
-  int c;
-  while( (c=getopt(argc,argv,"n:t:m:l:h")) != -1 ) {
-    switch(c) {
-    case 'n': { gModel_file = optarg; } break;
-    case 't': { gTrain_file = optarg; } break;
-    case 'm': { gMean_file = optarg; } break;
-    case 'l': { gLabel_file = optarg; } break;
-    case 'h': { printf("Syntax: %s -n deploy.txt -t trained.caffemodel -m mean.binaryproto -l labels.txt \n",
-		       argv[0] ); return 1; } break;
-    }
-  }
-
-  Classifier gClassifier( gModel_file, gTrain_file, gMean_file, gLabel_file );
-  
-
+  ObjectsDatabase mOd;
+  mOd.init_classifier();  
 
   gCapture.open( cv::CAP_OPENNI2 );
   
@@ -67,14 +48,14 @@ int main( int argc, char* argv[] ) {
     } else if( k == 'i' ) {
       
       // Predict 
-      int idx;
-      std::vector<Prediction> predictions = gClassifier.classify( gRgbImg, idx );
+      std::vector<Prediction> predictions; int idx; std::string label;
+      predictions = mOd.classify( gRgbImg, idx, label ); 
       printf("Predictions: \n");
       for (size_t i = 0; i < predictions.size(); ++i) {
         Prediction p = predictions[i];
         std::cout << std::fixed << std::setprecision(4) << p.second << " - \""
                   << p.first << "\"" << std::endl;
-     
+    
       }
 
 

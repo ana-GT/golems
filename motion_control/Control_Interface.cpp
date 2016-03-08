@@ -60,7 +60,8 @@ bool Control_Interface::update() {
 bool Control_Interface::get_state( Eigen::VectorXd &_q,
 				   Eigen::VectorXd &_dq ) {
 
-  while( !this->update() ) {}
+//  while( !this->update() ) {}
+   this->update(); // CHANGE ONLY MONDAY TO DEBUG IK ISSUE
   _q = mq;
   _dq = mdq;
   return true;

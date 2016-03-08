@@ -9,27 +9,22 @@ namespace SQ_utils {
 /**
  * @function create_mesh
  */
-  void create_SQ_mesh( double _a, double _b, double _c,
-		       double _e1, double _e2, int _N,
+  void create_SQ_mesh( SQ_parameters _p,
+		       int _N,
 		       const char* _mesh_name ) {
     pcl::PolygonMesh mesh;
-    double dim[3]; double e[2];
-
-    dim[0] = _a; dim[1] = _b; dim[2] = _c;
-    e[0] = _e1; e[1] = _e2;
 					  
-    SQ_utils::create_SQ_mesh( mesh, dim, e, _N, _mesh_name );
+    SQ_utils::create_SQ_mesh( mesh, _p, _N, _mesh_name );
   }
   
   void create_SQ_mesh( pcl::PolygonMesh &_mesh,
-		       double _dim[3],
-		       double _e[2], int _N,
+		       SQ_parameters _p, int _N,
 		       const char* _mesh_name ) {
     
     pcl::PointCloud<pcl::PointXYZ>::Ptr p( new pcl::PointCloud<pcl::PointXYZ>() );
     pcl::PointCloud<pcl::PointXYZ>::Ptr p_down( new pcl::PointCloud<pcl::PointXYZ>() );
     
-    p = sampleSQ_uniform<pcl::PointXYZ>( _dim[0], _dim[1], _dim[2], _e[0], _e[1], _N );
+    p = sampleSQ_uniform<pcl::PointXYZ>( _p, false ); // Don't apply rigid transform
     downsampling<pcl::PointXYZ>( p, 0.0025, p_down );
     
     // Convex Hull
@@ -103,10 +98,20 @@ namespace SQ_utils {
  */
 void printParamsInfo( const SQ_parameters &_par ) {
     
-    std::cout << "* Axes:("<<_par.dim[0]<<", "<<_par.dim[1]<<", "<<_par.dim[2] <<") ";
-    std::cout << " E:("<<_par.e[0]<< ", "<<_par.e[1]<<") ";
-    std::cout << " T:("<<_par.trans[0] << ", "<< _par.trans[1]<<", "<< _par.trans[2] <<") ";
-    std::cout << " R:("<<_par.rot[0]<< ", "<<_par.rot[1]<<", "<<_par.rot[2]<<")"<<std::endl;
+    std::cout << "\t * Dim:("<<_par.dim[0]<<", "<<_par.dim[1]<<", "<<_par.dim[2] <<") ";
+    std::cout << " e:("<<_par.e[0]<< ", "<<_par.e[1]<<") ";
+    std::cout << " trans:("<<_par.trans[0] << ", "<< _par.trans[1]<<", "<< _par.trans[2] <<") ";
+    std::cout << " rot:("<<_par.rot[0]<< ", "<<_par.rot[1]<<", "<<_par.rot[2]<<")"<<std::endl;
+    
+    switch( _par.type ) {
+    case REGULAR:
+      {} break;
+    case TAMPERED:
+      { std::cout << " tamp: "<<_par.tamp << std::endl; } break;
+    case BENT:
+      {} break;
+    }
+
 }
 
 /**

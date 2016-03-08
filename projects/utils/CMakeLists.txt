@@ -67,6 +67,11 @@ target_link_libraries( ftts_get_object_data_4 ftts )
 set_target_properties( ftts_get_object_data_4 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
 # Perception pick with ftts
-add_executable( perception_pick_ftts perception_pick_ftts.cpp classifier.cpp MakeMeshesUtils.cpp )
+add_executable( perception_pick_ftts perception_pick_ftts.cpp classifier.cpp )
 target_link_libraries( perception_pick_ftts ftts sq_fitting sq_utils perception_msgs ${Caffe_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} levmar )
 set_target_properties( perception_pick_ftts PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+# Perception pick with ftts
+add_executable( perception_pick_ftts_2 perception_pick_ftts_2.cpp )
+target_link_libraries( perception_pick_ftts_2 ftts sq_fitting sq_utils objectsDatabase perception_msgs ${Caffe_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} levmar )
+set_target_properties( perception_pick_ftts_2 PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 

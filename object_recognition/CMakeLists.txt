@@ -16,3 +16,8 @@ add_library(  base_classifier SHARED base_classifier.cpp )
 target_link_libraries( base_classifier ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
 set_target_properties( base_classifier PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
+
+add_library(  objectsDatabase SHARED ObjectsDatabase.cpp base_classifier )
+target_link_libraries( objectsDatabase ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
+set_target_properties( objectsDatabase PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )

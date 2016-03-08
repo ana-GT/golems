@@ -14,7 +14,7 @@
 #include <sstream>
 
 
-#include "object_recognition/base_classifier.h"
+#include "object_recognition/ObjectsDatabase.h"
 
 typedef pcl::PointXYZRGBA PointTa;
 
@@ -35,14 +35,6 @@ std::vector<double> gTableCoeffs;
 pcl::PointCloud<PointTa> gTablePoints;
 std::vector<std::string> gLabels;
 
-
-char* gModel_file ="/home/ana/Desktop/Crichton_data_trained/deploy_alexnet.prototxt";
-char* gTrain_file = "/home/ana/Desktop/Crichton_data_trained/partial_alexnet_iter_2200.caffemodel";
-// Remember AlexNet, referenc_caffenet and RCNN_ilsvrc13: 227, googlenet: 224
-char* gMean_file = "/home/ana/Desktop/Crichton_data_processed/Crichton_data_227_brute_resize_train.binaryproto";
-char* gLabel_file = "/home/ana/Desktop/Crichton_data/training_labels.txt";
-
-
 /*** Functions */
 void process();
 void drawSegmented();
@@ -53,20 +45,8 @@ void getPixelClusters();
  */
 int main( int argc, char* argv[] ) {
   
-  // http://www.robots.ox.ac.uk/~vgg/research/very_deep/  
-  int c;
-  while( (c=getopt(argc,argv,"n:t:m:l:h")) != -1 ) {
-    switch(c) {
-    case 'n': { gModel_file = optarg; } break;
-    case 't': { gTrain_file = optarg; } break;
-    case 'm': { gMean_file = optarg; } break;
-    case 'l': { gLabel_file = optarg; } break;
-    case 'h': { printf("Syntax: %s -n deploy.txt -t trained.caffemodel -m mean.binaryproto -l labels.txt \n",
-		       argv[0] ); return 1; } break;
-    }
-  }
-
-  Classifier gClassifier( gModel_file, gTrain_file, gMean_file, gLabel_file );
+  ObjectsDatabase mOd;
+  mOd.init_classifier();
   
   gCapture.open( cv::CAP_OPENNI2 );
   
@@ -138,12 +118,8 @@ int main( int argc, char* argv[] ) {
 	printf("xl: %d yl: %d xw: %d zw: %d \n", xl, yl, xw, yw);
 	printf("Segmented image [%d] size: %d, %d \n", i, img.rows, img.cols );
 	// Predict 
-	int idx;
-	std::vector<Prediction> predictions = gClassifier.classify( img, idx );
-	printf("Predictions: \n");
-	gLabels[i] = predictions[0].first;
-
-	
+	std::vector<Prediction> predictions; int idx; std::string label;
+	predictions = mOd.classify( img, idx, gLabels[i] ); 
       }
       
       

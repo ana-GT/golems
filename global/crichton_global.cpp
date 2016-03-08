@@ -39,15 +39,18 @@ gTrk[0].linear() << 0.974359, -0.0227323,  -0.223849,
  -0.063878,   0.620814,  -0.781351;
 
  gTrk[0].translation() << 0.164321, 0.0616093, 0.155298;
-*/
+*/  
 
-  // Perception Pick FTTS
- gTrk[0].linear() << 0.0149254,   -0.782269,   0.622762,   
-  -0.997846,  -0.0514428, -0.0407039,  
- 0.063878,   -0.620814,  -0.781351;
+  // Perception Pick FTTS (flipt x and y axes signs (put negative to 1 and 2 column on rot mat)
+ gTrk[0].linear() <<  -0.0306684,   -0.772788,   0.633923,   
+  -0.999312, 0.0104717, -0.0355799,  
+0.0208575,   -0.634578,  -0.772577;
 
- gTrk[0].translation() << 0.164321, 0.0616093, 0.155298;
- 
+ gTrk[0].translation() << 0.142142, 0.0647851, 0.122262;   
+
+   
+
+
  //   ARC_UP = 0
 
  gKnownConfs[LEFT_MSG][ARC_UP].resize(7);

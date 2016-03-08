@@ -69,6 +69,7 @@ typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( const double &_a1,
 
 /**
  * @function sampleSQ_uniform
+ * @brief DEFAULT REGULAR
  */
 template<typename PointT>
 typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( double _dim[3],
@@ -80,7 +81,7 @@ typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( double _dim[3],
   for( int j = 0; j < 2; ++j ) { p.e[j] = _e[j]; }
   for( int j = 0; j < 3; ++j ) { p.trans[j] = _trans[j]; }
   for( int j = 0; j < 3; ++j ) { p.rot[j] = _rot[j]; }
-
+  p.type = REGULAR;
   return sampleSQ_uniform<PointT>( p );
 }
 
@@ -89,83 +90,95 @@ typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( double _dim[3],
  * @function sampleSQ_uniform
  */
 template<typename PointT>
-typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( const SQ_parameters &_par ) {
+typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform( const SQ_parameters &_par,
+							bool _applyRigidTransform ) {
   
   typename pcl::PointCloud<PointT>::Ptr cloud_raw( new pcl::PointCloud<PointT>() );
   typename pcl::PointCloud<PointT>::Ptr cloud( new pcl::PointCloud<PointT>() );
+  typename pcl::PointCloud<PointT>::Ptr cloud_out( new pcl::PointCloud<PointT>() );
+
 
   // Get canonic SQ
   cloud_raw = sampleSQ_uniform<PointT>( _par.dim[0], _par.dim[1], _par.dim[2],
-					_par.e[0], _par.e[1] );
-  // Apply transform
-  Eigen::Matrix4d transf = Eigen::Matrix4d::Identity();
-  transf.block(0,3,3,1) = Eigen::Vector3d( _par.trans[0], _par.trans[1], _par.trans[2] );
-  Eigen::Matrix3d rot;
-  rot = Eigen::AngleAxisd( _par.rot[2], Eigen::Vector3d::UnitZ() )*
-    Eigen::AngleAxisd( _par.rot[1], Eigen::Vector3d::UnitY() )*
-    Eigen::AngleAxisd( _par.rot[0], Eigen::Vector3d::UnitX() );
-  transf.block(0,0,3,3) = rot;
-  
-  pcl::transformPointCloud( *cloud_raw,
-			    *cloud,
-			    transf );
-  
-  cloud->height = 1;
-  cloud->width = cloud->points.size();
-  
-  return cloud;
-
-}
+					_par.e[0], _par.e[1], 50 );
 
 
+  // Is it modified?
+  switch( _par.type ) {
+    
+  case REGULAR:
+    *cloud_out = *cloud_raw;
+    break;
 
-/**
- * @function sampleSQ_uniform
- */
-template<typename PointT>
-typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform_t( const SQ_parameters &_par ) {
-  
-  typename pcl::PointCloud<PointT>::Ptr cloud_raw( new pcl::PointCloud<PointT>() );
-  typename pcl::PointCloud<PointT>::Ptr cloud_tamp( new pcl::PointCloud<PointT>() );
-  typename pcl::PointCloud<PointT>::Ptr cloud( new pcl::PointCloud<PointT>() );
-  
+  case TAMPERED: {
+    
+    typename pcl::PointCloud<PointT>::iterator it;
+    PointT p; double K = _par.tamp;
+    
+    for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
+      p = *it;
+      p.y = ( 1 + (K/_par.dim[2])*p.z )*p.y;
+      p.x = ( 1 + (K/_par.dim[2])*p.z )*p.x;
+      cloud_out->points.push_back( p );
+    }
+    cloud_out->height = 1; cloud_out->width = cloud_out->points.size();
+        
+  } break;
 
-  // Get canonic SQ
-  cloud_raw = sampleSQ_uniform<PointT>( _par.dim[0], _par.dim[1], _par.dim[2],
-					_par.e[0], _par.e[1] );
+  case BENT:
 
-  // Apply tampering
-  typename pcl::PointCloud<PointT>::iterator it;
-  PointT p;
-  double K = _par.tamp;
-  
-  for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
-    p = *it;
-    p.y = ( 1 + (K/_par.dim[2])*p.z )*p.y;
-    p.x = ( 1 + (K/_par.dim[2])*p.z )*p.x;
-    cloud_tamp->points.push_back( p );
+    typename pcl::PointCloud<PointT>::iterator it;
+    PointT p;
+    double k = _par.k; 
+    double alpha = _par.alpha;
+    
+    double beta; double R; double r; double gamma;
+    
+    for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
+      p = *it;
+      
+      beta = atan2(p.y, p.x);
+      r = cos(alpha-beta)*sqrt(p.x*p.x + p.y*p.y);
+      gamma = p.z * k;
+      R = (1/k) - cos(gamma)*(1.0/k - r);      
+      
+      p.x = p.x + cos(alpha)*(R-r);
+      p.y = p.y + sin(alpha)*(R-r);
+      p.z = sin(gamma)*(1/k - r);
+
+      cloud_out->points.push_back( p );
+    }
+    cloud_out->height = 1; cloud_out->width = cloud_out->points.size();
+
+    break;
+
   }
-  cloud_tamp->height = 1; cloud_tamp->width = cloud_tamp->points.size();
 
-  // Apply transform
-  Eigen::Matrix4d transf = Eigen::Matrix4d::Identity();
-  transf.block(0,3,3,1) = Eigen::Vector3d( _par.trans[0], _par.trans[1], _par.trans[2] );
-  Eigen::Matrix3d rot;
-  rot = Eigen::AngleAxisd( _par.rot[2], Eigen::Vector3d::UnitZ() )*
-    Eigen::AngleAxisd( _par.rot[1], Eigen::Vector3d::UnitY() )*
-    Eigen::AngleAxisd( _par.rot[0], Eigen::Vector3d::UnitX() );
-  transf.block(0,0,3,3) = rot;
+  if( _applyRigidTransform ) {
 
-  pcl::transformPointCloud( *cloud_tamp,
-			    *cloud,
-			    transf );
+    Eigen::Matrix4d transf = Eigen::Matrix4d::Identity();
+    transf.block(0,3,3,1) = Eigen::Vector3d( _par.trans[0], _par.trans[1], _par.trans[2] );
+    Eigen::Matrix3d rot;
+    rot = Eigen::AngleAxisd( _par.rot[2], Eigen::Vector3d::UnitZ() )*
+      Eigen::AngleAxisd( _par.rot[1], Eigen::Vector3d::UnitY() )*
+      Eigen::AngleAxisd( _par.rot[0], Eigen::Vector3d::UnitX() );
+    transf.block(0,0,3,3) = rot;
+    
+    pcl::transformPointCloud( *cloud_out,
+			      *cloud,
+			      transf );
+    
+    cloud->height = 1;
+    cloud->width = cloud->points.size();
+  } else {
+    *cloud = *cloud_out;
+  }
   
-  cloud->height = 1;
-  cloud->width = cloud->points.size();
-  
+
   return cloud;
-  
+
 }
+
 
 /**
  * @function sampleSQ_uniform_b
@@ -244,16 +257,25 @@ typename pcl::PointCloud<PointT>::Ptr sampleSQ_uniform_b2( const SQ_parameters &
   for( it = cloud_raw->begin(); it != cloud_raw->end(); ++it ) {
 
     x = (*it).x; y = (*it).y; z = (*it).z;
-
+    /*
     beta = atan2( y, x);
     r = cos(alpha - beta)*sqrt(x*x + y*y);
     gamma = z*k;
     R = (1/k) - cos(gamma)*(1.0/k-r);
-    
+
     p.x = x + cos(alpha)*(R-r);
     p.y = y + sin(alpha)*(R-r);
-    p.z = sin(gamma)*(1.0/k-1);
-    
+    p.z = sin(gamma)*(1.0/k-r);
+    */
+
+    gamma = z*k;
+    R = (1/k) - cos(gamma)*(1.0/k-x);
+
+    p.x = R;
+    p.y = y;
+    p.z = sin(gamma)*(1.0/k-x);
+
+
     cloud_bent->points.push_back( p );
   }
   cloud_bent->height = 1; cloud_bent->width = cloud_bent->points.size();

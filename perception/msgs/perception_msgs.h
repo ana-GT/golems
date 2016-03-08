@@ -11,6 +11,7 @@
 extern "C" {
 #endif
 
+
   /**
    * @struct sns_msg_marker_robot
    * @brief Carries the marker position of known joints with marker in the robot frame
@@ -49,6 +50,11 @@ extern "C" {
     /** Translation & Rotation */
     double trans[3];
     double rot[3];
+
+    double tamp;
+    double R;
+    double k; double alpha;
+    int type;
 
     /** Mesh info */
     char mesh_filename[255];
