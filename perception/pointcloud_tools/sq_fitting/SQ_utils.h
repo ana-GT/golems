@@ -22,11 +22,11 @@
 namespace SQ_utils {
 
   void create_SQ_mesh( SQ_parameters _p, int _N,
-		       const char* _mesh_name );
+		       const char* _mesh_name, bool _applyTransform = false );
   
   void create_SQ_mesh( pcl::PolygonMesh &_mesh,
 		       SQ_parameters _p, int _N,
-		       const char* _mesh_name );
+		       const char* _mesh_name, bool _applyTransform = false );
   
   void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
 		       std::vector<pcl::Vertices> &_polygons );

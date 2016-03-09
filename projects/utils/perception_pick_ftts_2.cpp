@@ -16,10 +16,12 @@
 
 #include "perception/ftts/fast_tabletop_segmentation.h"
 #include "perception/msgs/perception_msgs.h"
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter_t.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter_b.h"
 #include "object_recognition/ObjectsDatabase.h"
+#include <pcl/filters/statistical_outlier_removal.h>
 
 #include <mutex>
 
@@ -44,7 +46,7 @@ std::mutex  mutex;
 std::vector<Eigen::VectorXd> gClustersBB;
 int gSelectedCluster;
 bool gShowSegmentation = false;
-
+bool gMirror = true;
 // Functions
 static void onMouse( int event, int x, int y, int flags, void* userdata );
 void grabber_callback( const CloudConstPtr& _cloud );
@@ -53,11 +55,14 @@ void drawBoundingBox();
 void startComm( int state, void* userdata );
 void send( int state, void* userData );
 
-void fit_SQ( pcl::PointCloud<PointT> _cluster, int _index,
+void fit_SQ( pcl::PointCloud<PointT>::Ptr _cluster, int _index,
 	     SQ_parameters &_p,
 	     int _type );
 void create_table_mesh( pcl::PolygonMesh &_table_mesh,
 			char _table_name_mesh[50] );
+
+void mirrorState(int state, void* data);
+void storeCloud( char* _name, int _index, pcl::PointCloud<PointT>::Ptr _cloud );
 
 // Communication
 bool gChanReady = false;
@@ -66,6 +71,10 @@ ach_channel_t gServer2Module_chan; // Channel to receive commands from server
 ach_channel_t gModule2Server_chan; // Channel to send responses to server
 
 ObjectsDatabase gOd;
+
+void mirrorState(int _state, void* data) {
+  gMirror = _state;
+}
 
 //////////////////////////
 //  @function main
@@ -85,6 +94,7 @@ int main( int argc, char* argv[] ) {
 
   cv::namedWindow( gWindowName, cv::WINDOW_AUTOSIZE );
   cv::setMouseCallback( gWindowName, onMouse, 0 );
+  cv::createButton( "Mirror", mirrorState, NULL, cv::QT_CHECKBOX, gMirror );
   cv::createButton( "Start comm", startComm, NULL, cv::QT_PUSH_BUTTON, false );
   cv::createButton( "Send", send, NULL, cv::QT_PUSH_BUTTON, false );
 
@@ -172,13 +182,10 @@ void send( int state, void* userData ) {
     gOd.classify( cv::Mat( gRgbImg, cv::Rect(xmin,ymin, xmax-xmin, ymax-ymin) ),
 		  index, label );
     // Send this info for fitting
-    fit_SQ( *gTts.getCluster(i), i, p, gOd.getSQtype(index) );
-    printf("Label: %s \n", label.c_str() );
+    fit_SQ( gTts.getCluster(i), i, p, gOd.getSQtype(index) );
+    printf("* Label: %s \n", label.c_str() );
     copy_SQparam_msg( p, msg->u[i] );    
 
-    // Save original pointclouds
-    char name[100]; sprintf( name, "original_%d.pcd" );
-    pcl::io::savePCDFileASCII( name, *gTts.getCluster(i) );
     char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%ld.ply", gPicturesPath.c_str(), i );
     SQ_utils::create_SQ_mesh( mesh, p, 25, mesh_name );
     msg->u[i].mesh_generated = true;
@@ -236,39 +243,58 @@ void create_table_mesh( pcl::PolygonMesh &_table_mesh,
   pcl::io::savePLYFile( _table_name_mesh, _table_mesh ); 
 }
 
-
+/**
+ * @function storeCloud
+ */
+void storeCloud( char* _name, int _index, pcl::PointCloud<PointT>::Ptr _cloud ) {
+    char complete_name[100]; 
+    sprintf(complete_name, "%s_%d.pcd", _name, _index );
+    pcl::io::savePCDFile( complete_name, *_cloud );
+}
 
 /**
  * @function fit_SQ
  */
-void fit_SQ( pcl::PointCloud<PointT> _cluster, int _index,
+void fit_SQ( pcl::PointCloud<PointT>::Ptr _cluster, int _index,
 	     SQ_parameters &_p, int _type ) {
-  /*
-  // Generate a mirror version of the pointcloud
-  mindGapper<PointTa> mg;
-  mg.setTablePlane( gTableCoeffs );
-  mg.setFittingParams();
-  mg.setDeviceParams();
-  mg.setFocalDist(gF);
-  printf("Mirror version \n");
-  */
-  // Fit pointcloud to superquadric
-  pcl::PointCloud<PointT>::Ptr completed( new pcl::PointCloud<PointT>() );
-  Eigen::Isometry3d Tsymm; Eigen::Vector3d Bb;
   
-  *completed = _cluster;
- 
-/*  mg.reset();
+  pcl::PointCloud<PointT>::Ptr filtered( new pcl::PointCloud<PointT>() );  
+  pcl::PointCloud<PointT>::Ptr completed( new pcl::PointCloud<PointT>() );  
+
+  // Filter
+  pcl::StatisticalOutlierRemoval<PointT> sor;
+  sor.setInputCloud (_cluster);
+  sor.setMeanK (50);
+  sor.setStddevMulThresh (1.0);
+  sor.filter (*filtered);
+
+  Eigen::Isometry3d Tsymm; Eigen::Vector3d Bb;
+  *completed = *filtered;
+
+  // Mirror
+  if( gMirror ) {
+    mindGapper<PointT> mg;
+    std::vector<double> tc(4); for( int i = 0; i < 4; ++i ) { tc[i] = gTts.mTableCoeffs[i]; }
+    mg.setTablePlane( tc );
+    mg.setFittingParams();
+    mg.setDeviceParams();
+    mg.setFocalDist(gF);
+
+    mg.reset();
+    // Debug: Store completed and incompleted clouds
+    storeCloud( "raw", _index, completed );    
     mg.complete( completed );
+    storeCloud( "mirrored", _index, completed );
+    mg.getSymmetryApprox( Tsymm, Bb );
+  }
 
-  mg.getSymmetryApprox( Tsymm, Bb );
-*/
-
+  // Fit superquadric
   switch( _type ) {
   case REGULAR: {
     printf("Type: regular \n");
     SQ_fitter<PointT> fitter;
     fitter.setInputCloud( completed );
+    if( gMirror ) { fitter.setInitialApprox( Tsymm, Bb ); }
     fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
     fitter.getFinalParams( _p );
     break;
@@ -277,6 +303,7 @@ void fit_SQ( pcl::PointCloud<PointT> _cluster, int _index,
     printf("Type: tampered \n");
     SQ_fitter_t<PointT> fitter;
     fitter.setInputCloud( completed );
+    if( gMirror ) { fitter.setInitialApprox( Tsymm, Bb ); }
     fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
     fitter.getFinalParams( _p );
     break;
@@ -285,13 +312,14 @@ void fit_SQ( pcl::PointCloud<PointT> _cluster, int _index,
     printf("Type: bent \n");
     SQ_fitter_b<PointT> fitter;
     fitter.setInputCloud( completed );
+    if( gMirror ) { fitter.setInitialApprox( Tsymm, Bb ); }
     fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
     fitter.getFinalParams( _p );
     break;
   }
   }
 
-    //fitter.setInitialApprox( Tsymm, Bb );  
+
     printParamsInfo(_p);
     
     pcl::PointCloud<pcl::PointXYZ>::Ptr sqp( new pcl::PointCloud<pcl::PointXYZ>() );

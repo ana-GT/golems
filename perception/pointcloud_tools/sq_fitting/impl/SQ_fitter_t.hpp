@@ -177,7 +177,7 @@ bool SQ_fitter_t<PointT>::minimize( const int &_type,
     for( i = 0; i < 3; ++i ) { p[i+8] = _in.rot[i]; }
     p[11] = _in.tamp;
 
-    printf("Initial p: %f %f %f %f %f %f %f %f %f %f %f %f, %f \n",
+    printf("Initial p: %f %f %f %f %f %f %f %f %f %f %f tamp: %f \n",
 	   p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11]);
 
     

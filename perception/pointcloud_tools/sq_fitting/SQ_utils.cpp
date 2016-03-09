@@ -11,20 +11,21 @@ namespace SQ_utils {
  */
   void create_SQ_mesh( SQ_parameters _p,
 		       int _N,
-		       const char* _mesh_name ) {
+		       const char* _mesh_name, bool _applyTransform ) {
     pcl::PolygonMesh mesh;
 					  
-    SQ_utils::create_SQ_mesh( mesh, _p, _N, _mesh_name );
+    SQ_utils::create_SQ_mesh( mesh, _p, _N, _mesh_name, _applyTransform );
   }
   
   void create_SQ_mesh( pcl::PolygonMesh &_mesh,
 		       SQ_parameters _p, int _N,
-		       const char* _mesh_name ) {
+		       const char* _mesh_name,
+                       bool _applyTransform ) {
     
     pcl::PointCloud<pcl::PointXYZ>::Ptr p( new pcl::PointCloud<pcl::PointXYZ>() );
     pcl::PointCloud<pcl::PointXYZ>::Ptr p_down( new pcl::PointCloud<pcl::PointXYZ>() );
     
-    p = sampleSQ_uniform<pcl::PointXYZ>( _p, false ); // Don't apply rigid transform
+    p = sampleSQ_uniform<pcl::PointXYZ>( _p, _applyTransform ); // Don't apply rigid transform
     downsampling<pcl::PointXYZ>( p, 0.0025, p_down );
     
     // Convex Hull

@@ -3,6 +3,8 @@
  * @brief Implements segmentation using multiplanar stuff from Alex Trevor
  * @date January 22nd, 2016
  */
+#pragma once
+
 #include <pcl/features/integral_image_normal.h>
 #include <pcl/segmentation/organized_multi_plane_segmentation.h>
 #include <pcl/segmentation/organized_connected_component_segmentation.h>

@@ -236,7 +236,7 @@ void error_metric_b( double* p,
 	 p[5], p[6], p[7],
 	 p[8], p[9], p[10],
 	 p[11], p[12]);
-  printf("Size of cloud: %d \n", _cloud->points.size() ); 
+  printf("Size of cloud: %lu \n", _cloud->points.size() ); 
 
   _e_g /= _cloud->points.size();
   _e_r /= _cloud->points.size();
