@@ -513,6 +513,7 @@ void J6_add( double* p, double* jac,
 /**
  * @function fr
  */
+// RADIAL: WITH ABS
 double fr( const double &a, const double &b, const double &c,
 	    const double &e1, const double &e2,
 	    const double &px, const double &py, const double &pz,
@@ -579,6 +580,7 @@ double fr( const double &a, const double &b, const double &c,
 /**
  * @function Jr
  */
+// JR WITH ABS
 void Jr( const double &a, const double &b, const double &c,
 	 const double &e1, const double &e2,
 	 const double &px, const double &py, const double &pz,
@@ -862,10 +864,10 @@ void Js( const double &a, const double &b, const double &c,
  
 }
 
-
 /**
  * @function fi
  */
+// ICHIM NO SQUARED AND NOT ABS
 double fi( const double &a, const double &b, const double &c,
 	   const double &e1, const double &e2,
 	   const double &px, const double &py, const double &pz,
@@ -929,9 +931,74 @@ double fi( const double &a, const double &b, const double &c,
 }
 
 
+/*
+// Fi WITH ABS
+double fi( const double &a, const double &b, const double &c,
+	   const double &e1, const double &e2,
+	   const double &px, const double &py, const double &pz,
+	   const double &ra, const double &pa, const double &ya,
+	   const double &x, const double &y, const double &z ) {
+
+  double t0;
+  double t2, t3, t4, t5, t6, t7, t8, t9;
+  double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
+  double t20, t21, t22, t23, t24, t25, t26, t27, t28, t29;
+  double t30, t31, t32, t33, t34, t35, t36, t37, t38, t39;
+  double t40, t41, t42, t43, t44, t45;
+
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t24 = t4*t5*t6;
+  t11 = t10-t24;
+  t12 = cos(pa);
+  t23 = px*t9;
+  t25 = py*t11;
+  t26 = t9*x;
+  t27 = t11*y;
+  t28 = pz*t4*t12;
+  t29 = t4*t12*z;
+  t13 = t23-t25-t26+t27+t28-t29;
+  t14 = t4*t6;
+  t31 = t2*t3*t5;
+  t15 = t14-t31;
+  t16 = t2*t4;
+  t17 = t3*t5*t6;
+  t18 = t16+t17;
+  t32 = px*t15;
+  t33 = py*t18;
+  t34 = t15*x;
+  t35 = t18*y;
+  t36 = pz*t3*t12;
+  t37 = t3*t12*z;
+  t19 = t32-t33-t34+t35-t36+t37;
+  t39 = pz*t5;
+  t40 = t5*z;
+  t41 = px*t2*t12;
+  t42 = t2*t12*x;
+  t43 = py*t6*t12;
+  t44 = t6*t12*y;
+  t20 = t39-t40-t41+t42-t43+t44;
+  t21 = 1.0/e2;
+  t22 = 1.0/e1;
+  t30 = t13*t13;
+  t38 = t19*t19;
+  t45 = t20*t20;
+  t0 = fabs(pow(pow(1.0/(c*c)*t30,t22)+pow(pow(1.0/(a*a)*t45,t21)+pow(1.0/(b*b)*t38,t21),e2*t22),e1)-1.0)*sqrt(a*b*c)*sqrt(t30+t38+t45);
+
+}*/
+
+
 /**
- * @function Jr
+ * @function Ji
  */
+// Ji NOT SQUARED AND NOT ABS
 void Ji( const double &a, const double &b, const double &c,
 	 const double &e1, const double &e2,
 	 const double &px, const double &py, const double &pz,
@@ -1063,6 +1130,140 @@ void Ji( const double &a, const double &b, const double &c,
   
 }
 
+/*
+// Ji WITH ABS, NOT SQUARED
+void Ji( const double &a, const double &b, const double &c,
+	 const double &e1, const double &e2,
+	 const double &px, const double &py, const double &pz,
+	 const double &ra, const double &pa, const double &ya,
+	 const double &x, const double &y, const double &z,
+	 double _J[11] ) {
+
+  double t2, t3, t4, t5, t6, t7, t8, t9;
+  double t10, t11, t12, t13, t14, t15, t16, t17, t18, t19;
+  double t20, t21, t22, t23, t24, t25, t26, t27, t28, t29;
+  double t30, t31, t32, t33, t34, t35, t36, t37, t38, t39;
+  double t40, t41, t42, t43, t44, t45, t46, t47, t48, t49;
+  double t50, t51, t52, t53, t54, t55, t56, t57, t58, t59;
+  double t60, t61, t62, t63, t64, t65, t66, t67, t68, t69;
+  double t70, t71, t72, t73, t74, t75, t76, t77, t78, t79;
+  double t80, t81, t82, t83, t84, t85, t86, t87, t88, t89;
+  double t90, t91, t92, t93, t94, t95, t96, t97, t98, t99;
+  double t100, t101;
+
+  t2 = cos(ya);
+  t3 = sin(ra);
+  t4 = cos(ra);
+  t5 = sin(pa);
+  t6 = sin(ya);
+  t7 = t3*t6;
+  t8 = t2*t4*t5;
+  t9 = t7+t8;
+  t10 = t2*t3;
+  t24 = t4*t5*t6;
+  t11 = t10-t24;
+  t12 = cos(pa);
+  t23 = px*t9;
+  t25 = py*t11;
+  t26 = t9*x;
+  t27 = t11*y;
+  t28 = pz*t4*t12;
+  t29 = t4*t12*z;
+  t13 = t23-t25-t26+t27+t28-t29;
+  t14 = t4*t6;
+  t31 = t2*t3*t5;
+  t15 = t14-t31;
+  t16 = t2*t4;
+  t17 = t3*t5*t6;
+  t18 = t16+t17;
+  t32 = px*t15;
+  t33 = py*t18;
+  t34 = t15*x;
+  t35 = t18*y;
+  t36 = pz*t3*t12;
+  t37 = t3*t12*z;
+  t19 = t32-t33-t34+t35-t36+t37;
+  t39 = pz*t5;
+  t40 = t5*z;
+  t41 = px*t2*t12;
+  t42 = t2*t12*x;
+  t43 = py*t6*t12;
+  t44 = t6*t12*y;
+  t20 = t39-t40-t41+t42-t43+t44;
+  t21 = 1.0/e2;
+  t22 = 1.0/e1;
+  t30 = t13*t13;
+  t38 = t19*t19;
+  t45 = t20*t20;
+  t46 = 1.0/(c*c);
+  t47 = t30*t46;
+  t48 = pow(t47,t22);
+  t49 = 1.0/(b*b);
+  t50 = t38*t49;
+  t51 = pow(t50,t21);
+  t52 = 1.0/(a*a);
+  t53 = t45*t52;
+  t54 = pow(t53,t21);
+  t55 = t51+t54;
+  t56 = e2*t22;
+  t57 = pow(t55,t56);
+  t58 = t48+t57;
+  t59 = pow(t58,e1);
+  t60 = t59-1.0;
+  t61 = t30+t38+t45;
+  t62 = sqrt(t61);
+  t63 = a*b*c;
+  t64 = fabs(t60);
+  t65 = 1.0/sqrt(t63);
+  t66 = (t60/fabs(t60));
+  t67 = e1-1.0;
+  t68 = pow(t58,t67);
+  t69 = t21-1.0;
+  t70 = t56-1.0;
+  t71 = pow(t55,t70);
+  t72 = sqrt(t63);
+  t73 = 1.0/(e1*e1);
+  t74 = log(t55);
+  t75 = 1.0/(e2*e2);
+  t76 = pow(t50,t69);
+  t77 = pow(t53,t69);
+  t78 = t22-1.0;
+  t79 = pow(t47,t78);
+  t80 = 1.0/sqrt(t61);
+  t81 = pz*t12;
+  t82 = px*t2*t5;
+  t83 = py*t5*t6;
+  t84 = t81+t82+t83-t12*z-t2*t5*x-t5*t6*y;
+  t85 = pz*t3*t5;
+  t86 = t2*t3*t12*x;
+  t87 = t3*t6*t12*y;
+  t88 = t85+t86+t87-t3*t5*z-px*t2*t3*t12-py*t3*t6*t12;
+  t89 = pz*t4*t5;
+  t90 = t2*t4*t12*x;
+  t91 = t4*t6*t12*y;
+  t92 = t89+t90+t91-t4*t5*z-px*t2*t4*t12-py*t4*t6*t12;
+  t93 = t2*t12*y;
+  t94 = px*t6*t12;
+  t95 = t93+t94-py*t2*t12-t6*t12*x;
+  t96 = px*t18;
+  t97 = py*t15;
+  t98 = t96+t97-t18*x-t15*y;
+  t99 = px*t11;
+  t100 = py*t9;
+  t101 = t99+t100-t11*x-t9*y;
+  _J[0] = b*c*t62*t64*t65*(1.0/2.0)-1.0/(a*a*a)*t45*t62*t66*t68*t71*t72*t77*2.0;
+  _J[1] = a*c*t62*t64*t65*(1.0/2.0)-1.0/(b*b*b)*t38*t62*t66*t68*t71*t72*t76*2.0;
+  _J[2] = a*b*t62*t64*t65*(1.0/2.0)-1.0/(c*c*c)*t30*t62*t66*t68*t72*t79*2.0;
+  _J[3] = t62*t66*t72*(t59*log(t58)-e1*t68*(t48*t73*log(t47)+e2*t57*t73*t74));
+  _J[4] = e1*t62*t66*t68*t72*(t22*t57*t74-e2*t22*t71*(t51*t75*log(t50)+t54*t75*log(t53)));
+  _J[5] = t64*t72*t80*(t9*t13*2.0+t15*t19*2.0-t2*t12*t20*2.0)*(1.0/2.0)+e1*t62*t66*t68*t72*(e2*t22*t71*(t15*t19*t21*t49*t76*2.0-t2*t12*t20*t21*t52*t77*2.0)+t9*t13*t22*t46*t79*2.0);
+  _J[6] = t64*t72*t80*(t11*t13*2.0+t18*t19*2.0+t6*t12*t20*2.0)*(-1.0/2.0)-e1*t62*t66*t68*t72*(e2*t22*t71*(t18*t19*t21*t49*t76*2.0+t6*t12*t20*t21*t52*t77*2.0)+t11*t13*t22*t46*t79*2.0);
+  _J[7] = t64*t72*t80*(t5*t20*2.0+t4*t12*t13*2.0-t3*t12*t19*2.0)*(1.0/2.0)+e1*t62*t66*t68*t72*(e2*t22*t71*(t5*t20*t21*t52*t77*2.0-t3*t12*t19*t21*t49*t76*2.0)+t4*t12*t13*t22*t46*t79*2.0);
+  _J[8] = e1*t62*t66*t68*t72*(t13*t19*t22*t46*t79*2.0-t13*t19*t22*t49*t71*t76*2.0);
+  _J[9] = t64*t72*t80*(t20*t84*2.0-t13*t92*2.0+t19*t88*2.0)*(1.0/2.0)+e1*t62*t66*t68*t72*(e2*t22*t71*(t19*t21*t49*t76*t88*2.0+t20*t21*t52*t77*t84*2.0)-t13*t22*t46*t79*t92*2.0);
+  _J[10] = t64*t72*t80*(t13*t101*2.0+t20*t95*2.0+t19*t98*2.0)*(1.0/2.0)+e1*t62*t66*t68*t72*(e2*t22*t71*(t19*t21*t49*t76*t98*2.0+t20*t21*t52*t77*t95*2.0)+t13*t22*t46*t79*t101*2.0);
+
+}*/
 
 /**
  * @function fc
@@ -1267,6 +1468,7 @@ void Jc( const double &a, const double &b, const double &c,
 /**
  * @function f5
  */
+// ICHIM WITH AREA INSTEAD OF VOLUME
 double f5( const double &a, const double &b, const double &c,
 	    const double &e1, const double &e2,
 	    const double &px, const double &py, const double &pz,
@@ -1324,8 +1526,8 @@ double f5( const double &a, const double &b, const double &c,
   t30 = t13*t13;
   t38 = t19*t19;
   t45 = t20*t20;
-  t0 = (pow(pow(1.0/(c*c)*t30,t22)+pow(pow(1.0/(a*a)*t45,t21)+pow(1.0/(b*b)*t38,t21),e2*t22),e1)-1.0)*sqrt(t30+t38+t45);
-  
+  t0 = (pow(pow(1.0/(c*c)*t30,t22)+pow(pow(1.0/(a*a)*t45,t21)+pow(1.0/(b*b)*t38,t21),e2*t22),e1)-1.0)*sqrt(t30+t38+t45)*sqrt(a*b+a*c+b*c);
+
   return t0;
 }
 
@@ -1350,7 +1552,8 @@ void J5( const double &a, const double &b, const double &c,
   double t60, t61, t62, t63, t64, t65, t66, t67, t68, t69;
   double t70, t71, t72, t73, t74, t75, t76, t77, t78, t79;
   double t80, t81, t82, t83, t84, t85, t86, t87, t88, t89;
-  double t90, t91, t92, t93, t94, t95, t96;
+  double t90, t91, t92, t93, t94, t95, t96, t97, t98, t99;
+  double t100, t101, t102;
 
   t2 = cos(ya);
   t3 = sin(ra);
@@ -1361,104 +1564,109 @@ void J5( const double &a, const double &b, const double &c,
   t8 = t2*t4*t5;
   t9 = t7+t8;
   t10 = t2*t3;
-  t47 = t4*t5*t6;
-  t11 = t10-t47;
+  t24 = t4*t5*t6;
+  t11 = t10-t24;
   t12 = cos(pa);
-  t46 = px*t9;
-  t48 = py*t11;
-  t49 = t9*x;
-  t50 = t11*y;
-  t51 = pz*t4*t12;
-  t52 = t4*t12*z;
-  t13 = t46-t48-t49+t50+t51-t52;
+  t23 = px*t9;
+  t25 = py*t11;
+  t26 = t9*x;
+  t27 = t11*y;
+  t28 = pz*t4*t12;
+  t29 = t4*t12*z;
+  t13 = t23-t25-t26+t27+t28-t29;
   t14 = t4*t6;
-  t33 = t2*t3*t5;
-  t15 = t14-t33;
+  t31 = t2*t3*t5;
+  t15 = t14-t31;
   t16 = t2*t4;
   t17 = t3*t5*t6;
   t18 = t16+t17;
-  t34 = px*t15;
-  t35 = py*t18;
-  t36 = t15*x;
-  t37 = t18*y;
-  t38 = pz*t3*t12;
-  t39 = t3*t12*z;
-  t19 = t34-t35-t36+t37-t38+t39;
-  t24 = pz*t5;
-  t25 = t5*z;
-  t26 = px*t2*t12;
-  t27 = t2*t12*x;
-  t28 = py*t6*t12;
-  t29 = t6*t12*y;
-  t20 = t24-t25-t26+t27-t28+t29;
+  t32 = px*t15;
+  t33 = py*t18;
+  t34 = t15*x;
+  t35 = t18*y;
+  t36 = pz*t3*t12;
+  t37 = t3*t12*z;
+  t19 = t32-t33-t34+t35-t36+t37;
+  t39 = pz*t5;
+  t40 = t5*z;
+  t41 = px*t2*t12;
+  t42 = t2*t12*x;
+  t43 = py*t6*t12;
+  t44 = t6*t12*y;
+  t20 = t39-t40-t41+t42-t43+t44;
   t21 = 1.0/e2;
   t22 = 1.0/e1;
-  t23 = 1.0/(a*a);
-  t30 = t20*t20;
-  t31 = t23*t30;
-  t32 = 1.0/(b*b);
-  t40 = t19*t19;
-  t41 = t32*t40;
-  t42 = pow(t41,t21);
-  t43 = pow(t31,t21);
-  t44 = t42+t43;
-  t45 = e2*t22;
-  t53 = t13*t13;
-  t54 = 1.0/(c*c);
-  t55 = t53*t54;
-  t56 = pow(t55,t22);
-  t57 = pow(t44,t45);
-  t58 = t56+t57;
-  t59 = e1-1.0;
-  t60 = pow(t58,t59);
-  t61 = t21-1.0;
-  t62 = t45-1.0;
-  t63 = pow(t44,t62);
-  t64 = t30+t40+t53;
-  t65 = sqrt(t64);
-  t66 = 1.0/(e1*e1);
-  t67 = log(t44);
-  t68 = 1.0/(e2*e2);
-  t69 = pow(t58,e1);
-  t70 = pow(t41,t61);
-  t71 = pow(t31,t61);
-  t72 = t22-1.0;
-  t73 = pow(t55,t72);
-  t74 = t69-1.0;
-  t75 = 1.0/sqrt(t64);
-  t76 = pz*t12;
-  t77 = px*t2*t5;
-  t78 = py*t5*t6;
-  t79 = t76+t77+t78-t12*z-t2*t5*x-t5*t6*y;
-  t80 = pz*t3*t5;
-  t81 = t2*t3*t12*x;
-  t82 = t3*t6*t12*y;
-  t83 = t80+t81+t82-t3*t5*z-px*t2*t3*t12-py*t3*t6*t12;
-  t84 = pz*t4*t5;
-  t85 = t2*t4*t12*x;
-  t86 = t4*t6*t12*y;
-  t87 = t84+t85+t86-t4*t5*z-px*t2*t4*t12-py*t4*t6*t12;
-  t88 = t2*t12*y;
-  t89 = px*t6*t12;
-  t90 = t88+t89-py*t2*t12-t6*t12*x;
-  t91 = px*t18;
-  t92 = py*t15;
-  t93 = t91+t92-t18*x-t15*y;
-  t94 = px*t11;
-  t95 = py*t9;
-  t96 = t94+t95-t11*x-t9*y;
-  
-  _J[0] = 1.0/(a*a*a)*t30*t60*t63*t65*t71*-2.0;
-  _J[1] = 1.0/(b*b*b)*t40*t60*t63*t65*t70*-2.0;
-  _J[2] = 1.0/(c*c*c)*t53*t60*t65*t73*-2.0;
-  _J[3] = t65*(t69*log(t58)-e1*t60*(t56*t66*log(t55)+e2*t57*t66*t67));
-  _J[4] = e1*t60*t65*(t22*t57*t67-e2*t22*t63*(t43*t68*log(t31)+t42*t68*log(t41)));
-  _J[5] = t74*t75*(t9*t13*2.0+t15*t19*2.0-t2*t12*t20*2.0)*(1.0/2.0)+e1*t60*t65*(e2*t22*t63*(t15*t19*t21*t32*t70*2.0-t2*t12*t20*t21*t23*t71*2.0)+t9*t13*t22*t54*t73*2.0);
-  _J[6] = t74*t75*(t11*t13*2.0+t18*t19*2.0+t6*t12*t20*2.0)*(-1.0/2.0)-e1*t60*t65*(e2*t22*t63*(t18*t19*t21*t32*t70*2.0+t6*t12*t20*t21*t23*t71*2.0)+t11*t13*t22*t54*t73*2.0);
-  _J[7] = t74*t75*(t5*t20*2.0+t4*t12*t13*2.0-t3*t12*t19*2.0)*(1.0/2.0)+e1*t60*t65*(e2*t22*t63*(t5*t20*t21*t23*t71*2.0-t3*t12*t19*t21*t32*t70*2.0)+t4*t12*t13*t22*t54*t73*2.0);
-  _J[8] = e1*t60*t65*(t13*t19*t22*t54*t73*2.0-t13*t19*t22*t32*t63*t70*2.0);
-  _J[9] = t74*t75*(t20*t79*2.0-t13*t87*2.0+t19*t83*2.0)*(1.0/2.0)+e1*t60*t65*(e2*t22*t63*(t20*t21*t23*t71*t79*2.0+t19*t21*t32*t70*t83*2.0)-t13*t22*t54*t73*t87*2.0);
-  _J[10] = t74*t75*(t13*t96*2.0+t20*t90*2.0+t19*t93*2.0)*(1.0/2.0)+e1*t60*t65*(e2*t22*t63*(t20*t21*t23*t71*t90*2.0+t19*t21*t32*t70*t93*2.0)+t13*t22*t54*t73*t96*2.0);
+  t30 = t13*t13;
+  t38 = t19*t19;
+  t45 = t20*t20;
+  t46 = 1.0/(c*c);
+  t47 = t30*t46;
+  t48 = pow(t47,t22);
+  t49 = 1.0/(b*b);
+  t50 = t38*t49;
+  t51 = pow(t50,t21);
+  t52 = 1.0/(a*a);
+  t53 = t45*t52;
+  t54 = pow(t53,t21);
+  t55 = t51+t54;
+  t56 = e2*t22;
+  t57 = pow(t55,t56);
+  t58 = t48+t57;
+  t59 = t30+t38+t45;
+  t60 = sqrt(t59);
+  t61 = a*b;
+  t62 = a*c;
+  t63 = b*c;
+  t64 = t61+t62+t63;
+  t65 = pow(t58,e1);
+  t66 = t65-1.0;
+  t67 = 1.0/sqrt(t64);
+  t68 = e1-1.0;
+  t69 = pow(t58,t68);
+  t70 = t21-1.0;
+  t71 = t56-1.0;
+  t72 = pow(t55,t71);
+  t73 = sqrt(t64);
+  t74 = 1.0/(e1*e1);
+  t75 = log(t55);
+  t76 = 1.0/(e2*e2);
+  t77 = pow(t50,t70);
+  t78 = pow(t53,t70);
+  t79 = t22-1.0;
+  t80 = pow(t47,t79);
+  t81 = 1.0/sqrt(t59);
+  t82 = pz*t12;
+  t83 = px*t2*t5;
+  t84 = py*t5*t6;
+  t85 = t82+t83+t84-t12*z-t2*t5*x-t5*t6*y;
+  t86 = pz*t3*t5;
+  t87 = t2*t3*t12*x;
+  t88 = t3*t6*t12*y;
+  t89 = t86+t87+t88-t3*t5*z-px*t2*t3*t12-py*t3*t6*t12;
+  t90 = pz*t4*t5;
+  t91 = t2*t4*t12*x;
+  t92 = t4*t6*t12*y;
+  t93 = t90+t91+t92-t4*t5*z-px*t2*t4*t12-py*t4*t6*t12;
+  t94 = t2*t12*y;
+  t95 = px*t6*t12;
+  t96 = t94+t95-py*t2*t12-t6*t12*x;
+  t97 = px*t18;
+  t98 = py*t15;
+  t99 = t97+t98-t18*x-t15*y;
+  t100 = px*t11;
+  t101 = py*t9;
+  t102 = t100+t101-t11*x-t9*y;
+  _J[0] = t60*t66*t67*(b+c)*(1.0/2.0)-1.0/(a*a*a)*t45*t60*t69*t72*t73*t78*2.0;
+  _J[1] = t60*t66*t67*(a+c)*(1.0/2.0)-1.0/(b*b*b)*t38*t60*t69*t72*t73*t77*2.0;
+  _J[2] = t60*t66*t67*(a+b)*(1.0/2.0)-1.0/(c*c*c)*t30*t60*t69*t73*t80*2.0;
+  _J[3] = t60*t73*(t65*log(t58)-e1*t69*(t48*t74*log(t47)+e2*t57*t74*t75));
+  _J[4] = e1*t60*t69*t73*(t22*t57*t75-e2*t22*t72*(t51*t76*log(t50)+t54*t76*log(t53)));
+  _J[5] = t66*t73*t81*(t9*t13*2.0+t15*t19*2.0-t2*t12*t20*2.0)*(1.0/2.0)+e1*t60*t69*t73*(e2*t22*t72*(t15*t19*t21*t49*t77*2.0-t2*t12*t20*t21*t52*t78*2.0)+t9*t13*t22*t46*t80*2.0);
+  _J[6] = t66*t73*t81*(t11*t13*2.0+t18*t19*2.0+t6*t12*t20*2.0)*(-1.0/2.0)-e1*t60*t69*t73*(e2*t22*t72*(t18*t19*t21*t49*t77*2.0+t6*t12*t20*t21*t52*t78*2.0)+t11*t13*t22*t46*t80*2.0);
+  _J[7] = t66*t73*t81*(t5*t20*2.0+t4*t12*t13*2.0-t3*t12*t19*2.0)*(1.0/2.0)+e1*t60*t69*t73*(e2*t22*t72*(t5*t20*t21*t52*t78*2.0-t3*t12*t19*t21*t49*t77*2.0)+t4*t12*t13*t22*t46*t80*2.0);
+  _J[8] = e1*t60*t69*t73*(t13*t19*t22*t46*t80*2.0-t13*t19*t22*t49*t72*t77*2.0);
+  _J[9] = t66*t73*t81*(t20*t85*2.0-t13*t93*2.0+t19*t89*2.0)*(1.0/2.0)+e1*t60*t69*t73*(e2*t22*t72*(t19*t21*t49*t77*t89*2.0+t20*t21*t52*t78*t85*2.0)-t13*t22*t46*t80*t93*2.0);
+  _J[10] = t66*t73*t81*(t13*t102*2.0+t20*t96*2.0+t19*t99*2.0)*(1.0/2.0)+e1*t60*t69*t73*(e2*t22*t72*(t19*t21*t49*t77*t99*2.0+t20*t21*t52*t78*t96*2.0)+t13*t22*t46*t80*t102*2.0);
 }
 
 

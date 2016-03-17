@@ -12,13 +12,15 @@ SQ_fitter_b<PointT>::SQ_fitter_b() :
   SQ_fitter<PointT>() {
   
   int i;
-  for( i = 0; i < 3; ++i ) { this->mLowerLim_dim[i] = 0.01; this->mUpperLim_dim[i] = 0.15; }
+  for( i = 0; i < 3; ++i ) { this->mLowerLim_dim[i] = 0.003; this->mUpperLim_dim[i] = 0.30; }
   this->mLowerLim_e = 0.1;  this->mUpperLim_e = 1.9;
   for( i = 0; i < 3; ++i ) { this->mLowerLim_trans[i] = -2.0; this->mUpperLim_trans[i] = 2.0; }
   for( i = 0; i < 3; ++i ) { this->mLowerLim_rot[i] = -M_PI; this->mUpperLim_rot[i] = M_PI; }
  
   this->mLowerLim_k = 0.005; this->mUpperLim_k = 20.0;
   this->mLowerLim_alpha = -M_PI; this->mUpperLim_alpha = M_PI;
+
+  this->mDimFactor = 1.1;
 
 }
 
@@ -73,6 +75,8 @@ bool SQ_fitter_b<PointT>::fit( const int &_type,
 			  false );
   }
    
+  //for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->mDimFactor*this->par_in_.dim[i]; }
+
   // 1.0 Set tampering start to 1 (0: No bending )
   this->par_in_.k = 0.01;
   this->par_in_.alpha = 0;
@@ -80,9 +84,6 @@ bool SQ_fitter_b<PointT>::fit( const int &_type,
 
   // 1.1. Set e1 and e2 to middle value in range
   this->par_in_.e[0] = 0.5; this->par_in_.e[1] = 1.0;
-
-  // Update limits according to this data, up to no more than original guess
-  for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->par_in_.dim[i]; }
   
   // Run loop
   par_i = this->par_in_;
@@ -92,10 +93,21 @@ bool SQ_fitter_b<PointT>::fit( const int &_type,
 
   ///
   for( int i = 0; i < this->N_; ++i ) { 
-    printf("Error i(%d): %f \n", i, error_i);
+   
     s_i = this->smax_ - (i)*ds;
     par_i_1 = par_i;
     error_i_1 = error_i;
+
+    // Update limits**********
+      double dim_i[3];
+      this->getBoundingBoxAlignedToTf( this->cloud_,
+			               par_i_1.trans,
+                                       par_i_1.rot,
+				       dim_i );
+
+      for( int j = 0; j < 3; ++j ) { if( this->mUpperLim_dim[i] < this->mDimFactor*dim_i[i] ) { this->mUpperLim_dim[i] = this->mDimFactor*dim_i[i]; } }
+    //****************************
+
 
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
     if( this->N_ == 1 ) { cloud_i = this->cloud_; }
@@ -111,10 +123,9 @@ bool SQ_fitter_b<PointT>::fit( const int &_type,
     
     // [CONDITION]
     double de = (error_i_1 - error_i);
-    printf("Error: %f \n", error_i);
     this->final_error_ = error_i;
-    if( fabs(de) < this->thresh_ && error_i < 0.01 ) {
-      printf("error_i_1: %f error_i: %f \n", error_i_1, error_i);
+    //    if( fabs(de) < this->thresh_ && error_i < 0.01 ) {
+    if( fabs(de) < this->thresh_  ) {
       fitted = true;
       break;
     } 
@@ -283,7 +294,7 @@ bool SQ_fitter_b<PointT>::minimize( const int &_type,
     for( i = 0; i < 3; ++i ) { _out.rot[i] = p[i+8]; }
     _out.alpha = p[11];
     _out.k = p[12];
-
+    _out.type = BENT;
     
     // Return status and error
     double eg, er;

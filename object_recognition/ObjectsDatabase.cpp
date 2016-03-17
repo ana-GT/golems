@@ -3,7 +3,7 @@
  */
 
 #include "ObjectsDatabase.h"
-
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter_m.h" // For the parameters for multiple
 
 /**
  * @function fill_dataset
@@ -17,7 +17,7 @@ void ObjectsDatabase::load_dataset() {
 			   "fluorescent_ball", "hammer", "jar", "jello_chocolate", 
 			   "jello_strawberry", "juice_box", "lemon", "light_blue_brush", 
 			   "magic_cube", "master_chef_coffee", "mike_monster", "milk", 
-			   "mustard", "orange", "peach", "pear", "pink_bate", 
+			   "mustard", "orange", "peach", "pear", "pink_bate", // 26 
 			   "plum", "pringles", "red_bowl", "red_cup", "red_plate", 
 			   "soft_scrub", "spam", "strawberry", "sun_maid_raisins", 
 			   "tennis_ball", "white_cup", "wooden_cube", "wood_glue", 
@@ -25,11 +25,11 @@ void ObjectsDatabase::load_dataset() {
   mNames.insert( mNames.end(), tNames, tNames + mNUM_OBJECTS );
 
   int tSQ_types[] = {REGULAR,BENT,REGULAR,REGULAR,REGULAR,
-		     REGULAR,REGULAR,REGULAR,MULTIPLE,REGULAR,
+		     MULTIPLE,REGULAR,REGULAR,MULTIPLE,REGULAR,
 		     REGULAR,MULTIPLE,REGULAR,REGULAR,
 		     REGULAR, REGULAR,REGULAR,MULTIPLE,
 		     REGULAR, REGULAR,REGULAR,REGULAR,
-		     REGULAR,REGULAR,REGULAR,TAMPERED,TAMPERED,
+		     REGULAR,REGULAR,REGULAR,TAMPERED, MULTIPLE, // Bate(26)
 		     REGULAR,REGULAR,REGULAR,REGULAR,REGULAR,
 		     REGULAR,REGULAR,REGULAR,REGULAR,
 		     REGULAR,TAMPERED,REGULAR,REGULAR,
@@ -45,8 +45,51 @@ void ObjectsDatabase::load_dataset() {
     ObjectEntry oe;
     oe.name = mNames[i];
     oe.sq_type = tSQ_types[i];
+
+    // Multiples:
+    //coffee_mate(5), drill(8), hammer(11),jar(12),brush(17),
+    //milk(21) maybe //bate(26)
+
+    
+    // Coffee mate
+    if( i == 5 ) { 
+      oe.num_parts = 2; 
+      oe.part_type.resize(2); 
+      oe.part_type[0] = REGULAR;
+      oe.part_type[1] = REGULAR;
+      oe.hint_search = PERPENDICULAR_TO_Z;
+    }
+
+    // Hammer
+    if( i == 11 ) {
+      oe.num_parts = 2; 
+      oe.part_type.resize(2); 
+      oe.part_type[0] = REGULAR;
+      oe.part_type[1] = REGULAR;   
+      oe.hint_search = PERPENDICULAR_TO_Z;
+    }
+    // Jar
+    if( i == 12 ) {
+      oe.num_parts = 2; 
+      oe.part_type.resize(2); 
+      oe.part_type[0] = REGULAR; // first is the big one
+      oe.part_type[1] = BENT;    
+      oe.hint_search = CONTAINING_Z;   
+    }
+    // Bate
+    if( i == 26 ) {
+      oe.num_parts = 2; 
+      oe.part_type.resize(2); 
+      oe.part_type[0] = TAMPERED; // first is the big one
+      oe.part_type[1] = REGULAR;    
+      oe.hint_search = PERPENDICULAR_TO_Z;   
+    }
+
     mDataset[mNames[i]] = oe;
+
+
   }
+
 
 }
 
@@ -99,7 +142,7 @@ std::vector<Prediction> ObjectsDatabase::classify( cv::Mat _img,
 						   std::string &_label ) {
 
   std::vector<Prediction> predictions = mClassifier.classify( _img, _index );
-  _label = predictions[0].first;	
+  _label = mNames[_index];// Shorter // predictions[0].first;	
   return predictions;
 }
 

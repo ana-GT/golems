@@ -1,6 +1,6 @@
 #!/bin/bash
 
-PLY_DIR="/home/ana/Research/commonData/objects/ch3_shapes/meshes"
+PLY_DIR="/home/ana/Research/commonData/objects/ch3_9/meshes"
 SCRIPT="/home/ana/Research/golems/scripts/./write_urdf.bash"
 
 cd ${PLY_DIR}

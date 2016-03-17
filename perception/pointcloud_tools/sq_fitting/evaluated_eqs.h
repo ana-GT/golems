@@ -189,7 +189,7 @@ void error_metric( double* p,
   _e_g = 0;
   _e_r = 0;
   _e_d = 0;
-  
+   
   typename pcl::PointCloud<PointT>::iterator it;
   for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
     _e_g += Err_g( p[0], p[1], p[2],

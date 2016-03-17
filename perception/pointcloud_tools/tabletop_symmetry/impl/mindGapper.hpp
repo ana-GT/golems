@@ -93,7 +93,6 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   PointCloudIter it;
 
   this->reset();
-  
   // 0. Store cloud, visibility mask, depth and 
   // the distance transform (DT) in 2D matrices
   mCloud = _cloud;
@@ -105,7 +104,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   }
   
   mDTMask = matDT( mMarkMask );
-
+  cv::imwrite( "markMask.png", mMarkMask );
   // 1. Project pointcloud to plane
   mProjected = projectToPlane( mCloud );
 
@@ -119,14 +118,13 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   // (otherwise the center is too influenced by the "front points" and might not
   // use the top information of the cloud, if available
   Eigen::Vector4d c;
-
+  
   PointCloudPtr projected_voxelized( new PointCloud() );
   
   pcl::VoxelGrid<PointT> sor;
   sor.setInputCloud (mProjected);
   sor.setLeafSize (0.01f, 0.01f, 0.01f);
   sor.filter (*projected_voxelized);
-
   pcl::compute3DCentroid( *projected_voxelized, c );
     
   mC << c(0), c(1), c(2);
@@ -137,7 +135,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   Eigen::Vector3d v, s, s_sample;
   v = mC; // viewing vector from Kinect origin (0,0,0) to centroid of projected cloud (mC)
   // s: Line which is the intersection between symmetry and table planes
-  if( abs(v.dot(mEa)) <= abs(v.dot(mEb)) ) { s = mEa; } 
+  if( fabs(v.dot(mEa)) <= fabs(v.dot(mEb)) ) { s = mEa; } 
   else { s = mEb; }
 
   
@@ -153,7 +151,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
   Np << mPlaneCoeffs(0), mPlaneCoeffs(1), mPlaneCoeffs(2); 
   dang = 2*mAlpha / (double) (mM-1);
-
+  
   int count = 0;
   for( int i = 0; i < mM; ++i ) {
         
@@ -178,14 +176,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
-      ///////////////
-      /*
-      char namec[100];
-      sprintf( namec, "candidate_%d.pcd", count );
-      pcl::io::savePCDFile(namec, *mCandidates[mCandidates.size()-1], true );
-      count++;
-      */
-      ////////////////
+
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
@@ -196,7 +187,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   // 6. Evaluate (optimization)
   mDelta1.resize( mCandidates.size() );
   mDelta2.resize( mCandidates.size() );
-
+ 
   for( int i = 0; i < mCandidates.size(); ++i ) {
 
     // Check inliers and outliers
@@ -244,18 +235,9 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
       if( frontOfMask == 0 ) { mDelta2[i] = MAX_VALUE_DELTA;  } 
       else { mDelta2[i] = (delta_2 / (double)frontOfMask); }
     } // end else mValidity
-
-      ///////////////
-    /*
-      printf("Candidate [%d] delta 1: %f delta 2: %f num out: %d front: %d \n", i, mDelta1[i], mDelta2[i],
-	     outOfMask, frontOfMask);
-    */
-      /////////////////
-
-    
     
   } // for each candidate
-
+  
 
   // First get the smallest delta1 per each rotation group
   int d1_ind; double d1_min;
@@ -264,14 +246,17 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   for( int i = 0; i < mM; ++i ) {
 
     for( int j = 0; j < mN; ++j ) {
-      if( mDelta1[i*mN + j] < 2 ) {
+      if( mDelta1[i*mN + j] < mCutoff_Pixel_MaxDist ) {
 	first_pass.push_back( i*mN + j );
       }
     }
   }
-  
+
   // Second, now get the smallest according to delta 2
   int d2_ind; double d2_min;
+
+  if( first_pass.size() == 0 ) { return -1; }
+
   d2_ind = first_pass[0]; d2_min = mDelta2[d2_ind];
   for( int i = 1; i < first_pass.size(); ++i ) {
     if( mDelta2[first_pass[i]] < d2_min ) {
@@ -281,12 +266,10 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   }
 
   int minIndex = d2_ind;
- 
-  printf("Min index: %d  \n", minIndex );
 
   if( mDelta1[minIndex] == MAX_VALUE_DELTA || mDelta2[minIndex] == MAX_VALUE_DELTA ) {
-    printf("Alert! Mirroring MAY not be used here \n");
-    
+    printf("Mirroring failed to give good results \n");
+    return -1;
   }
   
   // Set symmetry transformation
@@ -297,9 +280,33 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
   // Complete pointcloud if required
   // (do this AFTER setting the symmRt and calclating symmTf above)
+
   if( _completeCloud ) {
-    _cloud->insert( _cloud->end(), mCandidates[minIndex]->begin(),
-		    mCandidates[minIndex]->end() );
+    typename PointCloud::iterator it;
+    PointT P; int px, py;
+    for( it = mCandidates[minIndex]->begin(); it != mCandidates[minIndex]->end(); ++it ) {
+
+      P = (*it);
+      px = (int)( mF*(-P.x / P.z) + mCx );
+      py = (int)( mF*(-P.y / P.z) + mCy );
+                 
+      // MEASURE 1: OUT-OF-MASK PIXELS DISTANCE TO CLOSEST MASK PIXEL
+       
+      if( mMarkMask.at<uchar>(py,px) == 0 ) {
+       // continue;
+      }      
+      // MEASURE 2: IN-MASK PIXELS IN FRONT OF VISIBLE PIXELS
+      else {
+	double dp = (double)(mDepthMask.at<float>(py,px));
+	if( dp != 0 ) {
+	  double d = sqrt(P.z*P.z + P.y*P.y + P.x*P.x ) - dp;
+	  if( d < 0 ) {
+            continue;
+	  }
+        }
+     }
+      _cloud->points.push_back( *it );
+   } // end for
   }
 
   _cloud->width = 1; _cloud->height = _cloud->points.size();
@@ -398,8 +405,9 @@ mindGapper<PointT>::mindGapper() :
 
   mMax_Out_Mask_Ratio = 0.5;
   mUpper_Ratio_Delta = 0.1;
-  mMax_Front_Dist_Avg = 0.01; // 1 cm
-  mMax_Out_Pixel_Avg = 6; // 8 pixels avg (too big already, usually more than 6 is wrong)
+  mMax_Front_Dist_Avg = 0.008; // 1 cm
+  mMax_Out_Pixel_Avg = 4; // 8 pixels avg (too big already, usually more than 6 is wrong)
+  mCutoff_Pixel_MaxDist = 2; // Distance in pixels as cut off (we set 2)
 }
 
 /**

@@ -5,6 +5,7 @@ OBJECT_XML="${OBJECT}.xml"
 FILENAME="${OBJECT}_world.xml"
 HAND_FILENAME="models/robots/Schunk/Schunk.xml"
 TABLE_FILENAME="models/obstacles/ch3_shapes/LWA4_table.xml"
+FOLDER_OBJECT="ch3_9"
 # Remove file if it exists
 if [ -e ${FILENAME} ]
   then
@@ -15,7 +16,7 @@ printf '<?xml version=\"1.0\" ?>\n' >> ${FILENAME}
 printf '<world>\n' >> ${FILENAME}
 
 printf '\t <graspableBody>\n' >> ${FILENAME}
-printf '\t\t<filename>models/objects/ch3_shapes/%s</filename> \n' ${OBJECT_XML} >> ${FILENAME}
+printf '\t\t<filename>models/objects/%s/%s</filename> \n' ${FOLDER_OBJECT} ${OBJECT_XML} >> ${FILENAME}
 printf '\t\t<transform> \n' >> ${FILENAME}
 printf '\t\t\t<fullTransform>(+1 0 0 0)[700 -200 900]</fullTransform> \n' >> ${FILENAME}
 printf '\t\t</transform> \n' >> ${FILENAME}

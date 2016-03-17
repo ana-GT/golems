@@ -45,6 +45,7 @@ void CrichtonView<PointT>::grabber_callback( const CloudConstPtr& _cloud ) {
   double dt; clock_t ts, tf;
   // Segment the new input
   mTts.process( _cloud, mShowSegmentation );
+
   // Show it
   mRgbImg = mTts.getRgbImg();
   mPclMap = mTts.getXyzImg();
@@ -100,7 +101,7 @@ void CrichtonView<PointT>::send( int state, void* userData ) {
 
   // Variables 
   pcl::PolygonMesh mesh;
-  SQ_parameters p;
+  std::vector<SQ_parameters> ps;
   
   
   // 1. Save SQs
@@ -112,20 +113,27 @@ void CrichtonView<PointT>::send( int state, void* userData ) {
     mOd.classify( cv::Mat( mRgbImg, cv::Rect(xmin,ymin, xmax-xmin, ymax-ymin) ),
 		  index, label );
     // Send this info for fitting
+    //index = 5; // BOTTLE BY NOW
     printf("* Label: %s \n", label.c_str() );
-    fit_SQ( mTts.getCluster(i), i, p, mOd.getSQtype(index), (char*)label.c_str() );
-    copy_SQparam_msg( p, msg->u[i] );    
-
+    ObjectEntry entry; entry = mOd.getEntry( index );
+    fit_SQ( mTts.getCluster(i), i, ps, entry );
+    copy_SQparam_msg( ps[0], msg->u[i] );    
+    std::cout << "Dim ps 0: "<< ps[0].dim[0]<<", "<< ps[0].dim[1]<<", "<< ps[0].dim[2]<<std::endl;
     //////////////////////////////
     // Debug Store mesh
     char debug_name[100];
-    if( mMirror ) { sprintf( debug_name, "%s_%d_mirrored.ply", (char*)label.c_str(), i ); }
-    else { sprintf( debug_name, "%s_%d_original.ply", (char*)label.c_str(), i ); }
-    SQ_utils::create_SQ_mesh( p, 25, debug_name, true );
+    if( mMirror ) { sprintf( debug_name, "%s_mirrored_%d.ply", (char*)label.c_str(), i ); }
+    else { sprintf( debug_name, "%s_no_mirror_%d.ply", (char*)label.c_str(), i ); }
+    SQ_utils::create_SQ_mesh( ps[0], 25, debug_name, false );
     /////////////////////////
 
-    char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%ld.ply", gPicturesPath.c_str(), i );
-    SQ_utils::create_SQ_mesh( p, 25, mesh_name, false );
+    char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%d.ply", gPicturesPath.c_str(), i );
+    if( ps.size() == 1 ) {
+      SQ_utils::create_SQ_mesh( ps[0], 25, mesh_name, false );
+    } else {
+      SQ_utils::convertMeshes( ps, mesh_name );
+      std::cout << "Mesh name: "<< mesh_name << std::endl;
+    }
     msg->u[i].mesh_generated = true;
     strcpy( msg->u[i].mesh_filename, mesh_name );        
   }
@@ -198,8 +206,9 @@ void CrichtonView<PointT>::storeCloud( char* _name, int _index, CloudPtr _cloud 
  */
 template<typename PointT>
 void CrichtonView<PointT>::fit_SQ( CloudPtr _cluster, int _index,
-	     SQ_parameters &_p, int _type, char* _debug_name ) {
-  
+				   std::vector<SQ_parameters> &_ps, 
+				   ObjectEntry _oe  ) {
+
   CloudPtr filtered( new Cloud() );  
   CloudPtr completed( new Cloud() );  
 
@@ -214,12 +223,14 @@ void CrichtonView<PointT>::fit_SQ( CloudPtr _cluster, int _index,
   *completed = *filtered;
 
     // Debug: Store raw cloud
-   if( !_debug_name ) { _debug_name = "default"; }
-   char name[100]; sprintf( name, "%s_original", _debug_name );
+  char name[100]; sprintf( name, "%s_original", _oe.name.c_str() );
    storeCloud( name, _index, completed );    
 
   // Mirror
+   clock_t ts, tf; double dt;
+
   if( mMirror ) {
+    ts = clock();
     mindGapper<PointT> mg;
     std::vector<double> tc(4); for( int i = 0; i < 4; ++i ) { tc[i] = mTts.mTableCoeffs[i]; }
     mg.setTablePlane( tc );
@@ -228,54 +239,70 @@ void CrichtonView<PointT>::fit_SQ( CloudPtr _cluster, int _index,
     mg.setFocalDist(mF);
 
     mg.reset();
-    mg.complete( completed );
-    mg.getSymmetryApprox( Tsymm, Bb );
+    if( mg.complete( completed, true ) < 0 ) { printf("No mirror was valid \n");     sprintf( name, "%s_no_mirrored", _oe.name.c_str() ); }
+    else { printf("Mirroring was effectively applied \n");      sprintf( name, "%s_mirrored", _oe.name.c_str() ); }
+    tf = clock();
+    dt = (tf-ts)/(double) CLOCKS_PER_SEC;
+    printf("* Mirroring time: %f \n", dt );
     // Debug: Store mirrored cloud
-    sprintf( name, "%s_mirrored", _debug_name );
     storeCloud( name, _index, completed );
-
   }
 
   // Fit superquadric
-  switch( _type ) {
+  SQ_parameters p; 
+  int type = SQ_FX_ICHIM; // MULTIPLE WE USE DIFFERENT
+  ts = clock();
+  switch( _oe.sq_type ) {
   case REGULAR: {
     printf("Type: regular \n");
     SQ_fitter<PointT> fitter;
     fitter.setInputCloud( completed );
-    if( mMirror ) { fitter.setInitialApprox( Tsymm, Bb ); }
-    fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
-    fitter.getFinalParams( _p );
+    fitter.fit( type, 0.03, 0.005, 5, 0.005 );
+    fitter.getFinalParams( p ); _ps.push_back(p);
     break;
   }
   case TAMPERED: {
     printf("Type: tampered \n");
     SQ_fitter_t<PointT> fitter;
     fitter.setInputCloud( completed );
-    if( mMirror ) { fitter.setInitialApprox( Tsymm, Bb ); }
-    fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
-    fitter.getFinalParams( _p );
+    fitter.fit( type, 0.03, 0.005, 5, 0.005 );
+    fitter.getFinalParams( p ); _ps.push_back(p);
     break;
   }
   case BENT: {
     printf("Type: bent \n");
     SQ_fitter_b<PointT> fitter;
     fitter.setInputCloud( completed );
-    if( mMirror ) { fitter.setInitialApprox( Tsymm, Bb ); }
-    fitter.fit( SQ_FX_ICHIM, 0.03, 0.005, 5, 0.1 );
-    fitter.getFinalParams( _p );
+    fitter.fit( type, 0.03, 0.005, 5, 0.005 );
+    fitter.getFinalParams( p ); _ps.push_back(p);
     break;
   }
+  case MULTIPLE: {
+    printf("Type: multiple \n");
+    SQ_fitter_m<PointT> fitter;
+    fitter.setInputCloud( completed );
+    fitter.fit( SQ_FX_RADIAL, _oe.part_type, _oe.num_parts, _oe.hint_search, 0.03, 0.005, 5, 0.005 );
+    fitter.getFinalParams( _ps );
+    
+    break;
   }
 
+  }
+  tf = clock();
+  dt = (tf-ts)/(double)CLOCKS_PER_SEC;
+  printf("Fitting time");
+  if( mMirror ) { printf(" with mirror "); } else { printf(" with NO mirror: \n"); }
+  printf(" %f \n", dt );
 
-    printParamsInfo(_p);
+  if( _oe.sq_type != MULTIPLE ) {
+    printParamsInfo(_ps[0]);
     
     pcl::PointCloud<pcl::PointXYZ>::Ptr sqp( new pcl::PointCloud<pcl::PointXYZ>() );
-    char sqname[75]; sprintf( sqname, "%s_sq.pcd", _debug_name, _index ); 
-    sqp = sampleSQ_uniform<pcl::PointXYZ>( _p ); 
+    char sqname[75]; sprintf( sqname, "%s_sq.pcd", _oe.name.c_str() ); 
+    sqp = sampleSQ_uniform<pcl::PointXYZ>( _ps[0] ); 
     pcl::io::savePCDFile( sqname, *sqp );
     
-  
+  }
 }
 
 /**

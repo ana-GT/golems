@@ -11,7 +11,6 @@ void copy_SQparam_msg( SQ_parameters params,
 
   _su.e[0] = params.e[0]; _su.e[1] = params.e[1];
   _su.tamp = params.tamp;
-  _su.R = params.R;
   _su.k = params.k;
   _su.alpha = params.alpha;
   _su.type = params.type;

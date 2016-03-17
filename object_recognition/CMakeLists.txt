@@ -12,6 +12,10 @@ add_definitions( ${Caffe_DEFINITIONS} )
 find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
+# PCL, only headers
+find_package( PCL REQUIRED )
+include_directories( ${PCL_INCLUDE_DIRS} )
+
 add_library(  base_classifier SHARED base_classifier.cpp )
 target_link_libraries( base_classifier ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES} )
 set_target_properties( base_classifier PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib

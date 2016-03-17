@@ -119,6 +119,7 @@ int main( int argc, char* argv[] ) {
   ObjectsDatabase mOd;
   printf("Finishing object database \n");
   mOd.init_classifier();
+  mOd.load_dataset();
   gCapture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 );
   gCapture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 );
   gF = (float)gCapture.get( cv::CAP_OPENNI_DEPTH_GENERATOR_FOCAL_LENGTH );

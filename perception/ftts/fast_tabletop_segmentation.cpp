@@ -296,7 +296,7 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
   pcl::copyPointCloud( *_cloud,
 		       mPlaneIndices,
 		       *mTable );
-
+  mTable->width = 1; mTable->height = mTable->points.size();
 
   this->getSegmentedImg(_cloud, _showSegmentation );
 

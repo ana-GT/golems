@@ -52,7 +52,6 @@ extern "C" {
     double rot[3];
 
     double tamp;
-    double R;
     double k; double alpha;
     int type;
 

@@ -57,7 +57,7 @@ int main( int argc, char* argv[] ) {
 
   ObjectsDatabase mOd;
   mOd.init_classifier();
-
+  mOd.load_dataset();
 
   gCapture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 );
   gCapture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 );

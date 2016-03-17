@@ -8,9 +8,14 @@
 #include "perception/pointcloud_tools/sq_fitting/SQ_parameters.h"
 #include <object_recognition/base_classifier.h>
 
+
 struct ObjectEntry{
   std::string name;
-  int sq_type; // REGULAR, TAMPERED, BENT
+  int sq_type; // REGULAR, TAMPERED, BENT, MULTIPLE
+  // In case it is multiple
+  int num_parts;
+  std::vector<int> part_type;
+  int hint_search; // perpendicular-to-Z , containing-Z
 };
 
 
@@ -30,6 +35,7 @@ class ObjectsDatabase {
   int getSQtype( int _index ) { 
     return mDataset[mNames[_index]].sq_type;
   }
+  ObjectEntry getEntry( int _index ) { return mDataset[mNames[_index]]; }
   void sayIt( int _index );
   
   void setModelFile( char* _model_file ) { mModel_file = std::string(_model_file); }

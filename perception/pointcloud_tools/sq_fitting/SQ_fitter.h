@@ -31,6 +31,12 @@ class SQ_fitter {
 		      double _rot[3],
 		      bool _debug = false );
 
+
+  void getBoundingBoxAlignedToTf( const PointCloudPtr &_cloud,
+					double _trans[3],
+					double _rot[3],
+					double _dim[3] );
+
   virtual bool fit( const int &_type = SQ_FX_RADIAL, 
 		    const double &_smax = 0.05,
 		    const double &_smin = 0.01,
@@ -52,7 +58,7 @@ class SQ_fitter {
 
   void printResults();
   
-  void getFinalParams( SQ_parameters &_par ) { 
+  virtual void getFinalParams( SQ_parameters &_par ) { 
     _par = par_out_; 
   }
 
@@ -75,6 +81,7 @@ class SQ_fitter {
     double thresh_; /**< Error threshold */
     bool mGotInitApprox;
     double mInitDim[3]; double mInitRot[3]; double mInitTrans[3];
+    double mDimFactor;
     
     double mLowerLim_dim[3]; double mUpperLim_dim[3]; 
     double mLowerLim_rot[3]; double mUpperLim_rot[3]; 

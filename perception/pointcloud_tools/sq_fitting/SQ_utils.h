@@ -15,6 +15,7 @@
 #include <pcl/PolygonMesh.h>
 #include <pcl/surface/convex_hull.h>
 #include <pcl/io/ply_io.h>
+#include <pcl/features/normal_3d.h>
 
 #include "perception/pointcloud_tools/sq_fitting/SQ_parameters.h"
 
@@ -28,6 +29,19 @@ namespace SQ_utils {
 		       SQ_parameters _p, int _N,
 		       const char* _mesh_name, bool _applyTransform = false );
   
+  void convertMeshes(std::vector<SQ_parameters> _ps,
+		     std::string _mesh_output_name );
+
+  void createMixMesh( std::string output_name,
+		      std::vector<std::string> mesh_part );
+
+  void Tf2param( Eigen::Isometry3d _Tf, 
+		 double _trans[3],
+		 double _rot[3] );
+  
+  Eigen::Isometry3d param2Tf( double _trans[3], 
+			      double _rot[3] );
+
   void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
 		       std::vector<pcl::Vertices> &_polygons );
 } // end namespace SQ_utils
@@ -86,6 +100,8 @@ void sampleSQ_uniform_pn( const double &_a1,
 			  const double &_e2,
 			  const int &_N,
 			  pcl::PointCloud<pcl::PointNormal>::Ptr &_pn );
+
+pcl::PointCloud<pcl::PointNormal>::Ptr sampleSQ_uniform_pn( SQ_parameters _p, double _res = 0.01 );
 
 
 template<typename PointT>

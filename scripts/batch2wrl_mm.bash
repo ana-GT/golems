@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-DIR="/home/ana/Research/golems/scripts/ch3_shapes"
+DIR="/home/ana/Research/commonData/objects/ch3_9/meshes"
 PLY2WRL_SCRIPT="/home/ana/Research/golems/scripts/ply2wrl_mm.py"
 
 cd $DIR;

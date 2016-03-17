@@ -11,19 +11,19 @@ find_package( Qt5Widgets REQUIRED )
 add_subdirectory( levmar )
 
 # PCL
-find_package( PCL COMPONENTS common io filters surface io )
+find_package( PCL COMPONENTS common io filters surface io features)
 include_directories( ${PCL_INCLUDE_DIRS} )
 link_directories( ${PCL_LIBRARY_DIRS} )
 add_definitions( ${PCL_DEFINITIONS} )
 
 # SQ_utils library
-add_library( sq_utils STATIC SQ_utils.cpp SQ_parameters.cpp )
-target_link_libraries( sq_utils  ${PCL_COMMON_LIBRARIES} ${PCL_SURFACE_LIBRARIES} ${PCL_FILTERS_LIBRARIES} ${PCL_IO_LIBRARIES} )
+add_library( sq_utils SHARED SQ_utils.cpp SQ_parameters.cpp )
+target_link_libraries( sq_utils  ${PCL_COMMON_LIBRARIES} ${PCL_SURFACE_LIBRARIES} ${PCL_FILTERS_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_FEATURES_LIBRARIES} )
 set_target_properties( sq_utils PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )
 
 
-add_library( sq_fitting STATIC  SQ_fitter.cpp SQ_fitter_t.cpp SQ_fitter_b.cpp  evaluated_eqs.cpp evaluated_eqs_t.cpp evaluated_eqs_b.cpp )
+add_library( sq_fitting STATIC  SQ_fitter.cpp SQ_fitter_t.cpp SQ_fitter_b.cpp SQ_fitter_m.cpp  evaluated_eqs.cpp evaluated_eqs_t.cpp evaluated_eqs_b.cpp )
 target_link_libraries( sq_fitting sq_utils levmar  ${PCL_COMMON_LIBRARIES} ${PCL_FILTERS_LIBRARIES}  pthread )
 set_target_properties( sq_fitting PROPERTIES LIBRARY_OUTPUT_DIRECTORY
   ${CMAKE_SOURCE_DIR}/lib ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib )

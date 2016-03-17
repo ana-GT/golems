@@ -25,10 +25,12 @@ SQ_fitter<PointT>::SQ_fitter() :
   mGotInitApprox(false) {
 
   int i;
-  for( i = 0; i < 3; ++i ) { mLowerLim_dim[i] = 0.01; mUpperLim_dim[i] = 0.15; }
+  for( i = 0; i < 3; ++i ) { mLowerLim_dim[i] = 0.003; mUpperLim_dim[i] = 0.30; }
   mLowerLim_e = 0.1;  mUpperLim_e = 1.9;
   for( i = 0; i < 3; ++i ) { mLowerLim_trans[i] = -2.0; mUpperLim_trans[i] = 2.0; }
   for( i = 0; i < 3; ++i ) { mLowerLim_rot[i] = -M_PI; mUpperLim_rot[i] = M_PI; } 
+ 
+  mDimFactor = 1.1;
 }
 
 /**
@@ -112,18 +114,22 @@ bool SQ_fitter<PointT>::fit( const int &_type,
 		    par_in_.trans,
 		    par_in_.rot );
   }
+  double dims;
+  if( par_in_.dim[0] >= par_in_.dim[1] && par_in_.dim[0] >= par_in_.dim[2] ) { dims = par_in_.dim[0]; }
+  if( par_in_.dim[1] >= par_in_.dim[0] && par_in_.dim[1] >= par_in_.dim[2] ) { dims = par_in_.dim[1]; }
+  if( par_in_.dim[2] >= par_in_.dim[0] && par_in_.dim[2] >= par_in_.dim[1] ) { dims = par_in_.dim[2]; }
+  for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->mDimFactor*dims; }   
    
+
   // 1.1. Set e1 and e2 to middle value in range
   par_in_.e[0] = 1.0; par_in_.e[1] = 1.0; 
   par_in_.type = REGULAR;
 
-  // Update limits according to this data, up to no more than original guess
-  for( int i = 0; i < 3; ++i ) { mUpperLim_dim[i] = par_in_.dim[i]; }
-
   // Run loop
   par_i = par_in_;
-  double eg, er;
-  this->get_error( par_i, cloud_, eg, er, error_i );
+  double eg, er, ed;
+  this->get_error( par_i, cloud_, eg, er, ed );
+  error_i = er;
   fitted = false;
 
   ////////
@@ -133,10 +139,20 @@ bool SQ_fitter<PointT>::fit( const int &_type,
     par_i_1 = par_i;
     error_i_1 = error_i;
 
+    // Update limits**********
+      double dim_i[3];
+      this->getBoundingBoxAlignedToTf( cloud_,
+			               par_i_1.trans,
+                                       par_i_1.rot,
+				       dim_i );
+
+      for( int j = 0; j < 3; ++j ) { if( mUpperLim_dim[i] < mDimFactor*dim_i[i] ) { mUpperLim_dim[i] = mDimFactor*dim_i[i]; } }
+  printf("Initial limits[%d]: %f %f %f \n", i, mUpperLim_dim[0], mUpperLim_dim[1], mUpperLim_dim[2]);
+    //****************************
+
     
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
-    if( N_ == 1 ) { cloud_i = cloud_; }
-    else { downsampling<PointT>( cloud_, s_i, cloud_i ); }
+    downsampling<PointT>( cloud_, s_i, cloud_i ); 
 
     if( cloud_i->points.size() < 11 ) { continue; }
     
@@ -150,11 +166,13 @@ bool SQ_fitter<PointT>::fit( const int &_type,
     // [CONDITION]
     double de = (error_i_1 - error_i);
     final_error_ = error_i;
-    if( fabs(de) < thresh_ ) {
-      fitted = true;
-      break;
-    } 
 
+    if( i > 0 ) {
+      if( fabs(de) < thresh_ ) {
+        fitted = true;
+        break;
+      } 
+   } // end error i > 0
   }
  
   par_out_ = par_i;
@@ -202,17 +220,14 @@ void SQ_fitter<PointT>::getBoundingBox( const PointCloudPtr &_cloud,
   eigVec.col(2) = eigVec.col(0); // Z
   Eigen::Vector3f v3 = (eigVec.col(1)).cross( eigVec.col(2) );
   eigVec.col(0) = v3; 
-  
-  /*
-  Eigen::Vector3f v3 = (eigVec.col(0)).cross( eigVec.col(1) );
-  eigVec.col(2) = v3;
-  */
+
 
   Eigen::Vector3f rpy = eigVec.eulerAngles(2,1,0);
  
   _rot[0] = (double)rpy(2);
   _rot[1] = (double)rpy(1);
   _rot[2] = (double)rpy(0);
+
 
   // Transform _cloud
   Eigen::Matrix4f transf = Eigen::Matrix4f::Identity();
@@ -226,19 +241,47 @@ void SQ_fitter<PointT>::getBoundingBox( const PointCloudPtr &_cloud,
   // Get maximum and minimum
   PointT minPt; PointT maxPt;
   pcl::getMinMax3D( *cloud_temp, minPt, maxPt );
-  double d1, d2, d3, dmax;
-  d1 = ( maxPt.x - minPt.x ) / 2.0;
-  d2 = ( maxPt.y - minPt.y ) / 2.0;
-  d3 = ( maxPt.z - minPt.z ) / 2.0;
-  if( d3 >= d2 && d3 >= d1 ) { dmax = d3; }
-  if( d2 >= d1 && d2 >= d3 ) { dmax = d2; }
-  if( d1 >= d2 && d1 >= d3 ) { dmax = d1; }
-  _dim[0] = dmax;
-  _dim[1] = dmax;
-  _dim[2] = dmax;
-  pcl::io::savePCDFile("stored.pcd", *_cloud );
+  double dx, dy, dz, dmax;
+  dx = ( maxPt.x - minPt.x ) / 2.0;
+  dy = ( maxPt.y - minPt.y ) / 2.0;
+  dz = ( maxPt.z - minPt.z ) / 2.0;
+
+  _dim[0] = dx;
+  _dim[1] = dy;
+  _dim[2] = dz;
 
 }
+
+template<typename PointT>
+void SQ_fitter<PointT>::getBoundingBoxAlignedToTf( const PointCloudPtr &_cloud,
+					double _trans[3],
+					double _rot[3],
+					double _dim[3] ) {
+
+  Eigen::Matrix3f rot; rot = Eigen::AngleAxisf( _rot[2], Eigen::Vector3f::UnitZ() )*Eigen::AngleAxisf( _rot[1], Eigen::Vector3f::UnitY() )*Eigen::AngleAxisf( _rot[0], Eigen::Vector3f::UnitX() ); 
+
+  // Transform _cloud
+  Eigen::Matrix4f transf = Eigen::Matrix4f::Identity();
+  transf.block(0,3,3,1) << (float)_trans[0], (float)_trans[1], (float)_trans[2];
+  transf.block(0,0,3,3) = rot;
+
+  Eigen::Matrix4f tinv; tinv = transf.inverse();
+  PointCloudPtr cloud_temp( new pcl::PointCloud<PointT>() );
+  pcl::transformPointCloud( *_cloud, *cloud_temp, tinv );
+
+  // Get maximum and minimum
+  PointT minPt; PointT maxPt;
+  pcl::getMinMax3D( *cloud_temp, minPt, maxPt );
+  double dx, dy, dz, dmax;
+  dx = ( maxPt.x - minPt.x ) / 2.0;
+  dy = ( maxPt.y - minPt.y ) / 2.0;
+  dz = ( maxPt.z - minPt.z ) / 2.0;
+
+  _dim[0] = dx;
+  _dim[1] = dy;
+  _dim[2] = dz;
+
+} 
 
 
 /**
@@ -384,11 +427,12 @@ bool SQ_fitter<PointT>::minimize( const int &_type,
     for( i = 0; i < 2; ++i ) { _out.e[i] = p[i+3]; }
     for( i = 0; i < 3; ++i ) { _out.trans[i] = p[i+5]; }
     for( i = 0; i < 3; ++i ) { _out.rot[i] = p[i+8]; }
-    
+    _out.type = REGULAR;
+
     // Return status and error
-    double eg, er;
-    get_error( _out, cloud_, eg, er, _error );
-    
+    double eg, er, ed;
+    get_error( _out, cloud_, eg, er, ed );
+    _error = er;
     // If stopped by invalid (TODO: Add other reasons)
     if( info[6] == 7 ) {
 	return false;

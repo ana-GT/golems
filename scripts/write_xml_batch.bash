@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WRL_DIR="/home/ana/Research/golems/scripts/ch3_shapes"
+WRL_DIR="/home/ana/Software/graspit/models/objects/ch3_9"
 SCRIPT="/home/ana/Research/golems/scripts/./write_xml.bash"
 MATERIAL="plastic"
 

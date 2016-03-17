@@ -16,6 +16,7 @@
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter_t.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter_b.h"
+#include "perception/pointcloud_tools/sq_fitting/SQ_fitter_m.h"
 #include "object_recognition/ObjectsDatabase.h"
 #include <pcl/filters/statistical_outlier_removal.h>
 
@@ -50,9 +51,9 @@ class CrichtonView {
 
   void send( int state, void* userData );
 
-  void fit_SQ( CloudPtr _cluster, int _index,
-   	       SQ_parameters &_p,
-	       int _type, char* debug_name = NULL );
+void fit_SQ( CloudPtr _cluster, int _index,
+	       std::vector<SQ_parameters> &_p,
+	       ObjectEntry _oe );
   void create_table_mesh( pcl::PolygonMesh &_table_mesh,
 			  char _table_name_mesh[50] );
 
