@@ -105,7 +105,11 @@ bool SQ_fitter_b<PointT>::fit( const int &_type,
                                        par_i_1.rot,
 				       dim_i );
 
-      for( int j = 0; j < 3; ++j ) { if( this->mUpperLim_dim[i] < this->mDimFactor*dim_i[i] ) { this->mUpperLim_dim[i] = this->mDimFactor*dim_i[i]; } }
+      for( int j = 0; j < 3; ++j ) { 
+	if( this->mUpperLim_dim[j] < this->mDimFactor*dim_i[j] ) { 
+	  this->mUpperLim_dim[j] = this->mDimFactor*dim_i[j]; 
+	} 
+      }
     //****************************
 
 

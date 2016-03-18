@@ -39,4 +39,4 @@ for obi in bpy.data.objects:
 
 # Export wrl
 wrl_filename = mesh_name + '.wrl'
-bpy.ops.export_scene.vrml2(filepath=wrl_filename, axis_up='Z', axis_forward='X')
+bpy.ops.export_scene.vrml2(filepath=wrl_filename, axis_up='Z', axis_forward='Y')

@@ -146,8 +146,11 @@ bool SQ_fitter<PointT>::fit( const int &_type,
                                        par_i_1.rot,
 				       dim_i );
 
-      for( int j = 0; j < 3; ++j ) { if( mUpperLim_dim[i] < mDimFactor*dim_i[i] ) { mUpperLim_dim[i] = mDimFactor*dim_i[i]; } }
-  printf("Initial limits[%d]: %f %f %f \n", i, mUpperLim_dim[0], mUpperLim_dim[1], mUpperLim_dim[2]);
+      for( int j = 0; j < 3; ++j ) { 
+	if( mUpperLim_dim[j] < mDimFactor*dim_i[j] ) { 
+	  mUpperLim_dim[j] = mDimFactor*dim_i[j]; 
+	} 
+      }
     //****************************
 
     

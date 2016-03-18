@@ -88,21 +88,25 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
   this->get_error( par_i, this->cloud_, eg, er, error_i );
   fitted = false;
 
-  ///
+  ///***********************************
   for( int i = 0; i < this->N_; ++i ) { 
 
     s_i = this->smax_ - (i)*ds;
     par_i_1 = par_i;
     error_i_1 = error_i;
-
+    
     // Update limits**********
       double dim_i[3];
       this->getBoundingBoxAlignedToTf( this->cloud_,
 			               par_i_1.trans,
                                        par_i_1.rot,
 				       dim_i );
-
-      for( int j = 0; j < 3; ++j ) { if( this->mUpperLim_dim[i] < this->mDimFactor*dim_i[i] ) { this->mUpperLim_dim[i] = this->mDimFactor*dim_i[i]; } }
+      
+      for( int j = 0; j < 3; ++j ) { 
+	if( this->mUpperLim_dim[j] < this->mDimFactor*dim_i[j] ) { 
+	  this->mUpperLim_dim[j] = this->mDimFactor*dim_i[j]; 
+	}
+      }
     //****************************
 
 
@@ -118,6 +122,8 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
 	      par_i,
 	      error_i );
     
+    
+
     // [CONDITION]
     double de = (error_i_1 - error_i);
     this->final_error_ = error_i;
@@ -126,7 +132,7 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
       break;
     } 
     
-  }
+  } // end for N_
  
   this->par_out_ = par_i;
   printf( "Dim: %f %f %f E: %f %f Tamp: %f \n", 
@@ -197,8 +203,12 @@ bool SQ_fitter_t<PointT>::minimize( const int &_type,
     for( i = 0; i < 3; ++i ) { lb[i+5] = this->mLowerLim_trans[i]; ub[i+5] = this->mUpperLim_trans[i]; }
     for( i = 0; i < 3; ++i ) { lb[i+8] = this->mLowerLim_rot[i]; ub[i+8] = this->mUpperLim_rot[i]; }
     lb[11] = mLowerLim_tamp; ub[11] = mUpperLim_tamp;
-
-
+    /*
+    printf("Lower lim rot: \n");
+    for( i = 0; i < 3; ++i ) {
+      printf(" %f ", this->mLowerLim_rot[i]);
+    } printf("\n");
+    */
     switch( _type ) {
     case SQ_FX_RADIAL: {
       ret = dlevmar_bc_der( fr_add_t,
@@ -213,7 +223,7 @@ bool SQ_fitter_t<PointT>::minimize( const int &_type,
     } break;
 
     case SQ_FX_ICHIM: {
-      
+      printf("Here I assume \n");
       ret = dlevmar_bc_der( fi_add_t,
 			    Ji_add_t,
 			    p, y, m, n,
@@ -222,6 +232,7 @@ bool SQ_fitter_t<PointT>::minimize( const int &_type,
 			    1000,
 			    opts, info,
 			    NULL, NULL, (void*)&data );
+      printf("End of what I assume \n");
     } break;
       
     case SQ_FX_SOLINA: {

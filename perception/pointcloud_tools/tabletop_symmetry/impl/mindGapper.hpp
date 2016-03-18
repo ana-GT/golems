@@ -394,7 +394,7 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
 
 
 
-/**
+/** 
  * @function mindGapper
  * @brief Constructor 
  */
@@ -405,7 +405,7 @@ mindGapper<PointT>::mindGapper() :
 
   mMax_Out_Mask_Ratio = 0.5;
   mUpper_Ratio_Delta = 0.1;
-  mMax_Front_Dist_Avg = 0.008; // 1 cm
+  mMax_Front_Dist_Avg = 0.005; // 1 cm
   mMax_Out_Pixel_Avg = 4; // 8 pixels avg (too big already, usually more than 6 is wrong)
   mCutoff_Pixel_MaxDist = 2; // Distance in pixels as cut off (we set 2)
 }

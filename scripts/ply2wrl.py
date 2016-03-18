@@ -34,4 +34,4 @@ bpy.ops.import_mesh.ply(filepath=filename)
 
 # Export wrl
 wrl_filename = mesh_name + '.wrl'
-bpy.ops.export_scene.vrml2(filepath=wrl_filename)
+bpy.ops.export_scene.vrml2(filepath=wrl_filename, axis_up='Z', axis_forward='Y')

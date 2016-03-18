@@ -40,6 +40,14 @@ target_link_libraries( generate_SQ_meshes  sq_utils  ${PCL_SURFACE_LIBRARIES} ${
 set_target_properties( generate_SQ_meshes PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
 
+
+# Perception Pick
+add_executable( divide_two_parts divide_two_parts.cpp )
+target_link_libraries( divide_two_parts  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )
+set_target_properties( divide_two_parts PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+  ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+
 # Perception Pick
 add_executable( perception_pick perception_pick.cpp )
 target_link_libraries( perception_pick  perception_msgs tabletop_segmentation sq_fitting mindGapper refresher_utils  ${PCL_SURFACE_LIBRARIES} ${PCL_SEGMENTATION_LIBRARIES} ${PCL_IO_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} levmar )

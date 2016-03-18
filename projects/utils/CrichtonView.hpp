@@ -117,6 +117,7 @@ void CrichtonView<PointT>::send( int state, void* userData ) {
     printf("* Label: %s \n", label.c_str() );
     ObjectEntry entry; entry = mOd.getEntry( index );
     fit_SQ( mTts.getCluster(i), i, ps, entry );
+    /*
     copy_SQparam_msg( ps[0], msg->u[i] );    
     std::cout << "Dim ps 0: "<< ps[0].dim[0]<<", "<< ps[0].dim[1]<<", "<< ps[0].dim[2]<<std::endl;
     //////////////////////////////
@@ -135,9 +136,9 @@ void CrichtonView<PointT>::send( int state, void* userData ) {
       std::cout << "Mesh name: "<< mesh_name << std::endl;
     }
     msg->u[i].mesh_generated = true;
-    strcpy( msg->u[i].mesh_filename, mesh_name );        
+    strcpy( msg->u[i].mesh_filename, mesh_name );      */  
   }
-  
+  /*
   // 2. Get the table
   char tableName[50]; sprintf( tableName, "%s/tableMesh.ply", gPicturesPath.c_str() );
   create_table_mesh( mesh, tableName );
@@ -155,7 +156,7 @@ void CrichtonView<PointT>::send( int state, void* userData ) {
   }
   
   msg = 0;
-
+    */
   mMutex.unlock(); // Let the processing go on with its life
 }
 
@@ -247,7 +248,7 @@ void CrichtonView<PointT>::fit_SQ( CloudPtr _cluster, int _index,
     // Debug: Store mirrored cloud
     storeCloud( name, _index, completed );
   }
-
+  /*
   // Fit superquadric
   SQ_parameters p; 
   int type = SQ_FX_ICHIM; // MULTIPLE WE USE DIFFERENT
@@ -302,7 +303,7 @@ void CrichtonView<PointT>::fit_SQ( CloudPtr _cluster, int _index,
     sqp = sampleSQ_uniform<pcl::PointXYZ>( _ps[0] ); 
     pcl::io::savePCDFile( sqname, *sqp );
     
-  }
+    }*/
 }
 
 /**
