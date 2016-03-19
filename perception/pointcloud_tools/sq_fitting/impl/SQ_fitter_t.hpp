@@ -2,6 +2,7 @@
 #pragma once
 
 #include "perception/pointcloud_tools/sq_fitting/evaluated_eqs_t.h"
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper_utils.h"
 
 /**
  * @function SQ_fitter
@@ -66,13 +67,33 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
     
     this->mGotInitApprox = false;
   } else {
+
+    
     this->getBoundingBox( this->cloud_, 
 			  this->par_in_.dim,
 			  this->par_in_.trans,
 			  this->par_in_.rot,
 			  false );
+    
+    printf(" BT Dim: %f %f %f, trans: %f %f %f, rot: %f %f %f \n",
+	   this->par_in_.dim[0], this->par_in_.dim[1], this->par_in_.dim[2],
+	   this->par_in_.trans[0], this->par_in_.trans[1], this->par_in_.trans[2],
+	   this->par_in_.rot[0], this->par_in_.rot[1], this->par_in_.rot[2]);
+    
+
+    printf("Use table for orientation \n");
+    double coeff[4]= {-0.002072, -0.666118, -0.745843, 0.667762 }; 
+    getBoundingBoxTable<PointT>( this->cloud_, coeff, 
+				 this->par_in_.dim, 
+				 this->par_in_.trans, 
+				 this->par_in_.rot );
+    printf(" AT Dim: %f %f %f, trans: %f %f %f, rot: %f %f %f \n",
+	   this->par_in_.dim[0], this->par_in_.dim[1], this->par_in_.dim[2],
+	   this->par_in_.trans[0], this->par_in_.trans[1], this->par_in_.trans[2],
+	   this->par_in_.rot[0], this->par_in_.rot[1], this->par_in_.rot[2]);
   }
    
+
   for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->mDimFactor*this->par_in_.dim[i]; }
 
   // 1.0 Set tampering start to 1 (0: All tampering, 1: No tamp)
@@ -84,8 +105,8 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
 
   // Run loop
   par_i = this->par_in_;
-  double eg, er;
-  this->get_error( par_i, this->cloud_, eg, er, error_i );
+  double eg, er, ed;
+  this->get_error( par_i, this->cloud_, eg, error_i, ed );
   fitted = false;
 
   ///***********************************
@@ -96,6 +117,7 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
     error_i_1 = error_i;
     
     // Update limits**********
+    /*
       double dim_i[3];
       this->getBoundingBoxAlignedToTf( this->cloud_,
 			               par_i_1.trans,
@@ -107,8 +129,9 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
 	  this->mUpperLim_dim[j] = this->mDimFactor*dim_i[j]; 
 	}
       }
+    */
     //****************************
-
+      printf("[%d] Lim dim: %f %f %f \n", i, this->mUpperLim_dim[0], this->mUpperLim_dim[1], this->mUpperLim_dim[2]);
 
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
     if( this->N_ == 1 ) { cloud_i = this->cloud_; }
@@ -121,7 +144,9 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
 	      par_i_1,
 	      par_i,
 	      error_i );
-    
+    // Get the error of the whole cloud (the error from minimize is from the downsampled cloud)
+    this->get_error( par_i, this->cloud_, eg, error_i, ed );
+ 
     
 
     // [CONDITION]
@@ -135,9 +160,6 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
   } // end for N_
  
   this->par_out_ = par_i;
-  printf( "Dim: %f %f %f E: %f %f Tamp: %f \n", 
-	  this->par_out_.dim[0], this->par_out_.dim[1], this->par_out_.dim[2],
-	  this->par_out_.e[0], this->par_out_.e[1], this->par_out_.tamp );
 
   return fitted;
 }
@@ -203,12 +225,6 @@ bool SQ_fitter_t<PointT>::minimize( const int &_type,
     for( i = 0; i < 3; ++i ) { lb[i+5] = this->mLowerLim_trans[i]; ub[i+5] = this->mUpperLim_trans[i]; }
     for( i = 0; i < 3; ++i ) { lb[i+8] = this->mLowerLim_rot[i]; ub[i+8] = this->mUpperLim_rot[i]; }
     lb[11] = mLowerLim_tamp; ub[11] = mUpperLim_tamp;
-    /*
-    printf("Lower lim rot: \n");
-    for( i = 0; i < 3; ++i ) {
-      printf(" %f ", this->mLowerLim_rot[i]);
-    } printf("\n");
-    */
     switch( _type ) {
     case SQ_FX_RADIAL: {
       ret = dlevmar_bc_der( fr_add_t,
@@ -223,7 +239,6 @@ bool SQ_fitter_t<PointT>::minimize( const int &_type,
     } break;
 
     case SQ_FX_ICHIM: {
-      printf("Here I assume \n");
       ret = dlevmar_bc_der( fi_add_t,
 			    Ji_add_t,
 			    p, y, m, n,
@@ -232,7 +247,7 @@ bool SQ_fitter_t<PointT>::minimize( const int &_type,
 			    1000,
 			    opts, info,
 			    NULL, NULL, (void*)&data );
-      printf("End of what I assume \n");
+
     } break;
       
     case SQ_FX_SOLINA: {

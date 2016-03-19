@@ -114,12 +114,15 @@ bool SQ_fitter<PointT>::fit( const int &_type,
 		    par_in_.trans,
 		    par_in_.rot );
   }
+
+  for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->mDimFactor*this->par_in_.dim[i]; }
+  /*
   double dims;
   if( par_in_.dim[0] >= par_in_.dim[1] && par_in_.dim[0] >= par_in_.dim[2] ) { dims = par_in_.dim[0]; }
   if( par_in_.dim[1] >= par_in_.dim[0] && par_in_.dim[1] >= par_in_.dim[2] ) { dims = par_in_.dim[1]; }
   if( par_in_.dim[2] >= par_in_.dim[0] && par_in_.dim[2] >= par_in_.dim[1] ) { dims = par_in_.dim[2]; }
   for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->mDimFactor*dims; }   
-   
+  */
 
   // 1.1. Set e1 and e2 to middle value in range
   par_in_.e[0] = 1.0; par_in_.e[1] = 1.0; 
@@ -164,7 +167,8 @@ bool SQ_fitter<PointT>::fit( const int &_type,
 	      par_i_1,
 	      par_i,
 	      error_i );
-
+    // Get the error of the whole cloud (the error from minimize is from the downsampled cloud)
+    this->get_error( par_i, cloud_, eg, error_i, ed );
     
     // [CONDITION]
     double de = (error_i_1 - error_i);

@@ -24,6 +24,7 @@ void downsampling( const typename pcl::PointCloud<PointT>::Ptr &_cloud,
 }
 
 
+
 /**
  * @file sampleSQ_uniform
  */

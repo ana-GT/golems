@@ -106,6 +106,7 @@ void CrichtonView<PointT>::send( int state, void* userData ) {
   
   // 1. Save SQs
   for( int i = 0; i < mTts.getNumClusters(); ++i ) {  
+    for( int j = 0; j < 4; ++j ) { printf( "Table coeff[%d]= %f \n", j, mTts.mTableCoeffs[j] ); }
 
     // Recognize 
     int xmin, ymin, xmax, ymax; int index; std::string label;

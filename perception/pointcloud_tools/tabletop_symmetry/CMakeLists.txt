@@ -8,7 +8,7 @@ find_package( OpenCV REQUIRED )
 include_directories( ${OpenCV_INCLUDE_DIRS} )
 
 # Symmetry
-add_library( mindGapper SHARED mindGapper.cpp dt/dt.cpp )
+add_library( mindGapper SHARED mindGapper.cpp mindGapper_utils.cpp dt/dt.cpp )
 target_link_libraries( mindGapper ${OpenCV_LIBRARIES} ${PCL_COMMON_LIBRARIES}  )
 set_target_properties( mindGapper PROPERTIES 
 		       LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib

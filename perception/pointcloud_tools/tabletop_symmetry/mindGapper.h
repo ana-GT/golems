@@ -74,7 +74,6 @@ class mindGapper {
  private:
   
   /** Helper functions for complete */
-  PointCloudPtr projectToPlane( PointCloudPtr _cloud );
   PointCloudPtr mirrorFromPlane( PointCloudPtr _cloud,
 				 Eigen::VectorXd _plane,
 				 bool _joinMirrored = true );

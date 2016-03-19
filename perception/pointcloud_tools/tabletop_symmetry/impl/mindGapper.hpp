@@ -10,6 +10,9 @@
 #include <pcl/io/pcd_io.h>
 #include "../dt/dt.h"
 
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper_utils.h"
+
+
 #define MAX_VALUE_DELTA 1000000
 
 /**
@@ -105,31 +108,12 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   
   mDTMask = matDT( mMarkMask );
   cv::imwrite( "markMask.png", mMarkMask );
-  // 1. Project pointcloud to plane
-  mProjected = projectToPlane( mCloud );
+  // 1. Project pointcloud to plane 
+  mProjected = projectToPlane<PointT>( mCloud, mPlaneCoeffs );
 
   // 2. Find eigenvalues (first two,the last one will be zero since projected cloud is in 2D)
-  pcl::PCA<PointT> pca;
-  pca.setInputCloud( mProjected );
-  Eigen::Vector3f eval = pca.getEigenValues();
-  Eigen::Matrix3f evec = pca.getEigenVectors();
-
-  // Calculate the centroid with the voxelized version of the projected cloud on the table
-  // (otherwise the center is too influenced by the "front points" and might not
-  // use the top information of the cloud, if available
-  Eigen::Vector4d c;
-  
-  PointCloudPtr projected_voxelized( new PointCloud() );
-  
-  pcl::VoxelGrid<PointT> sor;
-  sor.setInputCloud (mProjected);
-  sor.setLeafSize (0.01f, 0.01f, 0.01f);
-  sor.filter (*projected_voxelized);
-  pcl::compute3DCentroid( *projected_voxelized, c );
-    
-  mC << c(0), c(1), c(2);
-  mEa << (double) evec(0,0), (double) evec(1,0), (double) evec(2,0);
-  mEb << (double) evec(0,1), (double) evec(1,1), (double) evec(2,1);
+  getInfoFromProjectedCloud<PointT>( mProjected, 0.01, 
+				     mC, mEa, mEb );
   
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;
@@ -477,44 +461,6 @@ void mindGapper<PointT>::reset() {
 }
 
 
-
-
-/**
- * @function projectToPlane
- * @brief Project _cloud to plane (set by setTablePlane), results in a 2D cloud
- */
-template<typename PointT>
-typename mindGapper<PointT>::PointCloudPtr mindGapper<PointT>::projectToPlane( PointCloudPtr _cloud ) {
-
-  // 0. Init
-  PointCloudPtr projected( new PointCloud() );
-  
-  // 1. Project and store
-  PointCloudIter it;
-  PointT p; double a;
-  
-
-  // Plane equation: c0*x + c1*y + c2*z + c3 = 0
-  // Original 3d point P will be projected (P') into plane with normal [c0, c1, c2]
-  // P' = -(c3 + c0*x + c1*y + c2*z) / (c0^2 + c1^2 + c2^2) 
-  for( it = _cloud->begin(); it != _cloud->end(); ++it ) {
-
-    p = (*it);
-    a = -( mPlaneCoeffs(3) + mPlaneCoeffs(0)*p.x + mPlaneCoeffs(1)*p.y + mPlaneCoeffs(2)*p.z );
-
-    PointT pp;
-    pp.x = p.x + mPlaneCoeffs(0)*a;
-    pp.y = p.y + mPlaneCoeffs(1)*a;
-    pp.z = p.z + mPlaneCoeffs(2)*a;
-
-    projected->points.push_back( pp );
-  }
-
-  projected->height = projected->points.size();
-  projected->width = 1;
-
-  return projected;
-}
 
 /**
  * @function mirrorFromPlane
