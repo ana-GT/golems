@@ -109,11 +109,12 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   mDTMask = matDT( mMarkMask );
   cv::imwrite( "markMask.png", mMarkMask );
   // 1. Project pointcloud to plane 
-  mProjected = projectToPlane<PointT>( mCloud, mPlaneCoeffs );
+  double dmin, dmax; double da, db;
+  mProjected = projectToPlane<PointT>( mCloud, mPlaneCoeffs, dmin, dmax );
 
   // 2. Find eigenvalues (first two,the last one will be zero since projected cloud is in 2D)
   getInfoFromProjectedCloud<PointT>( mProjected, 0.01, 
-				     mC, mEa, mEb );
+				     mC, mEa, mEb, da, db );
   
   // 3. Choose the eigen vector most perpendicular to the viewing direction as initial guess for symmetry plane
   Eigen::Vector3d v, s, s_sample;

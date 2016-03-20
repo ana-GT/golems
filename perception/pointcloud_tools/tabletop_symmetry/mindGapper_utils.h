@@ -16,14 +16,17 @@ void getBoundingBoxTable( const typename pcl::PointCloud<PointT>::Ptr _cloud,
 
 template<typename PointT>
 typename pcl::PointCloud<PointT>::Ptr projectToPlane( typename pcl::PointCloud<PointT>::Ptr _cloud,
-						      Eigen::VectorXd _planeCoeffs );
+						      Eigen::VectorXd _planeCoeffs,
+						      double &_dmin, double &_dmax );
 
 template<typename PointT>
 void getInfoFromProjectedCloud( typename pcl::PointCloud<PointT>::Ptr _cloud,
 				double _voxel_size,
 				Eigen::Vector3d &_center,
 				Eigen::Vector3d &_ea,
-				Eigen::Vector3d &_eb );
+				Eigen::Vector3d &_eb,
+				double &_da, 
+				double &_db );
 
 
 

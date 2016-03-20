@@ -8,12 +8,15 @@
 #include <pcl/common/pca.h>
 #include <pcl/common/common.h>
 #include <pcl/filters/voxel_grid.h>
+#include <pcl/features/moment_of_inertia_estimation.h>
 
 #include "perception/pointcloud_tools/sq_fitting/SQ_fitter.h"
 #include "perception/pointcloud_tools/sq_fitting/SQ_utils.h"
 #include "perception/pointcloud_tools/sq_fitting/evaluated_eqs.h"
 
 #include "perception/pointcloud_tools/sq_fitting/levmar/levmar.h"
+
+#include "perception/pointcloud_tools/tabletop_symmetry/mindGapper_utils.h"
 
 /**
  * @function SQ_fitter
@@ -30,7 +33,7 @@ SQ_fitter<PointT>::SQ_fitter() :
   for( i = 0; i < 3; ++i ) { mLowerLim_trans[i] = -2.0; mUpperLim_trans[i] = 2.0; }
   for( i = 0; i < 3; ++i ) { mLowerLim_rot[i] = -M_PI; mUpperLim_rot[i] = M_PI; } 
  
-  mDimFactor = 1.1;
+  mDimFactor = 1.0;
 }
 
 /**
@@ -113,17 +116,27 @@ bool SQ_fitter<PointT>::fit( const int &_type,
 		    par_in_.dim,
 		    par_in_.trans,
 		    par_in_.rot );
+
+    printf(" BT Dim: %f %f %f, trans: %f %f %f, rot: %f %f %f \n",
+	   this->par_in_.dim[0], this->par_in_.dim[1], this->par_in_.dim[2],
+	   this->par_in_.trans[0], this->par_in_.trans[1], this->par_in_.trans[2],
+	   this->par_in_.rot[0], this->par_in_.rot[1], this->par_in_.rot[2]);
+    
+    double coeff[4]= {-0.002072, -0.666118, -0.745843, 0.667762 }; 
+    getBoundingBoxTable<PointT>( this->cloud_, coeff, 
+				 this->par_in_.dim, 
+				 this->par_in_.trans, 
+				 this->par_in_.rot );
+    printf(" AT Dim: %f %f %f, trans: %f %f %f, rot: %f %f %f \n",
+	   this->par_in_.dim[0], this->par_in_.dim[1], this->par_in_.dim[2],
+	   this->par_in_.trans[0], this->par_in_.trans[1], this->par_in_.trans[2],
+	   this->par_in_.rot[0], this->par_in_.rot[1], this->par_in_.rot[2]);
+
+
   }
 
   for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->mDimFactor*this->par_in_.dim[i]; }
-  /*
-  double dims;
-  if( par_in_.dim[0] >= par_in_.dim[1] && par_in_.dim[0] >= par_in_.dim[2] ) { dims = par_in_.dim[0]; }
-  if( par_in_.dim[1] >= par_in_.dim[0] && par_in_.dim[1] >= par_in_.dim[2] ) { dims = par_in_.dim[1]; }
-  if( par_in_.dim[2] >= par_in_.dim[0] && par_in_.dim[2] >= par_in_.dim[1] ) { dims = par_in_.dim[2]; }
-  for( int i = 0; i < 3; ++i ) { this->mUpperLim_dim[i] = this->mDimFactor*dims; }   
-  */
-
+  
   // 1.1. Set e1 and e2 to middle value in range
   par_in_.e[0] = 1.0; par_in_.e[1] = 1.0; 
   par_in_.type = REGULAR;
@@ -141,7 +154,7 @@ bool SQ_fitter<PointT>::fit( const int &_type,
     s_i = smax_ - (i)*ds;
     par_i_1 = par_i;
     error_i_1 = error_i;
-
+    /*
     // Update limits**********
       double dim_i[3];
       this->getBoundingBoxAlignedToTf( cloud_,
@@ -153,9 +166,10 @@ bool SQ_fitter<PointT>::fit( const int &_type,
 	if( mUpperLim_dim[j] < mDimFactor*dim_i[j] ) { 
 	  mUpperLim_dim[j] = mDimFactor*dim_i[j]; 
 	} 
-      }
-    //****************************
-
+	}*/
+      //****************************
+      printf("[%d] Upper limits: %f %f %f \n", i, this->mUpperLim_dim[0],
+	     this->mUpperLim_dim[1],this->mUpperLim_dim[2] );
     
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
     downsampling<PointT>( cloud_, s_i, cloud_i ); 
@@ -210,52 +224,47 @@ void SQ_fitter<PointT>::getBoundingBox( const PointCloudPtr &_cloud,
 					double _rot[3],
 					bool _debug ) {
 
-  // 1. Compute the bounding box center
-  Eigen::Vector4d centroid;
-  pcl::compute3DCentroid( *_cloud, centroid );
-  _trans[0] = centroid(0);
-  _trans[1] = centroid(1); 
-  _trans[2] = centroid(2);
-
-  // 2. Compute main axis orientations
-  pcl::PCA<PointT> pca;
-  pca.setInputCloud( _cloud );
-  Eigen::Vector3f eigVal = pca.getEigenValues();
-  Eigen::Matrix3f eigVec = pca.getEigenVectors();
-  // Make sure 3 vectors are normal w.r.t. each other
   
-  eigVec.col(2) = eigVec.col(0); // Z
-  Eigen::Vector3f v3 = (eigVec.col(1)).cross( eigVec.col(2) );
-  eigVec.col(0) = v3; 
+  pcl::MomentOfInertiaEstimation<PointT> feature_extractor;
+  PointT min_OBB, max_OBB, pos_OBB; Eigen::Matrix3f rot_OBB;
+  Eigen::Vector3f temp;
+  double dx, dy, dz; 
+  float ex, ey, ez;
+  Eigen::Vector3f mc;
+  
 
+  feature_extractor.setInputCloud(_cloud);
+  feature_extractor.compute();
+  feature_extractor.getOBB( min_OBB, max_OBB, pos_OBB, rot_OBB );
+  feature_extractor.getEigenValues( ex, ey, ez );
 
-  Eigen::Vector3f rpy = eigVec.eulerAngles(2,1,0);
+  // Center will always be the same
+  _trans[0] = pos_OBB.x;
+  _trans[1] = pos_OBB.y;
+  _trans[2] = pos_OBB.z;
+  
+  dx = fabs(max_OBB.x - min_OBB.x)*0.5;
+  dy = fabs(max_OBB.y - min_OBB.y)*0.5;
+  dz = fabs(max_OBB.z - min_OBB.z)*0.5;
+
+  // Set which one is the biggest axis: That will be z
+  if( ex >= ey && ex >= ez ) {
+    temp = rot_OBB.col(2);
+    rot_OBB.col(2) = rot_OBB.col(0);  rot_OBB.col(0) = -temp;
+    _dim[0] = dz; _dim[1] = dy; _dim[2] = dx;
+  } else if( ey >= ex && ey >= ez ) {
+    temp = rot_OBB.col(2);
+    rot_OBB.col(2) = rot_OBB.col(1); rot_OBB.col(1) = -temp;
+    _dim[0] = dx; _dim[1] = dz; _dim[2] = dy;
+  } else {
+    _dim[0] = dx; _dim[1] = dy; _dim[2] = dz;
+  }
+
+  Eigen::Vector3f rpy = rot_OBB.eulerAngles(2,1,0);
  
   _rot[0] = (double)rpy(2);
   _rot[1] = (double)rpy(1);
   _rot[2] = (double)rpy(0);
-
-
-  // Transform _cloud
-  Eigen::Matrix4f transf = Eigen::Matrix4f::Identity();
-  transf.block(0,3,3,1) << (float)centroid(0), (float)centroid(1), (float)centroid(2);
-  transf.block(0,0,3,3) = eigVec;
-
-  Eigen::Matrix4f tinv; tinv = transf.inverse();
-  PointCloudPtr cloud_temp( new pcl::PointCloud<PointT>() );
-  pcl::transformPointCloud( *_cloud, *cloud_temp, tinv );
-
-  // Get maximum and minimum
-  PointT minPt; PointT maxPt;
-  pcl::getMinMax3D( *cloud_temp, minPt, maxPt );
-  double dx, dy, dz, dmax;
-  dx = ( maxPt.x - minPt.x ) / 2.0;
-  dy = ( maxPt.y - minPt.y ) / 2.0;
-  dz = ( maxPt.z - minPt.z ) / 2.0;
-
-  _dim[0] = dx;
-  _dim[1] = dy;
-  _dim[2] = dz;
 
 }
 

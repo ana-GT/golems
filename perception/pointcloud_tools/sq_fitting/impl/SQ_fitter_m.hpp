@@ -26,16 +26,11 @@ bool SQ_fitter_m<PointT>::fit( const int &_type,
 
   // Get the bounding box limits
   if( !this->mGotInitApprox ) {
-    printf("Get approx here\n");
     this->getBoundingBox( this->cloud_, 
 			  this->mInitDim,
 			  this->mInitTrans,
 			  this->mInitRot );
   }
-  printf("Init dim: %f %f %f, trans: %f %f %f, rot: %f %f %f\n",
-	 this->mInitDim[0], this->mInitDim[1], this->mInitDim[2],
-	 this->mInitTrans[0], this->mInitTrans[1], this->mInitTrans[2],
-	 this->mInitRot[0], this->mInitRot[1], this->mInitRot[2]);
 
   // Get plane equation and direction towards which to move
   Eigen::Vector3d direction;
@@ -51,7 +46,7 @@ bool SQ_fitter_m<PointT>::fit( const int &_type,
   
   // We move the plane, say till a percentage of points is still there
   // or until limit of the bounding box
-  double err_0, err_1, err_0_old;
+  double err_0, err_1, err_t;
 
   SQ_parameters p[2];
   std::vector<SQ_parameters> p0s;
@@ -62,58 +57,30 @@ bool SQ_fitter_m<PointT>::fit( const int &_type,
   PointCloudPtr part_1( new PointCloud );
   
   for( int i = 0; i < num_steps; ++i ) {
-
     plane_i = move_plane( plane, i, step_size );
     divide_cluster( part_0, part_1, plane_i );
     printf("[%d] Size part 0: %d size part 1: %d \n", i, part_0->points.size(), part_1->points.size() );
     // Fit
     err_0 = fit_part( part_0, _part_type[0], _smax, _smin, _N, _thresh, p[0] );
     err_1 = fit_part( part_1, _part_type[1], _smax, _smin, _N, _thresh, p[1] );
-
-    char namep0[50]; sprintf(namep0, "orig0_%d.pcd", i );
-    char namep1[50]; sprintf(namep1, "orig1_%d.pcd", i );
-    pcl::io::savePCDFile( namep0, *part_0 );
-    pcl::io::savePCDFile( namep1, *part_1 );
+    err_t = err_0*part_0->points.size() + err_1*part_1->points.size();
 
     if( err_0 > err_1 && i == 0 ) { step_size = step_size*-1; }
     
-    e0.push_back( err_0 );
-    e1.push_back( err_1 );
-    et.push_back( err_0*part_0->points.size() + err_1*part_1->points.size() );
-    p0s.push_back( p[0] );
-    p1s.push_back( p[1] );
-
-    printf("Iter[%d] error 0: %f error 1: %f \n", i, err_0, err_1);
+    e0.push_back( err_0 ); e1.push_back( err_1 ); et.push_back( err_t );
+    p0s.push_back( p[0] ); p1s.push_back( p[1] );
+    
+    printf("Iter[%d] error 0: %f error 1: %f - et \n", i, err_0, err_1, err_t );
     
   }
 
   double emin = et[0]; int eind = 0;
-    PointCloudPtr output0( new pcl::PointCloud<PointT>() );
-    PointCloudPtr output1( new pcl::PointCloud<PointT>() );
-    output0 = sampleSQ_uniform<PointT>( p0s[0], true );
-    output1 = sampleSQ_uniform<PointT>( p1s[0], true );
-
-    char name0[50]; sprintf(name0,"part0_%d.pcd", 0 );
-    char name1[50]; sprintf(name1,"part1_%d.pcd", 0 );
-    pcl::io::savePCDFile( name0, *output0 );
-    pcl::io::savePCDFile( name1, *output1 );
-
+  
   for( int i = 1; i < num_steps; ++i ) {
-    if( et[i] < emin ) { emin = et[i]; eind = i; }
-
-    // To test, store them both
-    PointCloudPtr output0( new pcl::PointCloud<PointT>() );
-    PointCloudPtr output1( new pcl::PointCloud<PointT>() );
-    output0 = sampleSQ_uniform<PointT>( p0s[i], true );
-    output1 = sampleSQ_uniform<PointT>( p1s[i], true );
-    char name0[50]; sprintf(name0,"part0_%d.pcd", i );
-    char name1[50]; sprintf(name1,"part1_%d.pcd", i );
-    pcl::io::savePCDFile( name0, *output0 );
-    pcl::io::savePCDFile( name1, *output1 );
-
-
+    if( et[i] < emin ) { emin = et[i]; eind = i; }   
   }
-  printf("Best apparently: %d \n", eind);
+
+  printf("Best according to sum of errors: %d \n", eind);
   pars_out_.resize(2);
   pars_out_[0] = p0s[eind];
   pars_out_[1] = p1s[eind];
@@ -135,7 +102,7 @@ double SQ_fitter_m<PointT>::fit_part( PointCloudPtr _part,
   // Fit superquadric
   switch( _type ) {
   case REGULAR: {
-    //printf("Type: regular \n");
+
     SQ_fitter<PointT> fitter;
     fitter.setInputCloud( _part );
     fitter.fit( _type, _smax, _smin, _N, _thresh );
@@ -144,7 +111,7 @@ double SQ_fitter_m<PointT>::fit_part( PointCloudPtr _part,
     break;
   }
   case TAMPERED: {
-    //printf("Type: tampered \n");
+
     SQ_fitter_t<PointT> fitter;
     fitter.setInputCloud( _part );
     fitter.fit( _type, _smax, _smin, _N, _thresh );
@@ -153,7 +120,7 @@ double SQ_fitter_m<PointT>::fit_part( PointCloudPtr _part,
     break;
   }
   case BENT: {
-    //printf("Type: bent \n");
+
     SQ_fitter_b<PointT> fitter;
     fitter.setInputCloud( _part );
     fitter.fit( _type, _smax, _smin, _N, _thresh );

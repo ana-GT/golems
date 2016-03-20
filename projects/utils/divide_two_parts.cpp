@@ -24,8 +24,8 @@ int main( int argc, char* argv[] ) {
 
   // Run in pointcloud 
   std::vector<int> types(2); 
-  types[0] = TAMPERED; 
-  types[1] = TAMPERED;
+  types[0] = REGULAR; 
+  types[1] = REGULAR;
   fitter.fit( SQ_FX_ICHIM, 
 	      types,
 	      2,

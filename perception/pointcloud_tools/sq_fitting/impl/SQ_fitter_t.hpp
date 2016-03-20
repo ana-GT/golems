@@ -79,9 +79,6 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
 	   this->par_in_.dim[0], this->par_in_.dim[1], this->par_in_.dim[2],
 	   this->par_in_.trans[0], this->par_in_.trans[1], this->par_in_.trans[2],
 	   this->par_in_.rot[0], this->par_in_.rot[1], this->par_in_.rot[2]);
-    
-
-    printf("Use table for orientation \n");
     double coeff[4]= {-0.002072, -0.666118, -0.745843, 0.667762 }; 
     getBoundingBoxTable<PointT>( this->cloud_, coeff, 
 				 this->par_in_.dim, 
