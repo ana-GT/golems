@@ -14,18 +14,24 @@ SQ_fitter_m<PointT>::~SQ_fitter_m() {
 
 template<typename PointT>
 bool SQ_fitter_m<PointT>::fit( const int &_type,
-		       std::vector<int> _part_type,
-		       int _num_parts,
-		       int _hint_search,	    
-		       const double &_smax,
-		       const double &_smin,
-		       const int &_N,
-		       const double &_thresh ) {
+			       std::vector<int> _part_type,
+			       int _num_parts,
+			       int _hint_search,	    
+			       const double &_smax,
+			       const double &_smin,
+			       const int &_N,
+			       const double &_thresh ) {
 
   // So far we only operate for 2 objects
 
   // Get the bounding box limits
-  if( !this->mGotInitApprox ) {
+  if( !this->mGotInitApprox ) {/*
+    double coeff[4]= {-0.002072, -0.666118, -0.745843, 0.667762 }; 
+    getBoundingBoxTable<PointT>( this->cloud_, coeff, 
+				 this->mInitDim, 
+				 this->mInitTrans, 
+				 this->mInitRot );*/
+    
     this->getBoundingBox( this->cloud_, 
 			  this->mInitDim,
 			  this->mInitTrans,
@@ -70,8 +76,19 @@ bool SQ_fitter_m<PointT>::fit( const int &_type,
     e0.push_back( err_0 ); e1.push_back( err_1 ); et.push_back( err_t );
     p0s.push_back( p[0] ); p1s.push_back( p[1] );
     
-    printf("Iter[%d] error 0: %f error 1: %f - et \n", i, err_0, err_1, err_t );
-    
+    printf("Iter[%d] error 0: %f error 1: %f - et: %f \n", i, err_0, err_1, err_t );
+   
+    /// SAVE
+    char name0[50]; char name1[50];
+    sprintf( name0, "orig0_%d.pcd", i ); pcl::io::savePCDFile( name0, *part_0 );
+    sprintf( name1, "orig1_%d.pcd", i ); pcl::io::savePCDFile( name1, *part_1 );
+    sprintf( name0, "part0_%d.pcd", i ); pcl::io::savePCDFile( name0, *sampleSQ_uniform<PointT>(p[0], true) );
+    sprintf( name1, "part1_%d.pcd", i ); pcl::io::savePCDFile( name1, *sampleSQ_uniform<PointT>(p[1], true) );
+    sprintf( name0, "mx_mesh_%d.ply", i ); 
+    std::vector<SQ_parameters> pars(2); pars[0] = p[0]; pars[1] = p[1];
+    SQ_utils::convertMeshes( pars, name0 );
+    ////////
+ 
   }
 
   double emin = et[0]; int eind = 0;
@@ -79,7 +96,7 @@ bool SQ_fitter_m<PointT>::fit( const int &_type,
   for( int i = 1; i < num_steps; ++i ) {
     if( et[i] < emin ) { emin = et[i]; eind = i; }   
   }
-
+ 
   printf("Best according to sum of errors: %d \n", eind);
   pars_out_.resize(2);
   pars_out_[0] = p0s[eind];

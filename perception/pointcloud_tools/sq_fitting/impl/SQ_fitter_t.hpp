@@ -67,18 +67,11 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
     
     this->mGotInitApprox = false;
   } else {
-
-    
     this->getBoundingBox( this->cloud_, 
 			  this->par_in_.dim,
 			  this->par_in_.trans,
-			  this->par_in_.rot,
-			  false );
-    
-    printf(" BT Dim: %f %f %f, trans: %f %f %f, rot: %f %f %f \n",
-	   this->par_in_.dim[0], this->par_in_.dim[1], this->par_in_.dim[2],
-	   this->par_in_.trans[0], this->par_in_.trans[1], this->par_in_.trans[2],
-	   this->par_in_.rot[0], this->par_in_.rot[1], this->par_in_.rot[2]);
+			  this->par_in_.rot );
+    /*
     double coeff[4]= {-0.002072, -0.666118, -0.745843, 0.667762 }; 
     getBoundingBoxTable<PointT>( this->cloud_, coeff, 
 				 this->par_in_.dim, 
@@ -88,6 +81,7 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
 	   this->par_in_.dim[0], this->par_in_.dim[1], this->par_in_.dim[2],
 	   this->par_in_.trans[0], this->par_in_.trans[1], this->par_in_.trans[2],
 	   this->par_in_.rot[0], this->par_in_.rot[1], this->par_in_.rot[2]);
+    */
   }
    
 
@@ -114,7 +108,7 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
     error_i_1 = error_i;
     
     // Update limits**********
-    /*
+    
       double dim_i[3];
       this->getBoundingBoxAlignedToTf( this->cloud_,
 			               par_i_1.trans,
@@ -126,9 +120,10 @@ bool SQ_fitter_t<PointT>::fit( const int &_type,
 	  this->mUpperLim_dim[j] = this->mDimFactor*dim_i[j]; 
 	}
       }
-    */
+    
     //****************************
-      printf("[%d] Lim dim: %f %f %f \n", i, this->mUpperLim_dim[0], this->mUpperLim_dim[1], this->mUpperLim_dim[2]);
+      printf("[%d] Upper limits: %f %f %f \n", i, 
+	     this->mUpperLim_dim[0], this->mUpperLim_dim[1], this->mUpperLim_dim[2]);
 
     PointCloudPtr cloud_i( new pcl::PointCloud<PointT>() );
     if( this->N_ == 1 ) { cloud_i = this->cloud_; }

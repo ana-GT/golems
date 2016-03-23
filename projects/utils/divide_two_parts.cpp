@@ -32,6 +32,20 @@ int main( int argc, char* argv[] ) {
 	      PERPENDICULAR_TO_Z,
 	      0.03, 0.005, 5, 0.005 );
   
+  std::vector<SQ_parameters> ps;
+  fitter.getFinalParams( ps );
+  pcl::PointCloud<PointT>::Ptr P0( new pcl::PointCloud<PointT> );
+  pcl::PointCloud<PointT>::Ptr P1( new pcl::PointCloud<PointT> );
+  P0 = sampleSQ_uniform<PointT>( ps[0], true );
+  P1 = sampleSQ_uniform<PointT>( ps[1], true );
+
   // Tell results
-  
+  pcl::io::savePCDFile( "final_part_0.pcd", *P0 );
+  pcl::io::savePCDFile( "final_part_1.pcd", *P1 );
+
+  printf("Final params: \n");
+  printParamsInfo( ps[0] );
+  printParamsInfo( ps[1] );
+  // Get the mesh
+  SQ_utils::convertMeshes( ps, "final_mesh.ply" );
 }

@@ -43,7 +43,8 @@ namespace SQ_utils {
 			      double _rot[3] );
 
   void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
-		       std::vector<pcl::Vertices> &_polygons );
+		       std::vector<pcl::Vertices> &_polygons,
+		       Eigen::Vector3d _center = Eigen::Vector3d::Zero() );
 } // end namespace SQ_utils
 
 void printParamsInfo( const SQ_parameters &_par );

@@ -161,10 +161,24 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
-
+      
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
+
+      // DEBUG//////
+      /*
+      cv::Mat markMaskd, depthMaskd;
+      this->generate2DMask( mCandidates[mCandidates.size()-1],
+			    markMaskd,
+			    depthMaskd );
+      char named[50]; sprintf(named, "cand_%d_%d.png", i, j );
+      cv::imwrite( named, markMaskd );
+      sprintf(named, "cand_%d_%d.pcd", i, j );
+      pcl::io::savePCDFile( named, *mCandidates[mCandidates.size()-1] );
+      */
+      ///////////////
+
 
     } // end for N    
   } // end for M
@@ -372,7 +386,7 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
   }
 
   // Fill projection
-  _markMask = fillProjection( _markMask );
+   _markMask = fillProjection( _markMask );
   
   return true;
 }

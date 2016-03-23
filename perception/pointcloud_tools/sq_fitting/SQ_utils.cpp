@@ -36,7 +36,10 @@ namespace SQ_utils {
     chull.setInputCloud( p_down );
     chull.reconstruct( points, polygons );
     
-    fix_mesh_faces( points, polygons );
+    Eigen::Vector3d center; 
+    if( _applyTransform ) { center << _p.trans[0], _p.trans[1], _p.trans[2]; }
+    else { center = Eigen::Vector3d(0,0,0); }
+    fix_mesh_faces( points, polygons, center );
     
     // Save mesh
     pcl::PCLPointCloud2 points2;
@@ -159,7 +162,8 @@ namespace SQ_utils {
    * @function fix_mesh_faces
    */
   void fix_mesh_faces( const pcl::PointCloud<pcl::PointXYZ> &_points,
-		       std::vector<pcl::Vertices> &_polygons ) {
+		       std::vector<pcl::Vertices> &_polygons,
+		       Eigen::Vector3d _center ) {
     
     pcl::PointXYZ p1, p2, p3;
     Eigen::Vector3d b;
@@ -179,7 +183,8 @@ namespace SQ_utils {
       
       // Find baricenter
       b << ( p1.x + p2.x + p3.x )/ 3.0, ( p1.y + p2.y + p3.y )/ 3.0, ( p1.z + p2.z + p3.z )/ 3.0;
-      
+      b = b - _center;
+
       // Find normal
       p21 << p2.x - p1.x, p2.y - p1.y, p2.z - p1.z;
       p31 << p3.x - p1.x, p3.y - p1.y, p3.z - p1.z;
