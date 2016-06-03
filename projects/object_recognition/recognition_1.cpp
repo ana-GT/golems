@@ -35,6 +35,8 @@ std::vector<double> gTableCoeffs;
 pcl::PointCloud<PointTa> gTablePoints;
 std::vector<std::string> gLabels;
 
+Eigen::VectorXd gFilterLimits; // xmin,xmax,ymin,ymax,zmin,zmax
+
 /*** Functions */
 void process();
 void drawSegmented();
@@ -45,8 +47,15 @@ void getPixelClusters();
  */
 int main( int argc, char* argv[] ) {
   
+  // Filter
+  gFilterLimits.resize(6);
+  //gFilterLimits << -0.35, 0.35, -0.70, 0.70, 1.5, 2.4; // Kinect
+  gFilterLimits << -1.0, 1.0, -1.5, 1.5, 0.35, 2.0; // Asus on top of Crichton
+
+
   ObjectsDatabase mOd;
   mOd.init_classifier();
+  mOd.load_dataset();
   
   gCapture.open( cv::CAP_OPENNI2 );
   
@@ -166,7 +175,8 @@ void process() {
 
   // Segment
   TabletopSegmentor<PointTa> tts;
-  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.0 );
+  tts.set_filter_minMax( gFilterLimits(0), gFilterLimits(1), gFilterLimits(2),
+			 gFilterLimits(3), gFilterLimits(4), gFilterLimits(5) );
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();

@@ -29,9 +29,12 @@ class skeleton_tracker {
   ~skeleton_tracker();
 
   openni::Status init( int argc, char* argv[] );
+  void setChan( std::string _chan );
   void run();
   void update();
   void finalize();
+
+  static std::string sJointNames[NUM_SKEL_JOINTS];
   
  private:
   
@@ -40,7 +43,7 @@ class skeleton_tracker {
   ach_channel_t mJoints_chan;
   
   // Head/Neck/LShoulder/LElbow/LHand/RShoulder/RElbow/RHand/Torso
-  static const int mNumJoints = 9;
+  static const int mNumJoints = NUM_SKEL_JOINTS;
   Eigen::Vector3d mJoints[mNumJoints];
   sns_msg_skel mMsg;
   

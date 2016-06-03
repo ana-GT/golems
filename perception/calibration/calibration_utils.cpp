@@ -127,7 +127,7 @@ bool svd_method( std::vector<Eigen::Vector3d> _Pk,
   Eigen::Matrix3d temp; temp = V*(U.transpose()); 
   Eigen::Matrix3d M; M.setIdentity(); M(2,2) = temp.determinant();
   if( M(2,2) == -1 ) {
-    //std::cout << "[SVD] Was reflection (det: "<< M(2,2) <<")"<<std::endl;
+    std::cout << "[SVD] Was reflection (det: "<< M(2,2) <<")"<<std::endl;
   }
   Eigen::Matrix3d Rot;
   Rot = V*M*(U.transpose());

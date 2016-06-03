@@ -140,8 +140,9 @@ void ObjectsDatabase::load_explanations() {
 std::vector<Prediction> ObjectsDatabase::classify( cv::Mat _img,
 						   int &_index,
 						   std::string &_label ) {
-
+  printf("Calling classifier prediction \n");
   std::vector<Prediction> predictions = mClassifier.classify( _img, _index );
+  printf("Classifying done now assign. Index: %d. Names size: %d \n", _index, mNames.size() );
   _label = mNames[_index];// Shorter // predictions[0].first;	
   return predictions;
 }

@@ -38,6 +38,8 @@ std::vector<int> gIndex;
 
 int gBiggestCluster;
 
+Eigen::VectorXd gFilterLimits; // xmin,xmax,ymin,ymax,zmin,zmax
+
 /*** Functions */
 void process();
 void drawSegmented();
@@ -48,16 +50,22 @@ void getPixelClusters();
  */
 int main( int argc, char* argv[] ) {
   
+  // Filter
+  gFilterLimits.resize(6);
+  //gFilterLimits << -0.35, 0.35, -0.70, 0.70, 1.5, 2.4; // Kinect
+  gFilterLimits << -1.0, 1.0, -1.5, 1.5, 0.35, 2.0; // Asus on top of Crichton
+
+
+  ObjectsDatabase mOd;
+  mOd.init_classifier();
+  mOd.load_dataset();
+
   gCapture.open( cv::CAP_OPENNI2 );
   
   if( !gCapture.isOpened() ) {
     printf("\t [ERROR] Could not open the capture object \n");
     return -1;
   }
-
-  ObjectsDatabase mOd;
-  mOd.init_classifier();
-  mOd.load_dataset();
 
   gCapture.set( cv::CAP_PROP_OPENNI2_MIRROR, 0.0 );
   gCapture.set( cv::CAP_PROP_OPENNI_REGISTRATION, -1.0 );
@@ -163,8 +171,10 @@ void process() {
 
   // Segment
   TabletopSegmentor<PointTa> tts;
-  tts.set_filter_minMax( -0.85, 0.85, -0.85, 0.85, 0.25, 1.0 );
-  tts.set_min_cluster_size(1500);
+  tts.set_filter_minMax( gFilterLimits(0), gFilterLimits(1), gFilterLimits(2),
+			 gFilterLimits(3), gFilterLimits(4), gFilterLimits(5) );
+
+  //tts.set_min_cluster_size(1500);
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();

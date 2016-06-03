@@ -47,7 +47,8 @@ int main( int argc, char* argv[] ) {
   // Set configuration values for Tts (tabletop segmentor)
   mCv.mRgbImg = cv::Mat( 480, 640, CV_8UC3 );
   mCv.mTts.setMinClusterSize(300);  
-  mCv.mTts.setZfilters( 0.35, 1.0 );
+  mCv.mTts.setMinMaxFilter( -1.0, 1.0, -1.0, 1.0, 0.35, 1.0 ); // PrimeSense
+  //mCv.mTts.setMinMaxFilter( -0.35, 0.35, -0.70, 0.70, 1.5, 2.4 ); // Kinect
   
   // Set capture
   mCv.setGrabber();

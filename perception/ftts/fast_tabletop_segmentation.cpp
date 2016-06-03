@@ -18,6 +18,10 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   mClusterDistThreshold(0.015f),
   mMinZ(0.35),
   mMaxZ(1.4),
+  mMinY(-1.0),
+  mMaxY(1.0),
+  mMinX(-1.0),
+  mMaxX(1.0),
   mThresh_dist2Table(0.015),
   mThresh_smallestBBdim(0.015),
   mEcc( new pcl::EuclideanClusterComparator<PointT, pcl::Normal, pcl::Label>() ){  
@@ -44,6 +48,14 @@ Fast_Tabletop_Segmentation<PointT>::Fast_Tabletop_Segmentation() :
   mMps.setRefinementComparator( refinement_compare );
 }
 
+template<typename PointT>
+void Fast_Tabletop_Segmentation<PointT>::setMinMaxFilter( double _xmin, double _xmax, 
+							  double _ymin, double _ymax, 
+							  double _zmin, double _zmax ) {
+  mMinX = _xmin; mMaxX = _xmax;
+  mMinY = _ymin; mMaxY = _ymax;
+  mMinZ = _zmin; mMaxZ = _zmax;
+}
 
 template<typename PointT>
 void Fast_Tabletop_Segmentation<PointT>::getSegmentedImg( CloudConstPtr _cloud,
@@ -201,7 +213,8 @@ void Fast_Tabletop_Segmentation<PointT>::process( CloudConstPtr _cloud,
     int i = 0;
     for( it = _cloud->begin(); it != _cloud->end(); ++it, ++i ) {
       
-      if( (*it).z < mMinZ || (*it).z > mMaxZ ) {
+      if( (*it).z < mMinZ || (*it).z > mMaxZ || (*it).y < mMinY || (*it).y > mMaxY ||
+	  (*it).x < mMinX || (*it).x > mMaxX ) {
 	outPoints.indices.push_back(i);
 	labels->points[i].label = label_indices.size();
       }

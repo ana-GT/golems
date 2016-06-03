@@ -89,3 +89,14 @@ set_target_properties( perception_pick_ftts_2 PROPERTIES RUNTIME_OUTPUT_DIRECTOR
 add_executable( perception_pick_ftts_2_mirror_data perception_pick_ftts_2_mirror_data.cpp )
 target_link_libraries( perception_pick_ftts_2_mirror_data ftts sq_fitting sq_utils objectsDatabase  mindGapper perception_msgs ${Caffe_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} levmar )
 set_target_properties( perception_pick_ftts_2_mirror_data PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+# Overhead kinect calib
+add_executable( overheadKinectCalib overheadKinectCalib.cpp )
+target_link_libraries( overheadKinectCalib calibration )
+set_target_properties( overheadKinectCalib PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin )
+
+ 
+# Overhead kinect calib
+add_executable( joystick_snapshot joystick_snapshot.cpp )
+target_link_libraries( joystick_snapshot  ${OpenCV_LIBRARIES} ${ACH_LIBRARIES} ${SNS_LIBRARIES} )
+set_target_properties( joystick_snapshot PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 

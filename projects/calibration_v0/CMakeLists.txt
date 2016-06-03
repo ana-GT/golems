@@ -45,6 +45,13 @@ target_link_libraries( calibration_v2_alita  motionControl perception_msgs biman
 set_target_properties( calibration_v2_alita PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
 ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
 
+# Calibration v3
+add_executable( calibration_v3_bothCameras calibration_v3_bothCameras.cpp ) 
+target_link_libraries( calibration_v3_bothCameras  motionControl perception_msgs bimanual_msgs crichton_markerDetector calibration ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES} ${SNS_LIBRARIES} ${ACH_LIBRARIES} ${PCL_COMMON_LIBRARIES} ${PCL_SEARCH_LIBRARIES} ${AMINO_LIBRARIES} ) 
+set_target_properties( calibration_v3_bothCameras PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 
+ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin ) 
+
+
 #add_library( test_alvar3Daccuracy test_alvar3Daccuracy.cpp ) # ${SRCS} )
 #target_link_libraries( test_alvar3Daccuracy ${OpenCV_LIBRARIES} ${ALVAR_LIBRARIES}  ${QT_LIBRARIES}    ${DART_LIBRARIES}  ${GRIP_LIBRARIES} ) 
 #set_target_properties( test_alvar3Daccuracy PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin 

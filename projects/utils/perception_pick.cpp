@@ -71,6 +71,7 @@ ach_channel_t gObj_param_chan; // Channel to send object param to planner
 ach_channel_t gServer2Module_chan; // Channel to receive commands from server
 ach_channel_t gModule2Server_chan; // Channel to send responses to server
 
+Eigen::VectorXd gFilterLimits; // xmin,xmax,ymin,ymax,zmin,zmax
 
 /***********************/
 /** FUNCTIONS          */
@@ -103,6 +104,11 @@ void pollChan();
  * @function main
  */
 int main( int argc, char* argv[] ) {
+
+  // Filter
+  gFilterLimits.resize(6);
+  gFilterLimits << -0.35, 0.35, -0.70, 0.70, 1.5, 2.4; // Kinect
+  //gFilterLimits << -1.0, 1.0, -1.5, 1.5, 0.35, 2.0; // Asus on top of Crichton
 
   // Initialization
   srand( time(NULL) );  
@@ -345,7 +351,7 @@ void send( int state, void* userData ) {
     std::cout << "E: "<< msg->u[i].e[0] << ", "<< msg->u[i].e[1] << std::endl;
     std::cout << " Dim: " << msg->u[i].dim[0] << ", "<< msg->u[i].dim[1] << ", "<< msg->u[i].dim[2] << std::endl;
 
-    char orig_name[50]; sprintf( orig_name, "original_pp_%d.pcd", i );
+    char orig_name[50]; sprintf( orig_name, "original_pp_%ld.pcd", i );
     pcl::io::savePCDFileASCII( orig_name, gClusters[i] );
     char mesh_name[50]; sprintf( mesh_name, "%s/mesh_%ld.ply", gPicturesPath.c_str(), i );
     create_mesh( mesh, dim, e, 25, mesh_name );
@@ -573,7 +579,8 @@ void process( int state,
 
   // Segment
   TabletopSegmentor<PointTa> tts;
-  tts.set_filter_minMax( -1.0, 1.0, -1.5,1.5, 0.35, 2.0 );
+  tts.set_filter_minMax( gFilterLimits(0), gFilterLimits(1), gFilterLimits(2),
+			 gFilterLimits(3), gFilterLimits(4), gFilterLimits(5) );
   tts.processCloud( cloud );
   gTableCoeffs = tts.getTableCoeffs();
   gTablePoints = tts.getTable();

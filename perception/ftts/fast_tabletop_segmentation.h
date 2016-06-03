@@ -28,12 +28,13 @@ class Fast_Tabletop_Segmentation {
 
  public:
   Fast_Tabletop_Segmentation();
+  void setMinMaxFilter( double _xmin, double _xmax, double _ymin,
+			double _ymax, double _zmin, double _zmax );
   void process( CloudConstPtr _cloud, bool _showSegmentation = true );
   cv::Mat getRgbImg() { return mRgbImg; }
   cv::Mat getXyzImg() { return mXyzImg; }
 
   void setMinClusterSize( int _size ) { mClusterMinSize = _size; }
-  void setZfilters( double _minZ, double _maxZ ) { mMinZ = _minZ; mMaxZ = _maxZ; }
   int getNumClusters() { return mClusters.size(); }
   bool getClusterBB( int _i, int &_xmin, int &_ymin,
 		     int &_xmax, int &_ymax );
@@ -54,6 +55,8 @@ private:
   std::vector<CloudPtr> getClusters() { return mClusters; }
   
   double mMinZ, mMaxZ;
+  double mMinY, mMaxY;
+  double mMinX, mMaxX;
   CloudPtr mCloud;
   float mThreshold;
   float mThresh_dist2Table;

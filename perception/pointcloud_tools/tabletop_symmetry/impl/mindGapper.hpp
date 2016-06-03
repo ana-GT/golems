@@ -21,7 +21,7 @@
  */
 cv::Mat fillProjection( const cv::Mat &_input ) {
 
-  int morph_size = 0;
+  int morph_size = 2;
   int morph_elem = cv::MORPH_RECT;
   
   cv::Mat output = cv::Mat::zeros( _input.rows, _input.cols, CV_8UC1 );
@@ -40,11 +40,11 @@ cv::Mat fillProjection( const cv::Mat &_input ) {
 		    cv::getStructuringElement(morph_elem,
 					      cv::Size(2*morph_size+1, 2*morph_size+1),
 					      cv::Point(morph_size,morph_size) ) );
-  cv::morphologyEx( output, output, cv::MORPH_CLOSE,
+   cv::morphologyEx( output, output, cv::MORPH_CLOSE,
 		    cv::getStructuringElement(morph_elem,
 					      cv::Size(2*morph_size+1, 2*morph_size+1),
 					      cv::Point(morph_size,morph_size) ) );
-
+  
   return output;
 }
 
@@ -107,6 +107,7 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   }
   
   mDTMask = matDT( mMarkMask );
+  cv::imwrite( "dtmask.png", mDTMask );
   cv::imwrite( "markMask.png", mMarkMask );
   // 1. Project pointcloud to plane 
   double dmin, dmax; double da, db;
@@ -138,6 +139,9 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
   dang = 2*mAlpha / (double) (mM-1);
   
   int count = 0;
+  std::vector<Eigen::VectorXd> planes;
+  std::vector<Eigen::VectorXd> centers;
+
   for( int i = 0; i < mM; ++i ) {
         
     ang = -mAlpha +i*dang;
@@ -161,7 +165,9 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
 
       // 5. Mirror
       mCandidates.push_back( mirrorFromPlane(_cloud, sp, false) );
-      
+
+      planes.push_back( sp ); centers.push_back(cp);
+
       mValidity.push_back( true );
       candidateSymmRts.push_back( symmRt );
       candidateDists.push_back( mDj*j );
@@ -247,14 +253,14 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
     for( int j = 0; j < mN; ++j ) {
       if( mDelta1[i*mN + j] < mCutoff_Pixel_MaxDist ) {
 	first_pass.push_back( i*mN + j );
-      }
+      } 
     }
   }
 
   // Second, now get the smallest according to delta 2
   int d2_ind; double d2_min;
 
-  if( first_pass.size() == 0 ) { return -1; }
+  if( first_pass.size() == 0 ) { printf("FIrst pass is zero \n"); return -1; }
 
   d2_ind = first_pass[0]; d2_min = mDelta2[d2_ind];
   for( int i = 1; i < first_pass.size(); ++i ) {
@@ -270,7 +276,11 @@ int mindGapper<PointT>::complete( PointCloudPtr &_cloud,
     printf("Mirroring failed to give good results \n");
     return -1;
   }
-  
+  printf("Min index: %d \n", minIndex );
+  mSymPlane = planes[minIndex];
+  mCenterPlane = centers[minIndex];
+  mSymPlanes = planes;
+  mCenterPlanes = centers;
   // Set symmetry transformation
   symmRt = candidateSymmRts[minIndex];
   // Put in symmetry axis
@@ -386,8 +396,11 @@ bool mindGapper<PointT>::generate2DMask( PointCloudPtr _segmented_cloud,
   }
 
   // Fill projection
-   _markMask = fillProjection( _markMask );
+  cv::imwrite( "maskNotFilled.png", _markMask );
+  _markMask = fillProjection( _markMask );
   
+   cv::imwrite( "maskFilled.png", _markMask );
+
   return true;
 }
 

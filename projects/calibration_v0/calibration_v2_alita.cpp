@@ -87,7 +87,7 @@ int main( int argc, char* argv[] ) {
   mMd.setMarkerSize(5);
   
   // Open device
-  cv::VideoCapture capture( cv::CAP_OPENNI2 ); 
+  cv::VideoCapture capture( cv::CAP_OPENNI2 );  
   
   if( !capture.isOpened() ) {
     std::cout << "t * Could not open the capture object"<<std::endl;

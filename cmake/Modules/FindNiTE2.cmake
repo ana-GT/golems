@@ -7,7 +7,7 @@
 # *********************************************************
 
 find_path( NiTE2_INCLUDE_DIR NiTE.h HINTS $ENV{NITE2_INCLUDE} )
-find_library( NiTE2_LIBRARY NAMES NiTE2 PATHS $ENV{NITE2_REDIST64} )
+find_library( NiTE2_LIBRARY NAMES NiTE2 PATHS $ENV{NITE2_REDIST} )
 
 set( NiTE2_INCLUDE_DIRS ${NiTE2_INCLUDE_DIR} )
 set( NiTE2_LIBS ${NiTE2_LIBRARY} )

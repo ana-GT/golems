@@ -6,6 +6,7 @@ int main( int argc, char* argv[] ) {
   skeleton_tracker mTracker;
   openni::Status rc = openni::STATUS_OK;
   rc = mTracker.init( argc, argv );
+  mTracker.setChan("tracker_chan");
   if( rc != openni::STATUS_OK ) {
     printf(">> Tracker initialization did not finish OK \n");
     return 1;

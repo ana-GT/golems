@@ -4,6 +4,16 @@
 #include <stdio.h>
 #include "skeleton_tracker.h"
 
+std::string skeleton_tracker::sJointNames[NUM_SKEL_JOINTS] = { std::string("head"),
+							       std::string("neck"),
+							       std::string("lShoulder"),
+							       std::string("lElbow"),
+							       std::string("lHand"),
+							       std::string("rShoulder"),
+							       std::string("rElbow"),
+							       std::string("rHand"),
+							       std::string("torso") };
+
 /**
  * @function skeleton_tracker 
  * @brief Constructor
@@ -43,10 +53,14 @@ openni::Status skeleton_tracker::init( int argc, char* argv[] ) {
   if( mUserTracker->create( &mDevice ) != nite::STATUS_OK ) {
     return openni::STATUS_ERROR;
   }
-
-  // Open channel to communicate
-  sns_chan_open( &mJoints_chan, "skel_chan", NULL );
   
+}
+
+/**
+ *  Open channel to communicate
+ */
+void skeleton_tracker::setChan( std::string _chan ) {
+  sns_chan_open( &mJoints_chan, _chan.c_str(), NULL );  
 }
 
 void skeleton_tracker::run() {

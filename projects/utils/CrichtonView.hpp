@@ -33,6 +33,7 @@ void CrichtonView<PointT>::setGUI() {
  
   boost::shared_ptr<pcl::io::openni2::OpenNI2Device> device = mGrabber->getDevice();
   mF = device->getDepthFocalLength(); // Same as color length, by the way
+  printf("FOcal length: %f \n", mF);
 
 }
 
@@ -45,7 +46,7 @@ void CrichtonView<PointT>::grabber_callback( const CloudConstPtr& _cloud ) {
   double dt; clock_t ts, tf;
   // Segment the new input
   mTts.process( _cloud, mShowSegmentation );
-
+   
   // Show it
   mRgbImg = mTts.getRgbImg();
   mPclMap = mTts.getXyzImg();
@@ -85,6 +86,8 @@ template<typename PointT>
 void CrichtonView<PointT>::send( int state, void* userData ) {
 
   mMutex.lock(); // Don't process anything while we are sending
+  printf("Sending \n");
+  for( int i = 0; i < 4; ++i ) { printf("**Table coeffs [%d]: %f \n", i, mTts.mTableCoeffs[i]);}
 
   printf("Clusters size: %d \n", mTts.getNumClusters() );
   if( mSelectedCluster < 0 || mSelectedCluster >= mTts.getNumClusters() ) {
@@ -114,7 +117,7 @@ void CrichtonView<PointT>::send( int state, void* userData ) {
 		  index, label );
     // Send this info for fitting
     //index = 5; // BOTTLE BY NOW
-    printf("* Label: %s \n", label.c_str() );
+    printf("*** Label!!: %s index: %d \n", label.c_str(), index );
     ObjectEntry entry; entry = mOd.getEntry( index );
     fit_SQ( mTts.getCluster(i), i, ps, entry );
     

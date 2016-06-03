@@ -73,11 +73,14 @@ int main( int argc, char* argv[] ) {
   // Set configuration values for Tts (tabletop segmentor)
   gRgbImg = cv::Mat( 480, 640, CV_8UC3 );
   gTts.setMinClusterSize(300);  
-  gTts.setZfilters( 0.35, 1.0 );
-printf("THIS ONE! \n");
+  //gTts.setMinMaxFilter( -1.0, 1.0, -1.0, 1.0, 0.35, 1.0 ); // PrimeSense
+  gTts.setMinMaxFilter( -0.35, 0.35, -0.70, 0.70, 1.5, 2.4 ); // Kinect
+
   // Set capture
-  gGrabber = new pcl::io::OpenNI2Grabber("", pcl::io::OpenNI2Grabber::OpenNI_Default_Mode, 
-					 pcl::io::OpenNI2Grabber::OpenNI_Default_Mode );
+  printf("Start grabber \n");
+  gGrabber = new pcl::io::OpenNI2Grabber(""); //"", pcl::io::OpenNI2Grabber::OpenNI_Default_Mode, 
+  //pcl::io::OpenNI2Grabber::OpenNI_Default_Mode );
+  printf("Grabber was initialized \n");
   boost::function<void (const CloudConstPtr&) > f = boost::bind(&grabber_callback, _1 );
   gGrabber->registerCallback(f);
 

@@ -50,6 +50,13 @@ class mindGapper {
   int complete( PointCloudPtr &_cloud,
 		bool _completeCloud = true );
 
+  Eigen::VectorXd getSymPlane() { return mSymPlane; } // call after complete
+  Eigen::VectorXd getCenterPlane() { return mCenterPlane; } // call after complete
+  void getProjectedInfo( Eigen::Vector3d &_center,
+			 Eigen::Vector3d &_ea,
+			 Eigen::Vector3d &_eb ) { _center = mC; _ea = mEa; _eb = mEb; }
+  PointCloudPtr getProjected() { return mProjected; }
+
   /**< Get the symmetry Tf: Z is the table plane and the rest comes from the symmetry plane */
   void getSymmetryApprox( Eigen::Isometry3d &_Tf,
 
@@ -71,8 +78,13 @@ class mindGapper {
   PointCloudPtr getCandidate(int _ind) { return mCandidates[_ind]; }
   bool viewInitialParameters();
 
+  std::vector<Eigen::VectorXd> mSymPlanes;
+  std::vector<Eigen::VectorXd> mCenterPlanes;
+
+
  private:
-  
+  Eigen::VectorXd mSymPlane; Eigen::VectorXd mCenterPlane;
+
   /** Helper functions for complete */
   PointCloudPtr mirrorFromPlane( PointCloudPtr _cloud,
 				 Eigen::VectorXd _plane,
