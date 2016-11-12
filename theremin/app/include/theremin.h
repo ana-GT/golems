@@ -4,12 +4,15 @@
 #include <QTimer>
 #include <QThread>
 #include <QMutex>
-#include <alsa/asoundlib.h>
-
+#include <stdio.h>
+//#include <alsa/asoundlib.h>
+#include <tinyalsa/asoundlib.h>
 
 namespace Ui {
     class Theremin;
 }
+
+
 
 /**
  * @class PlayThread
@@ -22,6 +25,7 @@ class PlayThread : public QThread {
   PlayThread( QObject* parent = 0 );
   ~PlayThread();
 
+
   void stop_thread() { this->restart = false; }
   void start_thread() { 
     printf("Start thread \n");
@@ -33,6 +37,9 @@ class PlayThread : public QThread {
     this->mutex.unlock();
   }
 
+  void setVolume( double _volume );
+  void set_tone( double _freq, 
+		 double _vol );
  protected:
   void run() Q_DECL_OVERRIDE;
   bool audio_start();
@@ -45,11 +52,17 @@ class PlayThread : public QThread {
 
   // Thread stuff
   double vol;
-  double sample_rate;
-  double frequency;
-  snd_pcm_t* handle; // device
+  double fs; // Hz sample rate
+  double ft; // Frequency
+  //snd_pcm_t* handle; // device
+  struct pcm* handle;
   int channels;
   int allow_resampling;
+
+  double freq_min;
+  double freq_max;
+  
+
 };
 
 /**
@@ -73,16 +86,20 @@ private slots:
     void scale_slot( int _id );
     void output_mode_slot( int _id );
     void volume_slot( int _in );
+    void frequency_slot( int _in );
 
 private:
     Ui::Theremin *ui;
-
-    double mTimes[6];
-
-    int mPx; int mPy;
-    QTimer* mTimer;
-    int mNumTimeouts;
-
     PlayThread* playThread;
+
+ public:
+    // Static
+    double static sSharp;
+    double  static sEqual_temp_freqs[12];
+    std::string static sEqual_temp_labels[12];
+    int static sDiatonic_major_intervals[7];
+    int static sPentatonic_major_intervals[5];
+    int static sPentatonic_minor_intervals[5];
+    int static blues_intervals[6];
 
 };
